@@ -1,0 +1,43 @@
+# Clay Webhook OS — Taxonomy
+# Blessed tags for knowledge nodes
+
+version: 1.0.0
+last_updated: 2026-03-03
+
+domains:
+  blessed:
+    - business       # Industry, market, buyer context
+    - methodology    # Frameworks, patterns, approaches
+    - technical      # Tools, integrations, implementation
+    - emergent       # New concepts not yet validated
+
+node_types:
+  blessed:
+    - concept        # Core ideas
+    - pattern        # Repeatable approaches
+    - case-study     # Real examples with outcomes
+    - framework      # Structured methodologies
+
+status_values:
+  blessed:
+    - emergent       # Identified but not validated
+    - validated      # Proven in practice (1+ campaigns)
+    - canonical      # Proven and referenced (2+ campaigns)
+
+topic_library:
+  business:
+    - industry-context
+    - buyer-personas
+    - sales-language
+  methodology:
+    - email-writing
+    - personalization
+    - cold-outreach
+    - content-creation
+    - brand-voice
+  technical: []
+
+quality_thresholds:
+  tag_sprawl_warning: 20
+  minimum_topic_count: 3
+  maximum_topic_count: 7

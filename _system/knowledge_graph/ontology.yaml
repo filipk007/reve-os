@@ -1,0 +1,38 @@
+# Clay Webhook OS — Ontology
+# Defines how knowledge nodes relate to each other
+
+version: 1.0.0
+last_updated: 2026-03-03
+
+relationship_types:
+
+  enables:
+    description: "A makes B possible (foundational)"
+    example: "[[josh-braun-pvc]] enables [[email-writing]]"
+
+  supports:
+    description: "A provides evidence for B"
+    example: "[[saas-b2b]] supports [[josh-braun-pvc]] with industry context"
+
+  implements:
+    description: "A is practical execution of B"
+    example: "skill email-gen implements [[josh-braun-pvc]]"
+
+  informs:
+    description: "A provides context that improves B"
+    example: "[[writing-style]] informs [[email-writing]]"
+
+linking_requirements:
+  all_nodes:
+    minimum_links: 2
+    description: "Every node should link to 2+ other nodes"
+  emergent_nodes:
+    minimum_links: 1
+    description: "New concepts can start with 1 link"
+
+quality_standards:
+  attribution_required: true
+  formats:
+    verified: "[VERIFIED: source]"
+    inferred: "[INFERRED: logic from sources]"
+    unverifiable: "[UNVERIFIABLE]"

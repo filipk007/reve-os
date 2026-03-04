@@ -1,0 +1,15 @@
+{
+  "name": "clay-webhook-os",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Clay webhook server powered by Claude Code Max subscription — no API key needed",
+  "main": "index.js",
+  "scripts": {
+    "start": "PATH=./node_modules/.bin:$PATH node index.js",
+    "dev": "PATH=./node_modules/.bin:$PATH node --watch index.js",
+    "setup": "npm install @anthropic-ai/claude-code && ./node_modules/.bin/claude login"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
