@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.core.context_assembler import build_prompt
@@ -21,7 +22,34 @@ async def webhook(body: WebhookRequest, request: Request):
     cache = request.app.state.cache
     model = body.model or settings.default_model
 
-    # Load skill
+    # --- Async mode: queue and return immediately ---
+    if body.callback_url:
+        queue = request.app.state.job_queue
+
+        # Validate skill exists before queuing
+        skill_content = load_skill(body.skill)
+        if skill_content is None:
+            return _error(f"Skill '{body.skill}' not found", body.skill)
+
+        job_id = await queue.enqueue(
+            skill=body.skill,
+            data=body.data,
+            instructions=body.instructions,
+            model=model,
+            callback_url=body.callback_url,
+            row_id=body.row_id,
+        )
+        return JSONResponse(
+            status_code=202,
+            content={
+                "accepted": True,
+                "job_id": job_id,
+                "queue_position": queue.pending,
+                "skill": body.skill,
+            },
+        )
+
+    # --- Sync mode: process and return result ---
     skill_content = load_skill(body.skill)
     if skill_content is None:
         return _error(f"Skill '{body.skill}' not found", body.skill)

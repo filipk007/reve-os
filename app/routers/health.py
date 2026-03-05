@@ -21,14 +21,45 @@ async def root():
 async def health(request: Request):
     pool = request.app.state.pool
     cache = request.app.state.cache
+    queue = request.app.state.job_queue
     return {
         "status": "ok",
         "engine": "claude --print",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "workers_available": pool.available,
         "workers_max": pool.max_workers,
+        "queue_pending": queue.pending,
+        "queue_total": queue.total,
         "skills_loaded": list_skills(),
         "cache_entries": cache.size,
+    }
+
+
+@router.get("/jobs")
+async def jobs(request: Request):
+    queue = request.app.state.job_queue
+    return {
+        "pending": queue.pending,
+        "total": queue.total,
+        "jobs": queue.get_jobs(),
+    }
+
+
+@router.get("/jobs/{job_id}")
+async def job_status(job_id: str, request: Request):
+    queue = request.app.state.job_queue
+    job = queue.get_job(job_id)
+    if job is None:
+        return {"error": True, "error_message": f"Job {job_id} not found"}
+    return {
+        "id": job.id,
+        "skill": job.skill,
+        "row_id": job.row_id,
+        "status": job.status,
+        "duration_ms": job.duration_ms,
+        "error": job.error,
+        "created_at": job.created_at,
+        "completed_at": job.completed_at,
     }
 
 

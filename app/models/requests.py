@@ -6,6 +6,8 @@ class WebhookRequest(BaseModel):
     data: dict = Field(..., description="Row data from Clay")
     instructions: str | None = Field(None, description="Optional campaign instructions")
     model: str | None = Field(None, description="Model override: opus, sonnet, haiku")
+    callback_url: str | None = Field(None, description="URL to POST results to (enables async mode)")
+    row_id: str | None = Field(None, description="Row identifier for matching callback results")
 
 
 class PipelineStep(BaseModel):
