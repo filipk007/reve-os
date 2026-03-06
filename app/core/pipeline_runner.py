@@ -26,6 +26,80 @@ def load_pipeline(name: str) -> dict | None:
     return yaml.safe_load(path.read_text())
 
 
+async def run_skill_chain(
+    skills: list[str],
+    data: dict,
+    instructions: str | None,
+    model: str,
+    pool: WorkerPool,
+    cache: ResultCache | None = None,
+) -> dict:
+    results = []
+    current_data = dict(data)
+    total_start = time.monotonic()
+
+    for skill_name in skills:
+        step_start = time.monotonic()
+
+        skill_content = load_skill(skill_name)
+        if skill_content is None:
+            results.append({
+                "skill": skill_name,
+                "success": False,
+                "duration_ms": 0,
+                "error": f"Skill '{skill_name}' not found",
+            })
+            continue
+
+        # Check cache
+        if cache is not None:
+            cached = cache.get(skill_name, current_data, instructions)
+            if cached is not None:
+                results.append({
+                    "skill": skill_name,
+                    "success": True,
+                    "duration_ms": 0,
+                    "output": cached,
+                })
+                current_data.update(cached)
+                continue
+
+        context_files = load_context_files(skill_content, current_data)
+        prompt = build_prompt(skill_content, context_files, current_data, instructions)
+
+        try:
+            result = await pool.submit(prompt, model)
+            parsed = result["result"]
+            duration_ms = result["duration_ms"]
+
+            if cache is not None:
+                cache.put(skill_name, current_data, instructions, parsed)
+            current_data.update(parsed)
+
+            results.append({
+                "skill": skill_name,
+                "success": True,
+                "duration_ms": duration_ms,
+                "output": parsed,
+            })
+        except Exception as e:
+            duration_ms = int((time.monotonic() - step_start) * 1000)
+            results.append({
+                "skill": skill_name,
+                "success": False,
+                "duration_ms": duration_ms,
+                "error": str(e),
+            })
+
+    total_ms = int((time.monotonic() - total_start) * 1000)
+    return {
+        "chain": [s for s in skills],
+        "steps": results,
+        "final_output": current_data,
+        "total_duration_ms": total_ms,
+    }
+
+
 async def run_pipeline(
     name: str,
     data: dict,

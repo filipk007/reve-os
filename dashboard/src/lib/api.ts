@@ -1,3 +1,13 @@
+import type {
+  BatchResponse,
+  HealthResponse,
+  Job,
+  JobListItem,
+  ScheduledBatch,
+  Stats,
+  WebhookResponse,
+} from "./types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://clay.nomynoms.com";
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
 
@@ -15,15 +25,6 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   }
   return res.json();
 }
-
-import type {
-  BatchResponse,
-  HealthResponse,
-  Job,
-  JobListItem,
-  Stats,
-  WebhookResponse,
-} from "./types";
 
 export function fetchHealth(): Promise<HealthResponse> {
   return apiFetch("/health");
@@ -50,10 +51,12 @@ export function fetchSkills(): Promise<{ skills: string[] }> {
 }
 
 export function runWebhook(body: {
-  skill: string;
+  skill?: string;
+  skills?: string[];
   data: Record<string, unknown>;
   model?: string;
   instructions?: string;
+  priority?: "high" | "normal" | "low";
 }): Promise<WebhookResponse> {
   return apiFetch("/webhook", {
     method: "POST",
@@ -66,9 +69,30 @@ export function runBatch(body: {
   rows: Record<string, unknown>[];
   model?: string;
   instructions?: string;
+  priority?: "high" | "normal" | "low";
+  scheduled_at?: string;
 }): Promise<BatchResponse> {
   return apiFetch("/batch", {
     method: "POST",
     body: JSON.stringify(body),
   });
+}
+
+export function fetchScheduledBatches(): Promise<{
+  batches: ScheduledBatch[];
+}> {
+  return apiFetch("/scheduled");
+}
+
+export function createJobStream(
+  onEvent: (eventType: string, data: Record<string, unknown>) => void
+): EventSource {
+  const es = new EventSource(`${API_URL}/jobs/stream`);
+  es.addEventListener("job_created", (e) => {
+    onEvent("job_created", JSON.parse(e.data));
+  });
+  es.addEventListener("job_updated", (e) => {
+    onEvent("job_updated", JSON.parse(e.data));
+  });
+  return es;
 }

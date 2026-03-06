@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     max_workers: int = 10
     default_model: str = "opus"
     request_timeout: int = 120
-    cache_ttl: int = 3600
+    cache_ttl: int = 86400
 
     # Derived paths (relative to project root)
     base_dir: Path = Path(__file__).resolve().parent.parent

@@ -4,6 +4,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import TYPE_CHECKING
 
 import httpx
 
@@ -12,7 +13,13 @@ from app.core.context_assembler import build_prompt
 from app.core.skill_loader import load_context_files, load_skill
 from app.core.worker_pool import WorkerPool
 
+if TYPE_CHECKING:
+    from app.core.cache import ResultCache
+    from app.core.event_bus import EventBus
+
 logger = logging.getLogger("clay-webhook-os")
+
+PRIORITY_WEIGHTS = {"high": 0, "normal": 1, "low": 2}
 
 
 class JobStatus(str, Enum):
@@ -20,6 +27,8 @@ class JobStatus(str, Enum):
     processing = "processing"
     completed = "completed"
     failed = "failed"
+    retrying = "retrying"
+    dead_letter = "dead_letter"
 
 
 @dataclass
@@ -31,18 +40,36 @@ class Job:
     model: str
     callback_url: str
     row_id: str | None
+    priority: str = "normal"
+    skills: list[str] | None = None
     status: JobStatus = JobStatus.queued
     result: dict | None = None
     error: str | None = None
     created_at: float = field(default_factory=time.time)
     completed_at: float | None = None
     duration_ms: int = 0
+    retry_count: int = 0
+    max_retries: int = 3
+    next_retry_at: float | None = None
+
+    def __lt__(self, other: "Job") -> bool:
+        return PRIORITY_WEIGHTS.get(self.priority, 1) < PRIORITY_WEIGHTS.get(other.priority, 1)
+
+    def __le__(self, other: "Job") -> bool:
+        return PRIORITY_WEIGHTS.get(self.priority, 1) <= PRIORITY_WEIGHTS.get(other.priority, 1)
 
 
 class JobQueue:
-    def __init__(self, pool: WorkerPool):
+    def __init__(
+        self,
+        pool: WorkerPool,
+        cache: "ResultCache | None" = None,
+        event_bus: "EventBus | None" = None,
+    ):
         self._pool = pool
-        self._queue: asyncio.Queue[Job] = asyncio.Queue()
+        self._cache = cache
+        self._event_bus = event_bus
+        self._queue: asyncio.PriorityQueue[Job] = asyncio.PriorityQueue()
         self._jobs: dict[str, Job] = {}
         self._workers: list[asyncio.Task] = []
 
@@ -62,11 +89,13 @@ class JobQueue:
         return [
             {
                 "id": j.id,
-                "skill": j.skill,
+                "skill": j.skills[0] if j.skills else j.skill,
                 "row_id": j.row_id,
                 "status": j.status,
                 "duration_ms": j.duration_ms,
                 "created_at": j.created_at,
+                "retry_count": j.retry_count,
+                "priority": j.priority,
             }
             for j in jobs
         ]
@@ -79,7 +108,38 @@ class JobQueue:
         model: str,
         callback_url: str,
         row_id: str | None,
+        priority: str = "normal",
+        max_retries: int = 3,
+        skills: list[str] | None = None,
     ) -> str:
+        # Cache dedup: check cache before creating job
+        if self._cache is not None:
+            cached = self._cache.get(skill, data, instructions)
+            if cached is not None:
+                job_id = uuid.uuid4().hex[:12]
+                job = Job(
+                    id=job_id,
+                    skill=skill,
+                    data=data,
+                    instructions=instructions,
+                    model=model,
+                    callback_url=callback_url,
+                    row_id=row_id,
+                    priority=priority,
+                    max_retries=max_retries,
+                    skills=skills,
+                    status=JobStatus.completed,
+                    result=cached,
+                    completed_at=time.time(),
+                )
+                self._jobs[job_id] = job
+                # Send callback immediately for cached results
+                await self._send_callback(job, cached_result=True)
+                if self._event_bus:
+                    self._event_bus.publish("job_created", {"job_id": job_id, "skill": skill, "status": "completed", "cached": True})
+                logger.info("[queue] Job %s cache hit (skill=%s)", job_id, skill)
+                return job_id
+
         job_id = uuid.uuid4().hex[:12]
         job = Job(
             id=job_id,
@@ -89,10 +149,15 @@ class JobQueue:
             model=model,
             callback_url=callback_url,
             row_id=row_id,
+            priority=priority,
+            max_retries=max_retries,
+            skills=skills,
         )
         self._jobs[job_id] = job
         await self._queue.put(job)
-        logger.info("[queue] Job %s enqueued (skill=%s, queue_size=%d)", job_id, skill, self._queue.qsize())
+        if self._event_bus:
+            self._event_bus.publish("job_created", {"job_id": job_id, "skill": skill, "status": "queued", "priority": priority})
+        logger.info("[queue] Job %s enqueued (skill=%s, priority=%s, queue_size=%d)", job_id, skill, priority, self._queue.qsize())
         return job_id
 
     async def start_workers(self, num_workers: int = 3):
@@ -110,43 +175,85 @@ class JobQueue:
         while True:
             job = await self._queue.get()
             job.status = JobStatus.processing
+            if self._event_bus:
+                self._event_bus.publish("job_updated", {"job_id": job.id, "status": "processing"})
             logger.info("[queue] Worker %d processing job %s (skill=%s)", worker_id, job.id, job.skill)
 
             try:
-                # Load skill
-                skill_content = load_skill(job.skill)
-                if skill_content is None:
-                    raise ValueError(f"Skill '{job.skill}' not found")
+                # Skill chaining: if multiple skills, run as chain
+                if job.skills and len(job.skills) > 1:
+                    from app.core.pipeline_runner import run_skill_chain
+                    result = await run_skill_chain(
+                        skills=job.skills,
+                        data=job.data,
+                        instructions=job.instructions,
+                        model=job.model,
+                        pool=self._pool,
+                        cache=self._cache,
+                    )
+                    job.status = JobStatus.completed
+                    job.result = result
+                    job.duration_ms = result.get("total_duration_ms", 0)
+                    job.completed_at = time.time()
+                    if self._event_bus:
+                        self._event_bus.publish("job_updated", {"job_id": job.id, "status": "completed"})
+                    await self._send_callback(job)
+                else:
+                    # Single skill execution
+                    skill_content = load_skill(job.skill)
+                    if skill_content is None:
+                        raise ValueError(f"Skill '{job.skill}' not found")
 
-                # Build prompt
-                context_files = load_context_files(skill_content, job.data)
-                prompt = build_prompt(skill_content, context_files, job.data, job.instructions)
+                    context_files = load_context_files(skill_content, job.data)
+                    prompt = build_prompt(skill_content, context_files, job.data, job.instructions)
 
-                # Execute
-                result = await self._pool.submit(prompt, job.model, settings.request_timeout)
-                parsed = result["result"]
+                    result = await self._pool.submit(prompt, job.model, settings.request_timeout)
+                    parsed = result["result"]
 
-                job.status = JobStatus.completed
-                job.result = parsed
-                job.duration_ms = result["duration_ms"]
-                job.completed_at = time.time()
+                    job.status = JobStatus.completed
+                    job.result = parsed
+                    job.duration_ms = result["duration_ms"]
+                    job.completed_at = time.time()
 
-                # Send callback
-                await self._send_callback(job)
+                    # Cache the result
+                    if self._cache is not None:
+                        self._cache.put(job.skill, job.data, job.instructions, parsed)
+
+                    if self._event_bus:
+                        self._event_bus.publish("job_updated", {"job_id": job.id, "status": "completed"})
+                    await self._send_callback(job)
 
             except Exception as e:
-                job.status = JobStatus.failed
-                job.error = str(e)
-                job.completed_at = time.time()
-                logger.error("[queue] Job %s failed: %s", job.id, e)
-
-                # Send error callback
-                await self._send_callback(job)
+                if job.retry_count < job.max_retries:
+                    job.retry_count += 1
+                    job.status = JobStatus.retrying
+                    delay = 2 ** job.retry_count
+                    job.next_retry_at = time.time() + delay
+                    logger.warning("[queue] Job %s retry %d/%d in %ds: %s", job.id, job.retry_count, job.max_retries, delay, e)
+                    if self._event_bus:
+                        self._event_bus.publish("job_updated", {"job_id": job.id, "status": "retrying", "retry_count": job.retry_count})
+                    # Schedule re-enqueue after delay (task_done handled by finally)
+                    loop = asyncio.get_running_loop()
+                    loop.call_later(delay, lambda j=job: asyncio.ensure_future(self._re_enqueue(j)))
+                else:
+                    job.status = JobStatus.dead_letter
+                    job.error = str(e)
+                    job.completed_at = time.time()
+                    logger.error("[queue] Job %s dead-lettered after %d retries: %s", job.id, job.max_retries, e)
+                    if self._event_bus:
+                        self._event_bus.publish("job_updated", {"job_id": job.id, "status": "dead_letter"})
+                    await self._send_callback(job)
 
             finally:
                 self._queue.task_done()
 
-    async def _send_callback(self, job: Job):
+    async def _re_enqueue(self, job: Job):
+        job.status = JobStatus.queued
+        job.next_retry_at = None
+        await self._queue.put(job)
+        logger.info("[queue] Job %s re-enqueued (retry %d/%d)", job.id, job.retry_count, job.max_retries)
+
+    async def _send_callback(self, job: Job, cached_result: bool = False):
         if not job.callback_url:
             return
 
@@ -165,7 +272,7 @@ class JobQueue:
                 "skill": job.skill,
                 "model": job.model,
                 "duration_ms": job.duration_ms,
-                "cached": False,
+                "cached": cached_result,
                 "async": True,
             }
         else:

@@ -6,6 +6,8 @@ const STYLES: Record<JobStatus, string> = {
   processing: "bg-kiln-mustard/15 text-kiln-mustard border-kiln-mustard/30",
   completed: "bg-kiln-teal/15 text-kiln-teal border-kiln-teal/30",
   failed: "bg-kiln-coral/15 text-kiln-coral border-kiln-coral/30",
+  retrying: "bg-kiln-mustard/25 text-kiln-mustard border-kiln-mustard/50 font-semibold",
+  dead_letter: "bg-kiln-coral/25 text-kiln-coral border-kiln-coral/50 font-semibold",
 };
 
 export function StatusBadge({ status }: { status: JobStatus }) {

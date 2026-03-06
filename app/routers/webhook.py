@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.core.context_assembler import build_prompt
+from app.core.pipeline_runner import run_skill_chain
 from app.core.skill_loader import load_context_files, load_skill
 from app.models.requests import WebhookRequest
 
@@ -22,22 +23,32 @@ async def webhook(body: WebhookRequest, request: Request):
     cache = request.app.state.cache
     model = body.model or settings.default_model
 
+    # Resolve skill chain
+    skill_chain = body.skills or [body.skill]
+    primary_skill = skill_chain[0]
+    is_chain = len(skill_chain) > 1
+    priority = body.priority or "normal"
+    max_retries = body.max_retries or 3
+
     # --- Async mode: queue and return immediately ---
     if body.callback_url:
         queue = request.app.state.job_queue
 
-        # Validate skill exists before queuing
-        skill_content = load_skill(body.skill)
+        # Validate first skill exists before queuing
+        skill_content = load_skill(primary_skill)
         if skill_content is None:
-            return _error(f"Skill '{body.skill}' not found", body.skill)
+            return _error(f"Skill '{primary_skill}' not found", primary_skill)
 
         job_id = await queue.enqueue(
-            skill=body.skill,
+            skill=primary_skill,
             data=body.data,
             instructions=body.instructions,
             model=model,
             callback_url=body.callback_url,
             row_id=body.row_id,
+            priority=priority,
+            max_retries=max_retries,
+            skills=skill_chain if is_chain else None,
         )
         return JSONResponse(
             status_code=202,
@@ -45,23 +56,42 @@ async def webhook(body: WebhookRequest, request: Request):
                 "accepted": True,
                 "job_id": job_id,
                 "queue_position": queue.pending,
-                "skill": body.skill,
+                "skill": primary_skill,
+                "skills": skill_chain if is_chain else None,
             },
         )
 
     # --- Sync mode: process and return result ---
-    skill_content = load_skill(body.skill)
+
+    # Skill chain sync mode
+    if is_chain:
+        try:
+            result = await run_skill_chain(
+                skills=skill_chain,
+                data=body.data,
+                instructions=body.instructions,
+                model=model,
+                pool=pool,
+                cache=cache,
+            )
+            return result
+        except Exception as e:
+            logger.error("[chain] Execution error: %s", e)
+            return _error(f"Chain execution error: {e}", primary_skill)
+
+    # Single skill sync mode
+    skill_content = load_skill(primary_skill)
     if skill_content is None:
-        return _error(f"Skill '{body.skill}' not found", body.skill)
+        return _error(f"Skill '{primary_skill}' not found", primary_skill)
 
     # Check cache
-    cached = cache.get(body.skill, body.data, body.instructions)
+    cached = cache.get(primary_skill, body.data, body.instructions)
     if cached is not None:
-        logger.info("[%s] Cache hit", body.skill)
+        logger.info("[%s] Cache hit", primary_skill)
         return {
             **cached,
             "_meta": {
-                "skill": body.skill,
+                "skill": primary_skill,
                 "model": model,
                 "duration_ms": 0,
                 "cached": True,
@@ -74,7 +104,7 @@ async def webhook(body: WebhookRequest, request: Request):
 
     logger.info(
         "[%s] Processing (model=%s, context_files=%d, prompt_len=%d)",
-        body.skill,
+        primary_skill,
         model,
         len(context_files),
         len(prompt),
@@ -84,20 +114,20 @@ async def webhook(body: WebhookRequest, request: Request):
     try:
         result = await pool.submit(prompt, model, settings.request_timeout)
     except TimeoutError:
-        return _error(f"Request timed out after {settings.request_timeout}s", body.skill)
+        return _error(f"Request timed out after {settings.request_timeout}s", primary_skill)
     except Exception as e:
-        logger.error("[%s] Execution error: %s", body.skill, e)
-        return _error(f"Execution error: {e}", body.skill)
+        logger.error("[%s] Execution error: %s", primary_skill, e)
+        return _error(f"Execution error: {e}", primary_skill)
 
     parsed = result["result"]
 
     # Cache result
-    cache.put(body.skill, body.data, body.instructions, parsed)
+    cache.put(primary_skill, body.data, body.instructions, parsed)
 
     return {
         **parsed,
         "_meta": {
-            "skill": body.skill,
+            "skill": primary_skill,
             "model": model,
             "duration_ms": result["duration_ms"],
             "cached": False,

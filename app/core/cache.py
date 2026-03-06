@@ -7,10 +7,25 @@ class ResultCache:
     def __init__(self, ttl: int = 3600):
         self._store: dict[str, tuple[float, dict]] = {}
         self._ttl = ttl
+        self._hits: int = 0
+        self._misses: int = 0
 
     @property
     def size(self) -> int:
         return len(self._store)
+
+    @property
+    def hits(self) -> int:
+        return self._hits
+
+    @property
+    def misses(self) -> int:
+        return self._misses
+
+    @property
+    def hit_rate(self) -> float:
+        total = self._hits + self._misses
+        return round(self._hits / total, 3) if total > 0 else 0.0
 
     def _key(self, skill: str, data: dict, instructions: str | None) -> str:
         payload = json.dumps({"skill": skill, "data": data, "instructions": instructions}, sort_keys=True)
@@ -22,11 +37,14 @@ class ResultCache:
         key = self._key(skill, data, instructions)
         entry = self._store.get(key)
         if entry is None:
+            self._misses += 1
             return None
         ts, result = entry
         if time.time() - ts > self._ttl:
             del self._store[key]
+            self._misses += 1
             return None
+        self._hits += 1
         return result
 
     def put(self, skill: str, data: dict, instructions: str | None, result: dict) -> None:
