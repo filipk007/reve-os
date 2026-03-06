@@ -24,6 +24,8 @@ import type {
   ReviewStats,
   ScheduledBatch,
   Stats,
+  UsageHealth,
+  UsageSummary,
   VariantDef,
   WebhookResponse,
 } from "./types";
@@ -592,6 +594,15 @@ export function rerunWithFeedback(
   jobId: string
 ): Promise<{ ok: boolean; original_job_id: string; skill: string; result: Record<string, unknown>; duration_ms: number; corrections_applied: number }> {
   return apiFetch(`/feedback/rerun/${jobId}`, { method: "POST" });
+}
+
+// Usage tracking
+export function fetchUsage(): Promise<UsageSummary> {
+  return apiFetch("/usage");
+}
+
+export function fetchUsageHealth(): Promise<UsageHealth> {
+  return apiFetch("/usage/health");
 }
 
 export function createJobStream(

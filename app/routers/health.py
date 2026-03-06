@@ -166,6 +166,20 @@ async def stats(request: Request):
             "cache_savings_usd": cache_savings_usd,
         },
         "feedback": feedback_summary.model_dump(),
+        "usage": _get_usage_summary(request),
+    }
+
+
+def _get_usage_summary(request: Request) -> dict:
+    usage_store = getattr(request.app.state, "usage_store", None)
+    if not usage_store:
+        return {}
+    health = usage_store.get_health()
+    return {
+        "subscription_health": health["status"],
+        "today_requests": health["today_requests"],
+        "today_tokens": health["today_tokens"],
+        "today_errors": health["today_errors"],
     }
 
 

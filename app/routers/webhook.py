@@ -4,11 +4,13 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from app.config import settings
+from app.core.claude_executor import SubscriptionLimitError
 from app.core.context_assembler import build_prompt
 from app.core.pipeline_runner import run_skill_chain
 from app.core.skill_loader import load_context_files, load_skill
 from app.core.token_estimator import estimate_cost, estimate_tokens
 from app.models.requests import WebhookRequest
+from app.models.usage import UsageEntry
 
 router = APIRouter()
 logger = logging.getLogger("clay-webhook-os")
@@ -119,6 +121,15 @@ async def webhook(body: WebhookRequest, request: Request):
         result = await pool.submit(prompt, model, settings.request_timeout)
     except TimeoutError:
         return _error(f"Request timed out after {settings.request_timeout}s", primary_skill)
+    except SubscriptionLimitError as e:
+        logger.error("[%s] Subscription limit: %s", primary_skill, e)
+        usage_store = getattr(request.app.state, "usage_store", None)
+        if usage_store:
+            usage_store.record_error("subscription_limit", str(e))
+        return _error(
+            "Claude subscription limit reached. Please wait for quota to reset.",
+            primary_skill,
+        )
     except Exception as e:
         logger.error("[%s] Execution error: %s", primary_skill, e)
         return _error(f"Execution error: {e}", primary_skill)
@@ -127,6 +138,26 @@ async def webhook(body: WebhookRequest, request: Request):
     input_tokens = estimate_tokens(result.get("prompt_chars", 0))
     output_tokens = estimate_tokens(result.get("response_chars", 0))
     cost_usd = estimate_cost(model, input_tokens, output_tokens)
+
+    # Record usage
+    usage_store = getattr(request.app.state, "usage_store", None)
+    if usage_store:
+        usage_envelope = result.get("usage")
+        if usage_envelope and isinstance(usage_envelope, dict):
+            actual_in = usage_envelope.get("input_tokens", 0)
+            actual_out = usage_envelope.get("output_tokens", 0)
+            is_actual = True
+        else:
+            actual_in = input_tokens
+            actual_out = output_tokens
+            is_actual = False
+        usage_store.record(UsageEntry(
+            skill=primary_skill,
+            model=model,
+            input_tokens=actual_in,
+            output_tokens=actual_out,
+            is_actual=is_actual,
+        ))
 
     # Cache result
     cache.put(primary_skill, body.data, body.instructions, parsed)

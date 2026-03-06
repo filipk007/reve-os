@@ -9,6 +9,7 @@ import { OutcomeCards } from "@/components/dashboard/outcome-cards";
 import { CampaignProgress } from "@/components/dashboard/campaign-progress";
 import { AlertsPanel } from "@/components/dashboard/alerts-panel";
 import { ApprovalChart } from "@/components/dashboard/approval-chart";
+import { SubscriptionHealth } from "@/components/dashboard/subscription-health";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { fetchOutcomes } from "@/lib/api";
 import type { OutcomeDashboard } from "@/lib/types";
@@ -69,6 +70,10 @@ export default function DashboardPage() {
         {/* Operational view */}
         <ErrorBoundary>
           <StatsCards />
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          <SubscriptionHealth />
         </ErrorBoundary>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

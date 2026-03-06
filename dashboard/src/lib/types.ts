@@ -58,6 +58,12 @@ export interface Stats {
     cache_savings_usd: number;
   };
   feedback?: FeedbackSummary;
+  usage?: {
+    subscription_health: string;
+    today_requests: number;
+    today_tokens: number;
+    today_errors: number;
+  };
 }
 
 export interface HealthResponse {
@@ -414,6 +420,42 @@ export interface PipelineTestResult {
   }[];
   final_output: Record<string, unknown>;
   total_duration_ms: number;
+}
+
+// Usage tracking types
+export interface DailyUsage {
+  date: string;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  request_count: number;
+  errors: number;
+  by_model: Record<string, number>;
+  by_skill: Record<string, number>;
+}
+
+export interface UsageError {
+  timestamp: number;
+  error_type: string;
+  message: string;
+  date_key: string;
+}
+
+export interface UsageSummary {
+  today: DailyUsage;
+  week: DailyUsage;
+  month: DailyUsage;
+  daily_history: DailyUsage[];
+  subscription_health: "healthy" | "warning" | "critical" | "exhausted";
+  last_error: UsageError | null;
+}
+
+export interface UsageHealth {
+  status: "healthy" | "warning" | "critical" | "exhausted";
+  today_requests: number;
+  today_tokens: number;
+  today_errors: number;
+  last_error: UsageError | null;
 }
 
 export interface WebhookResponse {

@@ -12,6 +12,7 @@ from app.config import settings
 from app.core.context_assembler import build_prompt
 from app.core.skill_loader import load_context_files, load_skill, load_skill_variant
 from app.core.token_estimator import estimate_cost, estimate_tokens
+from app.core.claude_executor import SubscriptionLimitError
 from app.core.worker_pool import WorkerPool
 
 if TYPE_CHECKING:
@@ -228,6 +229,7 @@ class JobQueue:
                     job.input_tokens_est = estimate_tokens(result.get("total_prompt_chars", 0))
                     job.output_tokens_est = estimate_tokens(result.get("total_response_chars", 0))
                     job.cost_est_usd = estimate_cost(job.model, job.input_tokens_est, job.output_tokens_est)
+                    self._record_usage(job, result.get("usage"))
                     if self._event_bus:
                         self._event_bus.publish("job_updated", {"job_id": job.id, "status": "completed"})
                     await self._send_callback(job)
@@ -254,6 +256,8 @@ class JobQueue:
                     job.output_tokens_est = estimate_tokens(result.get("response_chars", 0))
                     job.cost_est_usd = estimate_cost(job.model, job.input_tokens_est, job.output_tokens_est)
 
+                    self._record_usage(job, result.get("usage"))
+
                     # Cache the result
                     if self._cache is not None:
                         self._cache.put(job.skill, job.data, job.instructions, parsed)
@@ -278,6 +282,18 @@ class JobQueue:
                     except Exception:
                         pass  # Non-critical
 
+            except SubscriptionLimitError as e:
+                # Subscription exhausted — no point retrying, dead-letter immediately
+                job.status = JobStatus.dead_letter
+                job.error = str(e)
+                job.completed_at = time.time()
+                logger.error("[queue] Job %s dead-lettered (subscription limit): %s", job.id, e)
+                if hasattr(self, '_usage_store') and self._usage_store:
+                    self._usage_store.record_error("subscription_limit", str(e))
+                if self._event_bus:
+                    self._event_bus.publish("job_updated", {"job_id": job.id, "status": "dead_letter", "reason": "subscription_limit"})
+                await self._send_callback(job)
+
             except Exception as e:
                 if job.retry_count < job.max_retries:
                     job.retry_count += 1
@@ -301,6 +317,30 @@ class JobQueue:
 
             finally:
                 self._queue.task_done()
+
+    def _record_usage(self, job: Job, usage_envelope: dict | None) -> None:
+        if not hasattr(self, '_usage_store') or not self._usage_store:
+            return
+        from app.models.usage import UsageEntry
+
+        if usage_envelope and isinstance(usage_envelope, dict):
+            input_tokens = usage_envelope.get("input_tokens", 0)
+            output_tokens = usage_envelope.get("output_tokens", 0)
+            is_actual = True
+        else:
+            input_tokens = job.input_tokens_est
+            output_tokens = job.output_tokens_est
+            is_actual = False
+
+        entry = UsageEntry(
+            job_id=job.id,
+            skill=job.skill,
+            model=job.model,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            is_actual=is_actual,
+        )
+        self._usage_store.record(entry)
 
     async def _re_enqueue(self, job: Job):
         job.status = JobStatus.queued

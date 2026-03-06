@@ -16,11 +16,12 @@ from app.core.context_store import ContextStore
 from app.core.destination_store import DestinationStore
 from app.core.feedback_store import FeedbackStore
 from app.core.pipeline_store import PipelineStore
+from app.core.usage_store import UsageStore
 from app.core.experiment_store import ExperimentStore
 from app.core.campaign_store import CampaignStore
 from app.core.review_queue import ReviewQueue
 from app.core.campaign_runner import CampaignRunner
-from app.routers import batch, campaigns, context, destinations, experiments, feedback, health, pipeline, pipelines, review_queue, webhook
+from app.routers import batch, campaigns, context, destinations, experiments, feedback, health, pipeline, pipelines, review_queue, usage, webhook
 
 logging.basicConfig(
     level=logging.INFO,
@@ -58,6 +59,7 @@ app.include_router(pipelines.router)
 app.include_router(experiments.router)
 app.include_router(campaigns.router)
 app.include_router(review_queue.router)
+app.include_router(usage.router)
 
 
 @app.on_event("startup")
@@ -87,7 +89,10 @@ async def startup():
         data_dir=settings.data_dir,
     )
     app.state.experiment_store.load()
+    app.state.usage_store = UsageStore(data_dir=settings.data_dir)
+    app.state.usage_store.load()
     app.state.job_queue._experiment_store = app.state.experiment_store
+    app.state.job_queue._usage_store = app.state.usage_store
 
     # Phase 3: Campaign system
     app.state.campaign_store = CampaignStore(data_dir=settings.data_dir)
