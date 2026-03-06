@@ -134,6 +134,16 @@ export function pushToDestination(
   });
 }
 
+export function pushDataToDestination(
+  id: string,
+  data: Record<string, unknown>
+): Promise<{ ok: boolean; destination_name: string; status_code?: number; error?: string }> {
+  return apiFetch(`/destinations/${id}/push-data`, {
+    method: "POST",
+    body: JSON.stringify({ data }),
+  });
+}
+
 export function testDestination(
   id: string
 ): Promise<{ ok: boolean; status_code?: number; error?: string }> {

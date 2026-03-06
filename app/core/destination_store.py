@@ -124,6 +124,29 @@ class DestinationStore:
             errors=errors,
         )
 
+    async def push_data(self, destination: Destination, data: dict) -> dict:
+        headers: dict[str, str] = {"Content-Type": "application/json"}
+        if destination.auth_header_name and destination.auth_header_value:
+            headers[destination.auth_header_name] = destination.auth_header_value
+
+        payload = {**data}
+        payload["_meta"] = {
+            "source": "clay-webhook-os",
+            "pushed_from": "playground",
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post(destination.url, json=payload, headers=headers)
+                resp.raise_for_status()
+                return {
+                    "ok": True,
+                    "destination_name": destination.name,
+                    "status_code": resp.status_code,
+                }
+        except Exception as e:
+            return {"ok": False, "error": str(e), "destination_name": destination.name}
+
     async def test(self, destination: Destination) -> dict:
         headers: dict[str, str] = {"Content-Type": "application/json"}
         if destination.auth_header_name and destination.auth_header_value:

@@ -41,6 +41,10 @@ class PushRequest(BaseModel):
     job_ids: list[str]
 
 
+class PushDataRequest(BaseModel):
+    data: dict
+
+
 class PushResult(BaseModel):
     destination_id: str
     destination_name: str

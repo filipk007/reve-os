@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request
 
 from app.models.destinations import (
     CreateDestinationRequest,
+    PushDataRequest,
     PushRequest,
     UpdateDestinationRequest,
 )
@@ -62,6 +63,16 @@ async def push_to_destination(dest_id: str, body: PushRequest, request: Request)
 
     result = await store.push(dest, jobs)
     return result.model_dump()
+
+
+@router.post("/destinations/{dest_id}/push-data")
+async def push_data_to_destination(dest_id: str, body: PushDataRequest, request: Request):
+    store = request.app.state.destination_store
+    dest = store.get(dest_id)
+    if dest is None:
+        return {"error": True, "error_message": f"Destination '{dest_id}' not found"}
+    result = await store.push_data(dest, body.data)
+    return result
 
 
 @router.post("/destinations/{dest_id}/test")

@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { WebhookResponse } from "@/lib/types";
+import type { Destination, WebhookResponse } from "@/lib/types";
+import { pushDataToDestination } from "@/lib/api";
 import { formatSmartDuration } from "@/lib/utils";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CheckCircle, Loader2, Send, Sparkles, XCircle } from "lucide-react";
+import { toast } from "sonner";
 
 const STEPS = [
   { label: "Queued", icon: Send },
@@ -53,13 +63,17 @@ export function ResultViewer({
   loading,
   skill,
   model,
+  destinations = [],
 }: {
   result: WebhookResponse | null;
   loading: boolean;
   skill?: string;
   model?: string;
+  destinations?: Destination[];
 }) {
   const [elapsed, setElapsed] = useState(0);
+  const [pushDestId, setPushDestId] = useState("");
+  const [pushing, setPushing] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -138,6 +152,48 @@ export function ResultViewer({
           {JSON.stringify(display, null, 2)}
         </pre>
       </CardContent>
+      {!isError && destinations.length > 0 && (
+        <CardFooter className="border-t border-clay-800 px-4 py-3 gap-2">
+          <Select value={pushDestId} onValueChange={setPushDestId}>
+            <SelectTrigger className="flex-1 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm">
+              <SelectValue placeholder="Push to..." />
+            </SelectTrigger>
+            <SelectContent className="border-clay-700 bg-clay-900">
+              {destinations.map((d) => (
+                <SelectItem key={d.id} value={d.id}>
+                  {d.name} ({d.type === "clay_webhook" ? "Clay" : "Webhook"})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            disabled={!pushDestId || pushing}
+            className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold h-9"
+            onClick={async () => {
+              if (!pushDestId) return;
+              setPushing(true);
+              try {
+                const res = await pushDataToDestination(pushDestId, display);
+                if (res.ok) {
+                  toast.success("Pushed to destination", {
+                    description: `Sent to ${res.destination_name}`,
+                  });
+                } else {
+                  toast.error("Push failed", { description: res.error });
+                }
+              } catch (e) {
+                toast.error("Push failed", { description: (e as Error).message });
+              } finally {
+                setPushing(false);
+              }
+            }}
+          >
+            <Send className="h-3.5 w-3.5 mr-1.5" />
+            {pushing ? "Pushing..." : "Push"}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }

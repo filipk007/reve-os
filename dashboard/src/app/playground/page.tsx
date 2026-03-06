@@ -8,8 +8,8 @@ import { JsonEditor } from "@/components/playground/json-editor";
 import { ModelSelector } from "@/components/playground/model-selector";
 import { ResultViewer } from "@/components/playground/result-viewer";
 import { SKILL_SAMPLES, type Model } from "@/lib/constants";
-import { runWebhook } from "@/lib/api";
-import type { WebhookResponse } from "@/lib/types";
+import { runWebhook, fetchDestinations, pushToDestination } from "@/lib/api";
+import type { Destination, WebhookResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { toast } from "sonner";
@@ -21,6 +21,15 @@ function PlaygroundInner() {
   const [model, setModel] = useState<Model>("sonnet");
   const [result, setResult] = useState<WebhookResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [lastJobId, setLastJobId] = useState<string | null>(null);
+
+  // Load destinations on mount
+  useEffect(() => {
+    fetchDestinations()
+      .then((res) => setDestinations(res.destinations))
+      .catch(() => {});
+  }, []);
 
   // Handle skill from command palette URL param
   useEffect(() => {
@@ -121,7 +130,7 @@ function PlaygroundInner() {
         </div>
 
         {/* Right: Output */}
-        <ResultViewer result={result} loading={loading} skill={skill} model={model} />
+        <ResultViewer result={result} loading={loading} skill={skill} model={model} destinations={destinations} />
       </div>
     </div>
   );
