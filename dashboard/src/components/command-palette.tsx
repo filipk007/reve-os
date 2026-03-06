@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   FlaskConical,
   Layers,
+  BookOpen,
   Zap,
   Search,
 } from "lucide-react";
@@ -17,6 +18,7 @@ const PAGES = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Playground", href: "/playground", icon: FlaskConical },
   { name: "Batch Processing", href: "/batch", icon: Layers },
+  { name: "Context Hub", href: "/context", icon: BookOpen },
 ];
 
 const SKILLS = Object.keys(SKILL_SAMPLES);

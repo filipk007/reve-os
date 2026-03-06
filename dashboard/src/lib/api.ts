@@ -1,10 +1,14 @@
 import type {
   BatchResponse,
   BatchStatus,
+  ClientProfile,
+  ClientSummary,
   Destination,
   HealthResponse,
   Job,
   JobListItem,
+  KnowledgeBaseFile,
+  PromptPreview,
   PushResult,
   ScheduledBatch,
   Stats,
@@ -148,6 +152,79 @@ export function testDestination(
   id: string
 ): Promise<{ ok: boolean; status_code?: number; error?: string }> {
   return apiFetch(`/destinations/${id}/test`, { method: "POST" });
+}
+
+// Context Hub
+export function fetchClients(): Promise<{ clients: ClientSummary[] }> {
+  return apiFetch("/clients");
+}
+
+export function fetchClient(slug: string): Promise<ClientProfile> {
+  return apiFetch(`/clients/${slug}`);
+}
+
+export function createClient(
+  body: Record<string, unknown>
+): Promise<ClientProfile> {
+  return apiFetch("/clients", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateClient(
+  slug: string,
+  body: Record<string, unknown>
+): Promise<ClientProfile> {
+  return apiFetch(`/clients/${slug}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteClient(slug: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/clients/${slug}`, { method: "DELETE" });
+}
+
+export function fetchClientMarkdown(
+  slug: string
+): Promise<{ slug: string; markdown: string }> {
+  return apiFetch(`/clients/${slug}/markdown`);
+}
+
+export function fetchKnowledgeBase(): Promise<{
+  knowledge_base: Record<string, KnowledgeBaseFile[]>;
+}> {
+  return apiFetch("/knowledge-base");
+}
+
+export function fetchKnowledgeFile(
+  category: string,
+  filename: string
+): Promise<KnowledgeBaseFile> {
+  return apiFetch(`/knowledge-base/${category}/${filename}`);
+}
+
+export function updateKnowledgeFile(
+  category: string,
+  filename: string,
+  content: string
+): Promise<KnowledgeBaseFile> {
+  return apiFetch(`/knowledge-base/${category}/${filename}`, {
+    method: "PUT",
+    body: JSON.stringify({ content }),
+  });
+}
+
+export function previewPrompt(body: {
+  skill: string;
+  client_slug: string;
+  sample_data?: Record<string, unknown>;
+}): Promise<PromptPreview> {
+  return apiFetch("/context/preview", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 export function createJobStream(

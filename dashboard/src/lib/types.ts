@@ -134,6 +134,58 @@ export interface BatchStatus {
   }[];
 }
 
+// Context Hub types
+export interface CompanyInfo {
+  domain: string;
+  industry: string;
+  size: string;
+  stage: string;
+  hq: string;
+  founded: string;
+}
+
+export interface TonePreferences {
+  formality: string;
+  approach: string;
+  avoid: string;
+}
+
+export interface ClientProfile {
+  slug: string;
+  name: string;
+  company: CompanyInfo;
+  what_they_sell: string;
+  icp: string;
+  competitive_landscape: string;
+  recent_news: string;
+  value_proposition: string;
+  tone: TonePreferences;
+  campaign_angles: string;
+  notes: string;
+  raw_markdown: string;
+}
+
+export interface ClientSummary {
+  slug: string;
+  name: string;
+  industry: string;
+  stage: string;
+  domain: string;
+}
+
+export interface KnowledgeBaseFile {
+  path: string;
+  category: string;
+  name: string;
+  content: string;
+}
+
+export interface PromptPreview {
+  assembled_prompt: string;
+  context_files_loaded: string[];
+  estimated_tokens: number;
+}
+
 export interface WebhookResponse {
   [key: string]: unknown;
   _meta?: {
