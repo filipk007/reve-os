@@ -1,33 +1,43 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle } from "lucide-react";
 
 export function BatchProgress({
   total,
   completed,
   failed,
+  done = false,
 }: {
   total: number;
   completed: number;
   failed: number;
+  done?: boolean;
 }) {
-  const done = completed + failed;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const processed = completed + failed;
+  const pct = total > 0 ? Math.round((processed / total) * 100) : 0;
 
   return (
     <Card className="border-clay-800 bg-clay-900">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-clay-300 font-[family-name:var(--font-sans)]">
-            {done} / {total} rows processed
+            {processed} / {total} rows processed
           </span>
-          <span className="text-sm font-[family-name:var(--font-mono)] text-clay-400">
-            {pct}%
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-[family-name:var(--font-mono)] text-clay-400">
+              {pct}%
+            </span>
+            {done && <CheckCircle className="h-4 w-4 text-kiln-teal" />}
+          </div>
         </div>
         <div className="h-2.5 rounded-full bg-clay-800 overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-kiln-teal to-kiln-teal-light transition-all duration-300"
+            className={`h-full rounded-full transition-all duration-500 ${
+              done
+                ? "bg-kiln-teal"
+                : "bg-gradient-to-r from-kiln-teal to-kiln-teal-light bg-[length:200%_100%] animate-shimmer"
+            }`}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -42,7 +52,7 @@ export function BatchProgress({
           </span>
           <span>
             Queued:{" "}
-            <span className="text-clay-400">{total - done}</span>
+            <span className="text-clay-400">{total - processed}</span>
           </span>
         </div>
       </CardContent>

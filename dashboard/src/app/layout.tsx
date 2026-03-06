@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,10 +30,26 @@ export default function RootLayout({
       </head>
       <body className="flex h-screen overflow-hidden bg-[url('/brand-assets/bg-clay-texture.png')] bg-repeat bg-[length:400px]">
         <div className="absolute inset-0 bg-clay-950/95 pointer-events-none" />
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:rounded-md focus:bg-kiln-teal focus:px-4 focus:py-2 focus:text-clay-950 focus:font-medium"
+        >
+          Skip to main content
+        </a>
         <TooltipProvider>
           <Sidebar />
-          <main className="relative flex-1 overflow-auto">{children}</main>
+          <main id="main-content" className="relative flex-1 overflow-auto">{children}</main>
         </TooltipProvider>
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            classNames: {
+              success: "!bg-kiln-teal/15 !border-kiln-teal/30 !text-kiln-teal",
+              error: "!bg-kiln-coral/15 !border-kiln-coral/30 !text-kiln-coral",
+              info: "!bg-kiln-mustard/15 !border-kiln-mustard/30 !text-kiln-mustard",
+            },
+          }}
+        />
       </body>
     </html>
   );

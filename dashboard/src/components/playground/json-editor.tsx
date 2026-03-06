@@ -3,6 +3,20 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
+function parseJsonError(message: string): string {
+  // Extract line/column info from the error message if available
+  const posMatch = message.match(/position (\d+)/);
+  if (posMatch) {
+    return `Invalid JSON at position ${posMatch[1]}`;
+  }
+  const lineMatch = message.match(/line (\d+) column (\d+)/);
+  if (lineMatch) {
+    return `Invalid JSON at line ${lineMatch[1]}, column ${lineMatch[2]}`;
+  }
+  // Clean up common prefixes
+  return message.replace(/^(SyntaxError: )?/, "Invalid JSON: ");
+}
+
 export function JsonEditor({
   value,
   onChange,
@@ -17,7 +31,7 @@ export function JsonEditor({
       JSON.parse(value);
       setError(null);
     } catch (e) {
-      setError((e as Error).message);
+      setError(parseJsonError((e as Error).message));
     }
   }, [value]);
 
@@ -28,7 +42,9 @@ export function JsonEditor({
           Data (JSON)
         </label>
         {error && (
-          <span className="text-xs text-kiln-coral">Invalid JSON</span>
+          <span className="text-xs text-kiln-coral truncate max-w-[200px]" title={error}>
+            {error}
+          </span>
         )}
       </div>
       <Card

@@ -13,15 +13,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Download } from "lucide-react";
+import { Download, RotateCcw } from "lucide-react";
 
 export function ResultsTable({
   jobs,
   originalRows,
+  onRetryFailed,
 }: {
   jobs: Job[];
   originalRows: Record<string, string>[];
+  onRetryFailed?: () => void;
 }) {
+  const failedCount = jobs.filter(
+    (j) => j.status === "failed" || j.status === "dead_letter"
+  ).length;
+
   const downloadCsv = () => {
     const rows = jobs.map((job, i) => {
       const original = originalRows[i] || {};
@@ -56,15 +62,28 @@ export function ResultsTable({
         <span className="text-xs text-clay-500 uppercase tracking-wide font-[family-name:var(--font-sans)]">
           Results ({jobs.length} rows)
         </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={downloadCsv}
-          className="bg-kiln-teal/10 text-kiln-teal border-kiln-teal/30 hover:bg-kiln-teal/20 hover:text-kiln-teal"
-        >
-          <Download className="h-3.5 w-3.5 mr-1.5" />
-          Download CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          {failedCount > 0 && onRetryFailed && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetryFailed}
+              className="bg-kiln-coral/10 text-kiln-coral border-kiln-coral/30 hover:bg-kiln-coral/20 hover:text-kiln-coral"
+            >
+              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+              Retry failed rows ({failedCount})
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={downloadCsv}
+            className="bg-kiln-teal/10 text-kiln-teal border-kiln-teal/30 hover:bg-kiln-teal/20 hover:text-kiln-teal"
+          >
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Download CSV ({jobs.length} rows)
+          </Button>
+        </div>
       </div>
       <div className="overflow-x-auto max-h-96">
         <Table>

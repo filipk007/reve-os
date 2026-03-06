@@ -52,12 +52,11 @@ export function CsvUploader({
           alt=""
           width={80}
           height={80}
-          className="mb-4 animate-float opacity-70 rounded-lg"
+          className="mb-4 motion-safe:animate-float opacity-70 rounded-lg"
         />
         <Upload className="h-8 w-8 text-clay-600 mb-3" />
         <p className="text-clay-300 text-sm font-[family-name:var(--font-sans)]">
-          Drop a CSV here or{" "}
-          <span className="text-kiln-teal font-medium">click to upload</span>
+          Drop a CSV here to process hundreds of rows through any skill
         </p>
         <p className="text-xs text-clay-600 mt-1">
           Supports .csv files with headers

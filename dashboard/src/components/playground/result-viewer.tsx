@@ -1,31 +1,83 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import type { WebhookResponse } from "@/lib/types";
-import { formatDuration } from "@/lib/utils";
+import { formatSmartDuration } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CheckCircle, Loader2, Send, Sparkles, XCircle } from "lucide-react";
+
+const STEPS = [
+  { label: "Queued", icon: Send },
+  { label: "Processing with Claude", icon: Sparkles },
+  { label: "Formatting response", icon: Loader2 },
+  { label: "Complete", icon: CheckCircle },
+];
+
+function ProgressSteps({ elapsed }: { elapsed: number }) {
+  // Heuristic: estimate step based on elapsed time
+  const step = elapsed < 500 ? 0 : elapsed < 2000 ? 1 : elapsed < 3000 ? 2 : 3;
+
+  return (
+    <div className="space-y-3 w-full max-w-xs">
+      {STEPS.map((s, i) => {
+        const active = i === step;
+        const done = i < step;
+        const Icon = s.icon;
+        return (
+          <div
+            key={s.label}
+            className={`flex items-center gap-3 transition-all duration-300 ${
+              done
+                ? "text-kiln-teal"
+                : active
+                  ? "text-kiln-teal"
+                  : "text-clay-700"
+            }`}
+          >
+            <Icon
+              className={`h-4 w-4 shrink-0 ${active ? "animate-pulse" : ""}`}
+            />
+            <span className="text-sm">{s.label}{i === 1 && elapsed > 500 ? "..." : ""}</span>
+            {done && <CheckCircle className="h-3.5 w-3.5 ml-auto text-kiln-teal" />}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function ResultViewer({
   result,
   loading,
+  skill,
+  model,
 }: {
   result: WebhookResponse | null;
   loading: boolean;
+  skill?: string;
+  model?: string;
 }) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setElapsed(0);
+      return;
+    }
+    const start = Date.now();
+    const id = setInterval(() => {
+      setElapsed(Date.now() - start);
+    }, 200);
+    return () => clearInterval(id);
+  }, [loading]);
+
   if (loading) {
     return (
       <Card className="border-clay-800 bg-clay-900 h-full">
         <CardContent className="flex h-full items-center justify-center">
-          <div className="space-y-3 w-full max-w-sm">
-            <Skeleton className="h-4 w-full bg-clay-800" />
-            <Skeleton className="h-4 w-3/4 bg-clay-800" />
-            <Skeleton className="h-4 w-5/6 bg-clay-800" />
-            <p className="text-sm text-clay-500 text-center mt-4">
-              Processing...
-            </p>
-          </div>
+          <ProgressSteps elapsed={elapsed} />
         </CardContent>
       </Card>
     );
@@ -36,7 +88,7 @@ export function ResultViewer({
       <div className="h-full flex items-center">
         <EmptyState
           title="Ready to test"
-          description="Select a skill and click Run to see results."
+          description="Pick a skill, tweak the data, and hit Run. Results appear here instantly."
           asset="/brand-assets/v2-playground.png"
         />
       </div>
@@ -59,7 +111,7 @@ export function ResultViewer({
             {meta.model}
           </Badge>
           <span className="text-xs text-clay-500">
-            {formatDuration(meta.duration_ms)}
+            {formatSmartDuration(meta.duration_ms)}
           </span>
           {meta.cached && (
             <Badge
@@ -68,6 +120,12 @@ export function ResultViewer({
             >
               cached
             </Badge>
+          )}
+          {!isError && (
+            <CheckCircle className="h-4 w-4 text-kiln-teal ml-auto" />
+          )}
+          {isError && (
+            <XCircle className="h-4 w-4 text-kiln-coral ml-auto" />
           )}
         </CardHeader>
       )}
