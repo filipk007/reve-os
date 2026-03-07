@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { SkillSelector } from "@/components/playground/skill-selector";
@@ -11,8 +11,10 @@ import { SKILL_SAMPLES, type Model } from "@/lib/constants";
 import { runWebhook, fetchDestinations, pushToDestination } from "@/lib/api";
 import type { Destination, WebhookResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Play, RotateCcw, Clock, User } from "lucide-react";
 import { toast } from "sonner";
+import { formatSmartDuration } from "@/lib/utils";
 
 function PlaygroundInner() {
   const searchParams = useSearchParams();
@@ -23,6 +25,7 @@ function PlaygroundInner() {
   const [loading, setLoading] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [lastJobId, setLastJobId] = useState<string | null>(null);
+  const [avgDurations, setAvgDurations] = useState<Record<string, number>>({});
 
   // Load destinations on mount
   useEffect(() => {
@@ -39,6 +42,16 @@ function PlaygroundInner() {
       setJson(JSON.stringify(SKILL_SAMPLES[s], null, 2));
     }
   }, [searchParams]);
+
+  // Detect client_slug from JSON data
+  const clientSlug = (() => {
+    try {
+      const data = JSON.parse(json);
+      return data.client_slug || null;
+    } catch {
+      return null;
+    }
+  })();
 
   const handleSkillChange = (s: string) => {
     setSkill(s);
@@ -74,6 +87,16 @@ function PlaygroundInner() {
         toast.success("Webhook executed successfully", {
           description: duration ? `Completed in ${(duration / 1000).toFixed(1)}s` : undefined,
         });
+        // Track avg duration per skill
+        if (duration) {
+          setAvgDurations((prev) => {
+            const existing = prev[skill];
+            const newAvg = existing
+              ? Math.round((existing + duration) / 2)
+              : duration;
+            return { ...prev, [skill]: newAvg };
+          });
+        }
       }
     } catch (e) {
       const msg = (e as Error).message;
@@ -88,6 +111,10 @@ function PlaygroundInner() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTryAnother = () => {
+    setResult(null);
   };
 
   // Keyboard shortcut: Cmd+Enter to run
@@ -108,25 +135,61 @@ function PlaygroundInner() {
         {/* Left: Input */}
         <div className="flex flex-col gap-4">
           <SkillSelector value={skill} onChange={handleSkillChange} />
+
+          {/* Context indicators */}
+          <div className="flex flex-wrap items-center gap-2">
+            {clientSlug && (
+              <Badge
+                variant="outline"
+                className="bg-kiln-teal/10 text-kiln-teal border-kiln-teal/30 text-xs"
+              >
+                <User className="h-3 w-3 mr-1" />
+                Using context: {clientSlug}
+              </Badge>
+            )}
+            {skill && avgDurations[skill] && (
+              <Badge
+                variant="outline"
+                className="bg-clay-900/50 text-clay-400 border-clay-700 text-xs"
+              >
+                <Clock className="h-3 w-3 mr-1" />
+                ~{formatSmartDuration(avgDurations[skill])}
+              </Badge>
+            )}
+          </div>
+
           <JsonEditor value={json} onChange={setJson} />
           <ModelSelector value={model} onChange={setModel} />
-          <Button
-            onClick={handleRun}
-            disabled={!skill || loading}
-            className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold transition-all duration-200"
-          >
-            <Play className="h-4 w-4 mr-2" />
-            {loading
-              ? "Processing..."
-              : skill
-                ? `Run with ${model.charAt(0).toUpperCase() + model.slice(1)}`
-                : "Run"}
-            {!loading && (
-              <kbd className="hidden md:inline-block ml-2 text-[10px] opacity-60 border border-kiln-teal-dark rounded px-1 py-0.5">
-                {"\u2318"}Enter
-              </kbd>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={handleRun}
+              disabled={!skill || loading}
+              className="flex-1 bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold transition-all duration-200"
+            >
+              <Play className="h-4 w-4 mr-2" />
+              {loading
+                ? "Processing..."
+                : skill
+                  ? `Run with ${model.charAt(0).toUpperCase() + model.slice(1)}`
+                  : "Run"}
+              {!loading && (
+                <kbd className="hidden md:inline-block ml-2 text-[10px] opacity-60 border border-kiln-teal-dark rounded px-1 py-0.5">
+                  {"\u2318"}Enter
+                </kbd>
+              )}
+            </Button>
+            {result && !loading && (
+              <Button
+                variant="outline"
+                onClick={handleTryAnother}
+                className="border-clay-700 text-clay-400 hover:text-clay-200"
+                title="Clear result and try again"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
             )}
-          </Button>
+          </div>
         </div>
 
         {/* Right: Output */}

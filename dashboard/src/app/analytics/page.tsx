@@ -6,8 +6,10 @@ import { AnalyticsSummary } from "@/components/analytics/analytics-summary";
 import { SkillPerformanceTable } from "@/components/analytics/skill-performance-table";
 import { ApprovalChart } from "@/components/analytics/approval-chart";
 import { ClientBreakdown } from "@/components/analytics/client-breakdown";
-import type { FeedbackSummary } from "@/lib/types";
-import { fetchFeedbackAnalytics, fetchSkills } from "@/lib/api";
+import { ValueMetrics } from "@/components/analytics/value-metrics";
+import type { FeedbackSummary, Stats } from "@/lib/types";
+import { fetchFeedbackAnalytics, fetchSkills, fetchStats } from "@/lib/api";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -16,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
 const TIME_RANGES = [
@@ -28,6 +30,7 @@ const TIME_RANGES = [
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<FeedbackSummary | null>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [skills, setSkills] = useState<string[]>([]);
   const [skillFilter, setSkillFilter] = useState("all");
   const [timeRange, setTimeRange] = useState("all");
@@ -39,8 +42,12 @@ export default function AnalyticsPage() {
       const params: { skill?: string; days?: number } = {};
       if (skillFilter !== "all") params.skill = skillFilter;
       if (timeRange !== "all") params.days = parseInt(timeRange);
-      const summary = await fetchFeedbackAnalytics(params);
+      const [summary, statsData] = await Promise.all([
+        fetchFeedbackAnalytics(params),
+        fetchStats(),
+      ]);
       setData(summary);
+      setStats(statsData);
     } catch {
       toast.error("Failed to load analytics");
     } finally {
@@ -103,22 +110,37 @@ export default function AnalyticsPage() {
           </Button>
         </div>
 
+        {/* Value metrics — ROI section */}
+        {stats && <ValueMetrics stats={stats} feedbackData={data} />}
+
         {/* Summary cards */}
         <AnalyticsSummary data={data} />
 
         {/* Charts + Table */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ApprovalChart skills={data?.by_skill || []} />
-          <ClientBreakdown byClient={data?.by_client || {}} />
-        </div>
+        {data && data.by_skill.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ApprovalChart skills={data.by_skill} />
+              <ClientBreakdown byClient={data.by_client} />
+            </div>
 
-        {/* Performance table */}
-        <div>
-          <h3 className="text-sm font-medium text-clay-300 mb-3">
-            Skill Performance
-          </h3>
-          <SkillPerformanceTable skills={data?.by_skill || []} />
-        </div>
+            {/* Performance table */}
+            <div>
+              <h3 className="text-sm font-medium text-clay-300 mb-3">
+                Skill Performance
+              </h3>
+              <SkillPerformanceTable skills={data.by_skill} />
+            </div>
+          </>
+        ) : (
+          !loading && (
+            <EmptyState
+              title="No analytics data yet"
+              description="Analytics will appear after you run skills and rate their outputs. Try the Playground to get started."
+              icon={BarChart3}
+            />
+          )
+        )}
       </div>
     </div>
   );

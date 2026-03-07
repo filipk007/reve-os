@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { LayoutDashboard, FlaskConical, Layers, BookOpen, GitBranch, TestTubes, BarChart3, Settings, Rocket, ClipboardCheck, MoreHorizontal } from "lucide-react";
+import { LayoutDashboard, FlaskConical, Layers, BookOpen, GitBranch, TestTubes, BarChart3, Settings, Rocket, ClipboardCheck, MoreHorizontal, GraduationCap } from "lucide-react";
 
 const NAV = [
   {
@@ -22,58 +22,63 @@ const NAV = [
     shortcut: "1",
   },
   {
+    href: "/getting-started",
+    label: "Get Started",
+    icon: GraduationCap,
+    shortcut: "2",
+  },
+  {
     href: "/playground",
     label: "Playground",
     icon: FlaskConical,
-    shortcut: "2",
+    shortcut: "3",
   },
   {
     href: "/batch",
     label: "Batch",
     icon: Layers,
-    shortcut: "3",
+    shortcut: "4",
   },
   {
     href: "/context",
     label: "Context",
     icon: BookOpen,
-    shortcut: "4",
+    shortcut: "5",
   },
   {
     href: "/pipelines",
     label: "Pipelines",
     icon: GitBranch,
-    shortcut: "5",
+    shortcut: "6",
   },
   {
     href: "/lab",
     label: "Skills Lab",
     icon: TestTubes,
-    shortcut: "6",
+    shortcut: "7",
   },
   {
     href: "/campaigns",
     label: "Campaigns",
     icon: Rocket,
-    shortcut: "7",
+    shortcut: "8",
   },
   {
     href: "/review",
     label: "Review",
     icon: ClipboardCheck,
-    shortcut: "8",
+    shortcut: "9",
   },
   {
     href: "/analytics",
     label: "Analytics",
     icon: BarChart3,
-    shortcut: "9",
+    shortcut: "0",
   },
   {
     href: "/settings",
     label: "Settings",
     icon: Settings,
-    shortcut: "0",
   },
 ];
 
@@ -95,7 +100,7 @@ export function Sidebar() {
       if ((e.metaKey || e.ctrlKey) && ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].includes(e.key)) {
         e.preventDefault();
         const idx = e.key === "0" ? 9 : parseInt(e.key) - 1;
-        const nav = NAV[idx];
+        const nav = NAV.find((n) => n.shortcut === e.key);
         if (nav) window.location.href = nav.href;
       }
     };
@@ -125,9 +130,11 @@ export function Sidebar() {
               {!compact && (
                 <>
                   <span className="flex-1">{item.label}</span>
-                  <kbd className="hidden lg:inline-block text-[10px] text-clay-600 font-mono border border-clay-800 rounded px-1 py-0.5">
-                    {"\u2318"}{item.shortcut}
-                  </kbd>
+                  {item.shortcut && (
+                    <kbd className="hidden lg:inline-block text-[10px] text-clay-600 font-mono border border-clay-800 rounded px-1 py-0.5">
+                      {"\u2318"}{item.shortcut}
+                    </kbd>
+                  )}
                 </>
               )}
             </Link>

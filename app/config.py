@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     request_timeout: int = 120
     cache_ttl: int = 86400
     max_subscription_monthly_usd: float = 200.0
+    prompt_size_warn_tokens: int = 50000
 
     # Derived paths (relative to project root)
     base_dir: Path = Path(__file__).resolve().parent.parent

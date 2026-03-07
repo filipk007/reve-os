@@ -7,7 +7,7 @@ from app.config import settings
 from app.core.claude_executor import SubscriptionLimitError
 from app.core.context_assembler import build_prompt
 from app.core.pipeline_runner import run_skill_chain
-from app.core.skill_loader import load_context_files, load_skill
+from app.core.skill_loader import load_context_files, load_skill, load_skill_config
 from app.core.token_estimator import estimate_cost, estimate_tokens
 from app.models.requests import WebhookRequest
 from app.models.usage import UsageEntry
@@ -24,11 +24,12 @@ def _error(message: str, skill: str = "unknown") -> dict:
 async def webhook(body: WebhookRequest, request: Request):
     pool = request.app.state.pool
     cache = request.app.state.cache
-    model = body.model or settings.default_model
 
     # Resolve skill chain
     skill_chain = body.skills or [body.skill]
     primary_skill = skill_chain[0]
+    config = load_skill_config(primary_skill)
+    model = body.model or config.get("model") or settings.default_model
     is_chain = len(skill_chain) > 1
     priority = body.priority or "normal"
     max_retries = body.max_retries or 3
@@ -105,7 +106,7 @@ async def webhook(body: WebhookRequest, request: Request):
         }
 
     # Build prompt
-    context_files = load_context_files(skill_content, body.data)
+    context_files = load_context_files(skill_content, body.data, skill_name=primary_skill)
     prompt = build_prompt(skill_content, context_files, body.data, body.instructions)
 
     logger.info(
