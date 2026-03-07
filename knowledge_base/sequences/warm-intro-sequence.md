@@ -42,48 +42,23 @@ the introduction and convert warmth into a conversation.
 
 ## Step 1: Post-Intro Email (Same Day)
 
-**Purpose:** Respond within hours of the introduction. Speed signals
-respect for the referrer and seriousness to the prospect. Reply-all
-to the intro email, then follow up with a clean note.
+**Purpose:** Respond within hours. Speed signals respect for the referrer.
+Reply-all to thank the referrer, then follow up directly with the prospect.
+**Subject:** Keep the intro thread, or "[Referrer] suggested we connect"
+**Tone:** Warm, grateful, concise. Friend-of-a-friend, not cold caller.
 
-**Structure:**
-- Thank the referrer (brief, in the reply-all)
-- Move to a direct thread with the prospect
-- Reference the specific context the referrer provided
-- One sentence on relevance
-- Easy CTA
+**Reply-All:** "Thanks for connecting us, [referrer]! I'll take it from here."
 
-**Subject Line Pattern:** Keep the intro thread subject, or:
-"[Referrer name] suggested we connect"
-
-**Tone:** Warm, grateful, concise. You're a friend-of-a-friend, not
-a cold caller.
-
-**Reply-All (to close the loop with referrer):**
-> Thanks for connecting us, [referrer]! I'll take it from here.
-
-**Direct Follow-Up to Prospect:**
-> Hey [name] — [referrer] mentioned you're [specific context from
-> intro — e.g., "scaling your outbound team post-Series B"].
+**Direct Follow-Up:**
+> Hey [name] — [referrer] mentioned you're [specific context].
 >
-> We've been helping similar teams [specific value — e.g., "build
-> pipeline engines that don't break at 3x the volume"]. Thought it
-> might be worth a quick conversation.
->
-> Would 15 minutes this week work? Happy to share what we're seeing
-> with teams in your position.
+> We've been helping similar teams [specific value]. Thought it might
+> be worth a quick conversation. Would 15 minutes this week work?
 
-**Do:**
-- Respond same day, ideally within 2 hours
-- Reference specific context the referrer shared
-- Keep it under 5 sentences
-- Propose a specific time frame
-
-**Don't:**
-- Wait more than 24 hours (disrespects the referrer)
-- Send a long email explaining everything about your company
-- Forget to thank the referrer
-- Use a generic template that ignores the intro context
+**Do:** Respond same day (within 2 hrs), reference referrer's context,
+under 5 sentences, propose specific time frame.
+**Don't:** Wait 24+ hours, send long company overview, forget to thank
+the referrer, use generic templates.
 
 ## Step 2: Value-Add Follow-Up (Day 3)
 

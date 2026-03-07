@@ -95,3 +95,74 @@ SDKs for Python and Node.js.
 3. **"Stop building video ML in-house"** — for engineering leaders burning cycles on video models
 4. **"From 10,000 hours to the exact moment"** — for media/content companies with massive archives
 5. **"Video understanding, not video generation"** — differentiation from text-to-video hype
+
+## Personas
+
+### VP Engineering
+- **Why they buy:** Team is burning cycles building video search/analysis in-house with stitched-together open-source models. Twelve Labs replaces months of ML engineering with API calls.
+- **What they care about:** API reliability and latency, cost per minute of video processed, accuracy on their specific content type, not adding ML headcount
+- **Opening angle:** "Stop building video ML in-house" — reference their eng team size and video-heavy product
+- **Language that works:** "API-first", "ship in days not quarters", "one integration, multiple use cases", "purpose-built models"
+- **Language to avoid:** "AI-powered" (too generic), "revolutionary" (overpromise), "end-to-end platform" (they want focused tools)
+
+### CTO
+- **Why they buy:** Needs video intelligence as a core product capability without the risk of training and maintaining foundation models in-house.
+- **What they care about:** Model quality benchmarks, embedding flexibility for their architecture, vendor lock-in risk, scalability under load
+- **Opening angle:** "Video understanding, not video generation" — differentiate from the GPT-4V / Gemini noise
+- **Language that works:** "Foundation models purpose-built for video", "temporal understanding", "multimodal embeddings", "AWS Bedrock managed"
+- **Language to avoid:** "Black box AI", anything that implies they can't evaluate the models themselves
+
+### Data Leader
+- **Why they buy:** Video is the largest unstructured data type they can't query. Twelve Labs makes video searchable and embeddable like text.
+- **What they care about:** Embedding quality for RAG pipelines, vector DB integrations (Pinecone, Milvus), batch processing throughput, cost per inference
+- **Opening angle:** "Video is the new unstructured data" — reference their data stack (Databricks, Snowflake)
+- **Language that works:** "Multimodal embeddings", "video-to-vector", "batch indexing", "integrate with your existing data stack"
+- **Language to avoid:** "Simple drag-and-drop" (they want technical depth), consumer-grade language
+
+### Product Leader
+- **Why they buy:** Users want to search and navigate video content, but current search is text-metadata only. Twelve Labs enables true semantic video search.
+- **What they care about:** Time-to-integration, SDK quality, use case fit for their specific content type, user experience impact
+- **Opening angle:** "Your users are searching text. Your content is video." — reference a specific feature gap in their product
+- **Language that works:** "Semantic search", "natural language queries over video", "find the exact moment", "user engagement"
+- **Language to avoid:** Infrastructure jargon (they care about user outcomes, not model architecture)
+
+## Battle Cards
+
+### vs OpenAI (GPT-4V for video)
+- **Their pitch:** General-purpose multimodal AI that can understand images and video frames
+- **Our edge:** Twelve Labs models are video-FIRST — they understand temporal relationships, audio-visual alignment, and scene progression. GPT-4V analyzes individual frames, missing what happens between them.
+- **When they win:** Customer just needs basic frame-level description or already uses OpenAI for everything
+- **When we win:** Customer needs actual video comprehension — searching for moments, understanding sequences, analyzing temporal patterns
+- **Trap question:** "How does your current approach handle temporal relationships — like finding the moment someone says X while doing Y?"
+
+### vs Google (Gemini multimodal)
+- **Their pitch:** Massive multimodal model that handles text, images, audio, and video
+- **Our edge:** Twelve Labs is purpose-built for video with dedicated search and generation APIs. Gemini is a generalist — good at many things, best-in-class at none for video-specific tasks.
+- **When they win:** Customer is already deep in Google Cloud ecosystem and needs "good enough" video analysis
+- **When we win:** Customer needs best-in-class video search accuracy, dedicated video APIs, or runs on AWS/multi-cloud
+- **Trap question:** "Have you benchmarked video search accuracy specifically, or are you evaluating general multimodal capabilities?"
+
+### vs Amazon Rekognition
+- **Their pitch:** AWS-native video analysis — object detection, face recognition, content moderation
+- **Our edge:** Rekognition does label-based analysis (objects, faces). Twelve Labs does semantic understanding (find the moment where the CEO discusses revenue growth). Completely different capability layer.
+- **When they win:** Customer only needs basic object/face detection and is locked into AWS
+- **When we win:** Customer needs semantic search, natural language queries, video summarization, or multimodal embeddings
+- **Trap question:** "Can you search your video archive using a natural language question — like 'show me every scene where a customer complaint is discussed'?"
+
+## Signal Playbook
+| Signal | What It Means | Messaging Angle | Urgency |
+|--------|--------------|-----------------|---------|
+| Funding round | Scaling pressure, new budget | "Building video features post-raise" | High — 30 day window |
+| Hiring ML/AI engineers | Building video/AI capabilities in-house | "Ship video intelligence without the ML hiring cycle" | High — they're spending now |
+| Video product launch | Already investing in video, may need better tooling | "Level up your video features" | Medium |
+| Partnership with video platform | Expanding video ecosystem | "Adding intelligence to your video pipeline" | Medium |
+| Content library growth | More video = more need for search/analysis | "From 10,000 hours to the exact moment" | Medium |
+| Competitor using Twelve Labs | Social proof / FOMO | "[Competitor] just shipped video search — here's how" | High |
+| Tech stack includes vector DBs | Ready for embeddings-based approach | "Add video to your RAG pipeline" | Low — nurture |
+
+## Proven Responses
+(Empty — populate as campaigns generate results)
+
+## Active Campaigns
+| Campaign | Angle | Status | Pipeline | Notes |
+|----------|-------|--------|----------|-------|

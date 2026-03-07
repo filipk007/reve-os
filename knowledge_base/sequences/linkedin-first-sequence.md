@@ -36,117 +36,63 @@ email. The key: be a human first, a seller second.
 
 ## Step 1: Connect with Note (Day 0)
 
-**Purpose:** Get accepted. The connection note is NOT a pitch. It's a
-reason for them to let you into their network.
+**Purpose:** Get accepted. The note is NOT a pitch — it's a reason to
+let you into their network. 300 character limit. Every word counts.
 
-**Structure:** One sentence explaining why you're connecting. Reference
-something specific — mutual connection, shared interest, their content,
-a company milestone.
+**Do:** Reference something specific, keep it conversational, give a
+genuine reason, feel like a peer reaching out.
+**Don't:** Pitch your product, use generic templates, mention your
+company, include a CTA or meeting request.
 
-**Character Limit:** 300 characters. Every word counts.
-
-**Do:**
-- Reference something specific about them
-- Keep it conversational and brief
-- Give a genuine reason for connecting
-- Make it feel like a peer reaching out
-
-**Don't:**
-- Pitch your product in the connection note
-- Use generic templates ("I'd love to connect and expand my network")
-- Mention your company or what you sell
-- Include a CTA or meeting request
-
-**Example:**
 > Been following your takes on scaling outbound post-Series B — your
 > point about quality vs volume really resonated. Would love to connect.
 
 ## Step 2: Engage Their Content (Day 2-4)
 
-**Purpose:** Get on their radar by adding genuine value to their posts
-or shared content. Build familiarity before you sell anything.
+**Purpose:** Get on their radar with genuine value. Build familiarity
+before you sell anything. Comment on 1-2 recent posts with a unique
+perspective, related experience, or follow-up question.
 
-**Structure:** Leave a thoughtful comment on 1-2 of their recent posts.
-Add a perspective, share a related experience, or ask a follow-up question.
+**Do:** Read the full post first, add unique perspective, ask genuine
+follow-up questions, like and comment on 2-3 posts over 2-3 days.
+**Don't:** "Great post!" (zero-value), pitch in comments, engage every
+single post, copy-paste comment formats.
 
-**Do:**
-- Read the full post before commenting
-- Add a unique perspective or data point
-- Ask a genuine follow-up question
-- Like and comment on 2-3 posts over 2-3 days
-
-**Don't:**
-- Comment "Great post!" or "Love this!" (zero-value engagement)
-- Write a comment that's actually a pitch for your product
-- Engage with every single post (looks stalker-y)
-- Copy-paste the same comment format across multiple people
-
-**Example Comment:**
 > This tracks with what we've seen too. The teams that separate
-> "personalization" from "research" as two distinct workflows tend to
-> scale faster. Curious if you've found a threshold where manual
-> research stops being feasible?
+> "personalization" from "research" as distinct workflows scale faster.
+> Curious if you've found a threshold where manual research stops
+> being feasible?
 
 ## Step 3: DM with Relevant Insight (Day 5)
 
-**Purpose:** First direct message. Not a pitch — a genuine conversation
-starter based on the engagement you've already had.
+**Purpose:** First DM. Not a pitch — a conversation starter based on
+prior engagement. Reference the interaction, share a relevant insight
+or resource, keep it open-ended with no hard CTA.
 
-**Structure:**
-- Reference the interaction (their post, your comment, shared topic)
-- Share a relevant insight, resource, or question
-- Open-ended, no hard CTA
+**Do:** Under 3-4 sentences, reference prior engagement naturally,
+share something useful, make it easy to reply briefly.
+**Don't:** Wall of text, pitch your product, ask for a meeting, send
+voice notes unless you have a real relationship.
 
-**Do:**
-- Keep it under 3-4 sentences
-- Reference the prior engagement naturally
-- Share something they'd actually find useful
-- Make it easy to reply with a short response
-
-**Don't:**
-- Send a wall of text
-- Pitch your product
-- Ask for a meeting in the first DM
-- Send a voice note (unless you have a real relationship)
-
-**Example:**
 > Your post about outbound quality vs volume stuck with me. We just
 > published some benchmarks on how personalization depth affects reply
-> rates — want me to send it over? Think it maps well to what you're
-> building at [company].
+> rates — want me to send it over?
 
 ## Step 4: Email Crossover (Day 8)
 
-**Purpose:** Move the conversation to email where you can be more
-detailed. Reference the LinkedIn interaction to establish warmth.
+**Purpose:** Move to email. Reference LinkedIn interaction for warmth.
+Permission line referencing LinkedIn + value line + low-friction CTA.
 
-**Structure:**
-- Permission line referencing LinkedIn engagement
-- Value line connected to the topics you discussed
-- Low-friction CTA
+**Do:** Reference specific LinkedIn interaction, keep warm tone,
+transition naturally, include one clear value prop.
+**Don't:** Pretend LinkedIn didn't happen, switch to corporate tone,
+send a long email, use "As per our LinkedIn conversation."
 
-**Do:**
-- Reference the specific LinkedIn interaction
-- Keep the warm tone from LinkedIn
-- Transition naturally — don't make it feel like a bait-and-switch
-- Include one clear value proposition
-
-**Don't:**
-- Pretend the LinkedIn engagement didn't happen
-- Switch to a stiff, corporate tone
-- Send a long email — keep the LinkedIn warmth and brevity
-- Include "As per our LinkedIn conversation" (too formal)
-
-**Example:**
 > Hey [name] — enjoyed the back and forth on your outbound scaling
-> post last week. Your point about the quality ceiling hit close to
-> home.
+> post last week. Your point about the quality ceiling hit close to home.
 >
 > We've been helping teams at [similar companies] break through that
-> ceiling without adding headcount. Just shipped some interesting
-> results from Q4.
->
-> Worth a quick look?
+> ceiling without adding headcount. Worth a quick look?
 
 ## Rules for the Full Sequence
 - If they engage back on LinkedIn at any point, have a real conversation
