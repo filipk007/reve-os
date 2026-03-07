@@ -8,6 +8,38 @@
 - **HQ:** San Francisco, CA
 - **Founded:** 2021
 
+## Sales Motion
+- **Model:** Product-led growth (free tier → developer adoption → enterprise deal)
+- **Free tier:** 600 minutes, no credit card required
+- **Typical cycle:** Developer tries API → builds POC → eng manager approves budget → enterprise deal
+- **Enterprise cycle:** 2-4 months (security review, procurement)
+- **Champions:** Individual developers who tried the API and loved it
+- **Blockers:** Security review, vendor approval, "build vs buy" debates
+
+## Sequence Strategy
+Developer-tool sales require technical credibility, not sales pressure.
+
+### Cadence
+- **Touches:** 5-7 over 3 weeks
+- **Channels:** Email (primary), LinkedIn (secondary). No cold calls for developers.
+- **Spacing:** Day 1 → Day 3 → Day 7 → Day 10 → Day 14 → Day 21
+
+### Touch Sequence
+| Touch | Channel | Purpose | Content |
+|-------|---------|---------|---------|
+| 1 | Email | Pain-based opener | Lead with their specific video challenge, no product pitch |
+| 2 | LinkedIn | Connect + note | Short, reference the email topic, add a technical insight |
+| 3 | Email | Value-add | Case study or technical comparison relevant to their stack |
+| 4 | Email | Direct ask | "Would it be useful to see how [similar company] solved this?" |
+| 5 | Email | Break-up or new angle | Either close the loop or pivot to a different pain point |
+
+### Rules for Developer Audiences
+- Never open with "I hope this email finds you well" — developers hate that
+- Lead with a technical observation about their product/stack, not a pitch
+- Link to docs or technical content, not marketing pages
+- Keep emails under 100 words — developers skim aggressively
+- PS line with free tier link: "PS — 600 free minutes, no credit card: twelvelabs.io"
+
 ## What They Sell
 
 Twelve Labs builds a **video understanding platform** — an API that lets developers
@@ -33,6 +65,12 @@ speech, and temporal relationships simultaneously.
 **Pricing:** Usage-based. Free tier = 600 minutes. Developer plan starts ~$0.033/min.
 SDKs for Python and Node.js.
 
+## Positioning
+For engineering teams building video-powered products, Twelve Labs is the
+video understanding API that lets you search, analyze, and generate from
+video using purpose-built multimodal models — unlike general-purpose LLMs
+that treat video as a series of image frames.
+
 ## Target ICP — Who Twelve Labs Sells To
 
 ### Primary Buyers
@@ -54,14 +92,52 @@ SDKs for Python and Node.js.
 - **Company size:** 50-5,000 employees (mid-market to enterprise)
 - **Verticals:** Media & Entertainment, Security/Surveillance, Sports, E-learning, AdTech, Healthcare (surgical video)
 - **Technical signal:** Has engineering team, builds products (not just buys SaaS)
-- **Stack signal:** Uses cloud infra (AWS, GCP, Azure), vector DBs (Pinecone, Milvus), data platforms (Databricks, Snowflake)
 - **Video signal:** Company creates, hosts, or processes significant video content
+
+### ICP Tech Stack Signals
+- **Cloud:** AWS, GCP, Azure
+- **Vector DBs:** Pinecone, Milvus, Weaviate, Qdrant
+- **Data platforms:** Databricks, Snowflake, BigQuery
+- **Video platforms:** Mux, Cloudflare Stream, AWS MediaConvert
+- **ML/AI signals:** Uses embeddings, runs ML pipelines, has ML engineers
 
 ### Negative ICP (Don't Target)
 - Non-technical buyers with no engineering team
 - Companies with < 100 hours of video content
 - Pure consumer plays with no API integration need
 - Companies already building in-house video ML (Google, Meta, etc.)
+
+## Vertical Messaging
+
+### Media & Entertainment
+- **Pain:** Thousands of hours of content, manual tagging, can't find the clip they need
+- **Hook:** "From 10,000 hours to the exact moment — no more manual tagging"
+- **Use case:** Asset search, auto-chaptering, content repurposing
+
+### Security & Surveillance
+- **Pain:** Human monitoring doesn't scale, reviewing footage is slow
+- **Hook:** "Search every camera feed by description, not timestamp"
+- **Use case:** Incident search, anomaly detection, automated alerts
+
+### Sports Analytics
+- **Pain:** Manual highlight clipping, slow game film review
+- **Hook:** "Auto-generate highlights and search game footage by play type"
+- **Use case:** Highlight generation, play-by-play search, performance analysis
+
+### E-learning / EdTech
+- **Pain:** Students can't find the right moment in lecture videos
+- **Hook:** "Let students search inside lectures like they search Google"
+- **Use case:** Lecture search, auto-chaptering, quiz generation from video
+
+### AdTech
+- **Pain:** Brand safety, ad placement verification, creative analysis at scale
+- **Hook:** "Understand what's IN the video before your ad runs next to it"
+- **Use case:** Content classification, brand safety, creative analysis
+
+### Healthcare (Surgical Video)
+- **Pain:** Surgical video libraries are unsearchable, training is manual
+- **Hook:** "Search surgical video archives by procedure, technique, or outcome"
+- **Use case:** Surgical training, procedure documentation, research
 
 ## Competitive Landscape
 - **Direct:** Moments Lab, Mantis AI, LiveLink AI
@@ -78,11 +154,67 @@ SDKs for Python and Node.js.
 - Moving toward "agentic video intelligence" (autonomous video understanding agents)
 - Presented at AWS re:Invent 2025
 
-## Value Proposition (for outbound on their behalf)
+## Messaging Hierarchy
+
+### Primary (lead with this)
 - "Build video intelligence into your product with a few API calls"
-- "Stop treating video like a pile of frames — understand what's actually happening"
-- "30,000 developers already use Twelve Labs to search, analyze, and understand video"
-- "One-time indexing, unlimited downstream tasks — search, summarize, classify, embed"
+
+### Secondary (supporting proof)
+- "Purpose-built video models — not image models applied to frames"
+- "30,000+ developers already on the platform"
+
+### Tertiary (use in follow-ups / PS lines)
+- "One-time indexing, unlimited downstream tasks"
+- "Available on AWS Bedrock as a managed service"
+
+## Social Proof
+- 30,000+ developers on the platform
+- $107M total raised (Series B, Dec 2024)
+- $300M valuation
+- Partners: AWS, Databricks, Snowflake, Adobe
+- Available on AWS Bedrock (managed service)
+- Presented at AWS re:Invent 2025
+
+## ROI Framework
+Use these comparisons to make the business case concrete in outbound:
+
+### Build vs. Buy Math
+- **In-house cost:** 2-3 ML engineers × $200-300K/yr = $400-900K/yr, plus 6+ months to build, ongoing model retraining
+- **Twelve Labs cost:** API usage starts at $0.033/min. Even at scale, a fraction of one ML engineer's salary
+- **Time-to-value:** In-house = 6+ months. Twelve Labs = first API call in < 1 hour, production in 1-2 weeks
+- **Opportunity cost:** Every month your ML team spends on video models is a month they're NOT building your core product
+
+### ROI Triggers (when to use cost math)
+- Prospect is hiring ML engineers → "That $300K hire gets you one model. This API gets you five capabilities."
+- Prospect has existing video features that are slow → "How much revenue are you losing per month of delayed video search?"
+- Prospect is evaluating build vs. buy → Lead with the time math, not the dollar math
+
+## Integration Timeline
+- **Free tier signup:** 5 minutes, no credit card
+- **First API call:** < 1 hour with Python/Node SDK
+- **POC (index + search own content):** 1-2 days
+- **Production integration:** 1-2 weeks
+- **Enterprise onboarding:** 2-4 weeks with dedicated support
+
+Use in outbound to reduce perceived friction: "Most teams go from signup to working POC in a day."
+
+## Case Study Patterns
+Use these anonymized patterns in outbound. Replace with real case studies as they become available.
+
+### Media Company (Content Search)
+- **Before:** Editorial team spent 4+ hours/day manually searching 50,000+ hours of archive footage
+- **After:** Natural language search across entire archive — find any moment in seconds
+- **Result:** Content repurposing velocity increased, new revenue from previously buried footage
+
+### Security Platform (Surveillance Intelligence)
+- **Before:** Human operators monitoring camera feeds, reviewing incidents manually post-hoc
+- **After:** API-powered search across all feeds — "show me every instance of X in the last 24 hours"
+- **Result:** Incident response time dropped from hours to minutes
+
+### EdTech Platform (In-Video Search)
+- **Before:** Students scrubbed through hour-long lecture recordings to find specific topics
+- **After:** Semantic search inside lectures — students type a question, jump to the exact moment
+- **Result:** Student engagement with video content increased significantly
 
 ## Tone Preferences
 - **Formality:** Technical but approachable. Developer-friendly.
@@ -149,6 +281,34 @@ SDKs for Python and Node.js.
 - **When we win:** Customer needs semantic search, natural language queries, video summarization, or multimodal embeddings
 - **Trap question:** "Can you search your video archive using a natural language question — like 'show me every scene where a customer complaint is discussed'?"
 
+## Common Objections
+
+### "We'll just use GPT-4V / Gemini for video"
+General-purpose models analyze frames individually — they miss temporal
+relationships. Ask: "Can your current approach find the moment where
+someone says X while doing Y?" That requires understanding time, not
+just pixels.
+
+### "We can build this in-house with open-source models"
+You can — and it'll take 6+ months of ML eng time, plus ongoing model
+maintenance. Twelve Labs gives you production-grade video understanding
+via API, so your team ships features instead of training models.
+
+### "The cost per minute seems high"
+Index once, query unlimited times. Compare: the cost of one ML engineer
+for one month vs. a year of Twelve Labs API usage. Also: free tier =
+600 minutes to prove ROI before committing.
+
+### "We don't have enough video content to justify this"
+If you have 100+ hours and growing, the ROI compounds. But if video isn't
+core to your product, this probably isn't the right fit. (Negative ICP
+honesty builds trust.)
+
+### "How accurate is it on our specific content type?"
+Best answer: "Let's test it." Free tier lets them index their own content
+and evaluate. Benchmarks are public, but nothing beats testing on their
+own data.
+
 ## Signal Playbook
 | Signal | What It Means | Messaging Angle | Urgency |
 |--------|--------------|-----------------|---------|
@@ -159,6 +319,38 @@ SDKs for Python and Node.js.
 | Content library growth | More video = more need for search/analysis | "From 10,000 hours to the exact moment" | Medium |
 | Competitor using Twelve Labs | Social proof / FOMO | "[Competitor] just shipped video search — here's how" | High |
 | Tech stack includes vector DBs | Ready for embeddings-based approach | "Add video to your RAG pipeline" | Low — nurture |
+
+## Discovery Questions
+- "How does your team currently search or navigate video content?"
+- "What happens when someone needs to find a specific moment in a video today?"
+- "How much engineering time are you spending on video-related ML?"
+- "What would change if your users could search inside video like they search text?"
+- "How many hours of video content are you processing per month?"
+- "Are you building video features in-house, or evaluating third-party APIs?"
+
+## Champion Enablement
+When the champion is a developer who tried the API and wants to sell internally:
+- **No-approval entry:** Free tier (600 min, no credit card) — they can POC without asking anyone
+- **Internal pitch points to arm them with:**
+  - "We replaced 3 months of ML eng work with 2 days of API integration"
+  - "One-time indexing, then unlimited search/summarize/classify on the same content"
+  - "Already on AWS Bedrock — passes infra review automatically"
+- **Assets to share:** API docs, public benchmarks, architecture diagram showing integration points
+- **Key ask:** "Can you introduce me to whoever owns the video roadmap?"
+
+## Multi-Threading Guide
+Developer-tool enterprise deals rarely close single-threaded. Engage multiple stakeholders:
+
+| Stage | Who to Engage | What They Need |
+|-------|--------------|----------------|
+| POC | Developer champion | API docs, free tier, SDK quickstart |
+| Internal buy-in | Eng manager | ROI math, build-vs-buy comparison, integration timeline |
+| Technical review | Staff/principal engineer | Architecture docs, latency benchmarks, security posture |
+| Security review | InfoSec / compliance | SOC 2 status, data handling policy, AWS Bedrock managed option |
+| Budget approval | VP Eng / CTO | Business case, competitor analysis, contract terms |
+
+**Timing:** Start multi-threading after the champion confirms a successful POC — not before.
+**Signal to escalate:** Champion says "I need to get buy-in from my manager" or "we'd need security to review this."
 
 ## Proven Responses
 (Empty — populate as campaigns generate results)
