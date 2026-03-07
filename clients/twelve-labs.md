@@ -16,6 +16,30 @@
 - **Champions:** Individual developers who tried the API and loved it
 - **Blockers:** Security review, vendor approval, "build vs buy" debates
 
+## Sequence Strategy
+Developer-tool sales require technical credibility, not sales pressure.
+
+### Cadence
+- **Touches:** 5-7 over 3 weeks
+- **Channels:** Email (primary), LinkedIn (secondary). No cold calls for developers.
+- **Spacing:** Day 1 → Day 3 → Day 7 → Day 10 → Day 14 → Day 21
+
+### Touch Sequence
+| Touch | Channel | Purpose | Content |
+|-------|---------|---------|---------|
+| 1 | Email | Pain-based opener | Lead with their specific video challenge, no product pitch |
+| 2 | LinkedIn | Connect + note | Short, reference the email topic, add a technical insight |
+| 3 | Email | Value-add | Case study or technical comparison relevant to their stack |
+| 4 | Email | Direct ask | "Would it be useful to see how [similar company] solved this?" |
+| 5 | Email | Break-up or new angle | Either close the loop or pivot to a different pain point |
+
+### Rules for Developer Audiences
+- Never open with "I hope this email finds you well" — developers hate that
+- Lead with a technical observation about their product/stack, not a pitch
+- Link to docs or technical content, not marketing pages
+- Keep emails under 100 words — developers skim aggressively
+- PS line with free tier link: "PS — 600 free minutes, no credit card: twelvelabs.io"
+
 ## What They Sell
 
 Twelve Labs builds a **video understanding platform** — an API that lets developers
@@ -151,6 +175,47 @@ that treat video as a series of image frames.
 - Available on AWS Bedrock (managed service)
 - Presented at AWS re:Invent 2025
 
+## ROI Framework
+Use these comparisons to make the business case concrete in outbound:
+
+### Build vs. Buy Math
+- **In-house cost:** 2-3 ML engineers × $200-300K/yr = $400-900K/yr, plus 6+ months to build, ongoing model retraining
+- **Twelve Labs cost:** API usage starts at $0.033/min. Even at scale, a fraction of one ML engineer's salary
+- **Time-to-value:** In-house = 6+ months. Twelve Labs = first API call in < 1 hour, production in 1-2 weeks
+- **Opportunity cost:** Every month your ML team spends on video models is a month they're NOT building your core product
+
+### ROI Triggers (when to use cost math)
+- Prospect is hiring ML engineers → "That $300K hire gets you one model. This API gets you five capabilities."
+- Prospect has existing video features that are slow → "How much revenue are you losing per month of delayed video search?"
+- Prospect is evaluating build vs. buy → Lead with the time math, not the dollar math
+
+## Integration Timeline
+- **Free tier signup:** 5 minutes, no credit card
+- **First API call:** < 1 hour with Python/Node SDK
+- **POC (index + search own content):** 1-2 days
+- **Production integration:** 1-2 weeks
+- **Enterprise onboarding:** 2-4 weeks with dedicated support
+
+Use in outbound to reduce perceived friction: "Most teams go from signup to working POC in a day."
+
+## Case Study Patterns
+Use these anonymized patterns in outbound. Replace with real case studies as they become available.
+
+### Media Company (Content Search)
+- **Before:** Editorial team spent 4+ hours/day manually searching 50,000+ hours of archive footage
+- **After:** Natural language search across entire archive — find any moment in seconds
+- **Result:** Content repurposing velocity increased, new revenue from previously buried footage
+
+### Security Platform (Surveillance Intelligence)
+- **Before:** Human operators monitoring camera feeds, reviewing incidents manually post-hoc
+- **After:** API-powered search across all feeds — "show me every instance of X in the last 24 hours"
+- **Result:** Incident response time dropped from hours to minutes
+
+### EdTech Platform (In-Video Search)
+- **Before:** Students scrubbed through hour-long lecture recordings to find specific topics
+- **After:** Semantic search inside lectures — students type a question, jump to the exact moment
+- **Result:** Student engagement with video content increased significantly
+
 ## Tone Preferences
 - **Formality:** Technical but approachable. Developer-friendly.
 - **Approach:** Lead with the technical capability, ground in specific use case
@@ -262,6 +327,30 @@ own data.
 - "What would change if your users could search inside video like they search text?"
 - "How many hours of video content are you processing per month?"
 - "Are you building video features in-house, or evaluating third-party APIs?"
+
+## Champion Enablement
+When the champion is a developer who tried the API and wants to sell internally:
+- **No-approval entry:** Free tier (600 min, no credit card) — they can POC without asking anyone
+- **Internal pitch points to arm them with:**
+  - "We replaced 3 months of ML eng work with 2 days of API integration"
+  - "One-time indexing, then unlimited search/summarize/classify on the same content"
+  - "Already on AWS Bedrock — passes infra review automatically"
+- **Assets to share:** API docs, public benchmarks, architecture diagram showing integration points
+- **Key ask:** "Can you introduce me to whoever owns the video roadmap?"
+
+## Multi-Threading Guide
+Developer-tool enterprise deals rarely close single-threaded. Engage multiple stakeholders:
+
+| Stage | Who to Engage | What They Need |
+|-------|--------------|----------------|
+| POC | Developer champion | API docs, free tier, SDK quickstart |
+| Internal buy-in | Eng manager | ROI math, build-vs-buy comparison, integration timeline |
+| Technical review | Staff/principal engineer | Architecture docs, latency benchmarks, security posture |
+| Security review | InfoSec / compliance | SOC 2 status, data handling policy, AWS Bedrock managed option |
+| Budget approval | VP Eng / CTO | Business case, competitor analysis, contract terms |
+
+**Timing:** Start multi-threading after the champion confirms a successful POC — not before.
+**Signal to escalate:** Champion says "I need to get buy-in from my manager" or "we'd need security to review this."
 
 ## Proven Responses
 (Empty — populate as campaigns generate results)
