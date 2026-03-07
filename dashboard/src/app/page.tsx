@@ -32,6 +32,12 @@ export default function DashboardPage() {
   const [outcomes, setOutcomes] = useState<OutcomeDashboard | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [hasActivity, setHasActivity] = useState<boolean | null>(null);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("kiln_onboarding_dismissed") === "true";
+    }
+    return false;
+  });
 
   const load = useCallback(async () => {
     try {
@@ -57,8 +63,20 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [load]);
 
+  // Auto-dismiss onboarding when activity is detected
+  useEffect(() => {
+    if (hasActivity && !onboardingDismissed) {
+      localStorage.setItem("kiln_onboarding_dismissed", "true");
+      setOnboardingDismissed(true);
+    }
+  }, [hasActivity, onboardingDismissed]);
+
   // Empty state for new clients
-  if (hasActivity === false) {
+  if (hasActivity === false && !onboardingDismissed) {
+    const dismissOnboarding = () => {
+      localStorage.setItem("kiln_onboarding_dismissed", "true");
+      setOnboardingDismissed(true);
+    };
     return (
       <div className="flex flex-col h-full">
         <Header title="Dashboard" />
@@ -74,6 +92,12 @@ export default function DashboardPage() {
             <Button variant="outline" asChild className="border-clay-700 text-clay-300 hover:bg-clay-800">
               <Link href="/run">Open Playground</Link>
             </Button>
+            <button
+              onClick={dismissOnboarding}
+              className="text-xs text-clay-500 hover:text-clay-300 transition-colors mt-2"
+            >
+              Skip — I've used this before
+            </button>
           </EmptyState>
         </div>
       </div>
