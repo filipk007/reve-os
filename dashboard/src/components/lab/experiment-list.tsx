@@ -44,7 +44,7 @@ export function ExperimentList({
           0
         );
         return (
-          <Card key={exp.id} className="border-clay-800 bg-clay-900">
+          <Card key={exp.id} className="border-clay-800 bg-white shadow-sm">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

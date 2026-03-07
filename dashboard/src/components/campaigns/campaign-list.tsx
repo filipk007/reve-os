@@ -64,7 +64,7 @@ export function CampaignList({
         return (
           <Card
             key={campaign.id}
-            className="border-clay-800 bg-clay-900 flex flex-col hover:border-clay-700 transition-colors"
+            className="border-clay-800 bg-white shadow-sm flex flex-col hover:border-clay-700 transition-colors"
           >
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-2">

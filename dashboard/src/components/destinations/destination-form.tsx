@@ -50,7 +50,7 @@ export function DestinationForm({ initial, onSubmit, loading }: DestinationFormP
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+        <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
           Name
         </label>
         <Input
@@ -62,7 +62,7 @@ export function DestinationForm({ initial, onSubmit, loading }: DestinationFormP
       </div>
 
       <div>
-        <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+        <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
           Type
         </label>
         <Select value={type} onValueChange={handleTypeChange}>
@@ -77,7 +77,7 @@ export function DestinationForm({ initial, onSubmit, loading }: DestinationFormP
       </div>
 
       <div>
-        <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+        <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
           URL
         </label>
         <Input
@@ -90,7 +90,7 @@ export function DestinationForm({ initial, onSubmit, loading }: DestinationFormP
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+          <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
             Auth Header Name (optional)
           </label>
           <Input
@@ -101,7 +101,7 @@ export function DestinationForm({ initial, onSubmit, loading }: DestinationFormP
           />
         </div>
         <div>
-          <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+          <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
             Auth Header Value (optional)
           </label>
           <Input
@@ -115,7 +115,7 @@ export function DestinationForm({ initial, onSubmit, loading }: DestinationFormP
       </div>
 
       <div>
-        <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+        <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
           Client Slug (optional)
         </label>
         <Input

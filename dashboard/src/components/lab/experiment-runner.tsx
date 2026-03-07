@@ -60,7 +60,7 @@ export function ExperimentRunner({
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-xs text-clay-500 uppercase tracking-wide mb-2 block">
+        <label className="text-xs text-clay-500 uppercase tracking-wider mb-2 block">
           Paste CSV Data
         </label>
         <Textarea

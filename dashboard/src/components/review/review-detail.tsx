@@ -157,7 +157,7 @@ export function ReviewDetail({
   const isActing = acting !== null;
 
   return (
-    <Card className="border-clay-800 bg-clay-900">
+    <Card className="border-clay-800 bg-white shadow-sm">
       <CardContent className="p-0">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-clay-800 px-4 py-3">
@@ -184,19 +184,19 @@ export function ReviewDetail({
           {/* Meta info */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wide">
+              <p className="text-xs text-clay-500 uppercase tracking-wider">
                 Skill
               </p>
               <p className="text-sm text-clay-200 mt-0.5">{item.skill}</p>
             </div>
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wide">
+              <p className="text-xs text-clay-500 uppercase tracking-wider">
                 Model
               </p>
               <p className="text-sm text-clay-200 mt-0.5">{item.model}</p>
             </div>
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wide">
+              <p className="text-xs text-clay-500 uppercase tracking-wider">
                 Created
               </p>
               <p className="text-sm text-clay-200 mt-0.5">
@@ -205,7 +205,7 @@ export function ReviewDetail({
             </div>
             {campaignName && (
               <div>
-                <p className="text-xs text-clay-500 uppercase tracking-wide">
+                <p className="text-xs text-clay-500 uppercase tracking-wider">
                   Campaign
                 </p>
                 <p className="text-sm text-clay-200 mt-0.5">{campaignName}</p>
@@ -213,7 +213,7 @@ export function ReviewDetail({
             )}
             {item.client_slug && (
               <div>
-                <p className="text-xs text-clay-500 uppercase tracking-wide">
+                <p className="text-xs text-clay-500 uppercase tracking-wider">
                   Client
                 </p>
                 <p className="text-sm text-clay-200 mt-0.5">
@@ -226,7 +226,7 @@ export function ReviewDetail({
           {/* Confidence bar */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-xs text-clay-500 uppercase tracking-wide">
+              <p className="text-xs text-clay-500 uppercase tracking-wider">
                 Confidence Score
               </p>
               <span
@@ -252,7 +252,7 @@ export function ReviewDetail({
           {/* Input data — collapsible */}
           <div>
             <button
-              className="flex items-center gap-1.5 text-xs text-clay-500 uppercase tracking-wide mb-1 hover:text-clay-400 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-clay-500 uppercase tracking-wider mb-1 hover:text-clay-400 transition-colors"
               onClick={() => setShowInput(!showInput)}
             >
               {showInput ? (
@@ -271,7 +271,7 @@ export function ReviewDetail({
 
           {/* Output */}
           <div>
-            <p className="text-xs text-clay-500 uppercase tracking-wide mb-1">
+            <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
               Output
             </p>
             <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-800 rounded-md p-3 overflow-x-auto max-h-72">
@@ -281,7 +281,7 @@ export function ReviewDetail({
 
           {/* Note textarea */}
           <div>
-            <p className="text-xs text-clay-500 uppercase tracking-wide mb-1">
+            <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
               Reviewer Note
             </p>
             <Textarea
@@ -296,7 +296,7 @@ export function ReviewDetail({
           {/* Revise form */}
           {showReviseForm && (
             <div className="border border-kiln-mustard/20 bg-kiln-mustard/5 rounded-md p-3 space-y-2">
-              <p className="text-xs text-kiln-mustard uppercase tracking-wide font-medium">
+              <p className="text-xs text-kiln-mustard uppercase tracking-wider font-medium">
                 Revised Instructions
               </p>
               <Textarea

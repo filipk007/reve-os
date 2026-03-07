@@ -59,9 +59,9 @@ export function ResultsTable({
   };
 
   return (
-    <div className="rounded-xl border border-clay-800 bg-clay-900 overflow-hidden">
+    <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden">
       <div className="flex items-center justify-between border-b border-clay-800 px-4 py-2">
-        <span className="text-xs text-clay-500 uppercase tracking-wide font-[family-name:var(--font-sans)]">
+        <span className="text-xs text-clay-500 uppercase tracking-wider font-[family-name:var(--font-sans)]">
           Results ({jobs.length} rows)
         </span>
         <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export function ResultsTable({
             {jobs.map((job, i) => (
               <TableRow
                 key={job.id}
-                className="border-clay-800 hover:bg-clay-800/50"
+                className="border-clay-800 hover:bg-muted/50"
               >
                 <TableCell className="text-clay-500 font-[family-name:var(--font-mono)] text-xs">
                   {i + 1}

@@ -57,7 +57,7 @@ export function ExperimentSetup({
   return (
     <div className="space-y-4 max-w-lg">
       <div>
-        <label className="text-xs text-clay-500 uppercase tracking-wide mb-1.5 block">
+        <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
           Skill
         </label>
         <Select value={skill} onValueChange={setSkill}>
@@ -75,7 +75,7 @@ export function ExperimentSetup({
       </div>
 
       <div>
-        <label className="text-xs text-clay-500 uppercase tracking-wide mb-1.5 block">
+        <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
           Experiment Name
         </label>
         <Input
@@ -88,7 +88,7 @@ export function ExperimentSetup({
 
       {skill && (
         <div>
-          <label className="text-xs text-clay-500 uppercase tracking-wide mb-2 block">
+          <label className="text-xs text-clay-500 uppercase tracking-wider mb-2 block">
             Select Variants (min 2)
           </label>
           <div className="flex flex-wrap gap-2">

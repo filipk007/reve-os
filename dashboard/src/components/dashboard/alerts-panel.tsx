@@ -55,7 +55,7 @@ export function AlertsPanel({ alerts, recommendations }: AlertsPanelProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xs text-clay-500 uppercase tracking-wide font-[family-name:var(--font-sans)]">
+      <h3 className="text-base font-semibold text-clay-200 font-[family-name:var(--font-sans)]">
         Alerts & Recommendations
       </h3>
 
@@ -65,10 +65,10 @@ export function AlertsPanel({ alerts, recommendations }: AlertsPanelProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className="bg-clay-800 border-clay-700">
+          <Card className="border-clay-800 bg-white shadow-sm">
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-kiln-teal/10">
+                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-kiln-teal/15">
                   <CheckCircle2 className="h-4 w-4 text-kiln-teal" />
                 </div>
                 <div>
@@ -98,7 +98,7 @@ export function AlertsPanel({ alerts, recommendations }: AlertsPanelProps) {
               >
                 <Card
                   className={cn(
-                    "bg-clay-800 border-clay-700 border-l-3",
+                    "border-clay-800 bg-white shadow-sm border-l-3",
                     borderColor
                   )}
                 >
@@ -140,7 +140,7 @@ export function AlertsPanel({ alerts, recommendations }: AlertsPanelProps) {
                 delay: (alerts.length + index) * 0.05,
               }}
             >
-              <Card className="bg-clay-800 border-clay-700">
+              <Card className="border-clay-800 bg-white shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <TrendingUp className="h-4 w-4 mt-0.5 shrink-0 text-clay-400" />

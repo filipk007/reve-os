@@ -91,13 +91,13 @@ export function OutcomeCards({ data }: OutcomeCardsProps) {
           >
             <Card
               className={cn(
-                "bg-clay-800 border-clay-700 hover:border-kiln-teal/30 transition-all duration-200",
+                "border-clay-800 bg-white shadow-sm hover:border-clay-700 transition-all duration-200",
                 border
               )}
             >
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs text-clay-500 uppercase tracking-wide font-[family-name:var(--font-sans)]">
+                  <p className="text-xs text-clay-500 uppercase tracking-wider font-[family-name:var(--font-sans)]">
                     {card.label}
                   </p>
                   <Icon className={cn("h-4 w-4", accent)} />

@@ -313,7 +313,7 @@ export default function BatchPage() {
                   <SkillSelector value={skill} onChange={handleSkillChange} />
                   <ModelSelector value={model} onChange={setModel} />
                   <div>
-                    <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+                    <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                       Destination (optional)
                     </label>
                     <Select value={selectedDestId} onValueChange={(v) => setSelectedDestId(v === "none" ? "" : v)}>
@@ -343,7 +343,7 @@ export default function BatchPage() {
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
                   <div className="flex-1">
-                    <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+                    <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                       Schedule (optional)
                     </label>
                     <input
@@ -469,12 +469,12 @@ export default function BatchPage() {
 
         {/* Scheduled Batches - Collapsible */}
         {scheduledBatches.length > 0 && (
-          <div className="rounded-xl border border-clay-800 bg-clay-900 overflow-hidden">
+          <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden">
             <button
               onClick={() => setScheduledCollapsed((c) => !c)}
               className="w-full flex items-center justify-between p-4 text-left hover:bg-clay-800/50 transition-colors"
             >
-              <h3 className="text-sm font-semibold text-clay-300 uppercase tracking-wide">
+              <h3 className="text-sm font-semibold text-clay-300 uppercase tracking-wider">
                 Scheduled Batches
                 <span className="ml-2 inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-kiln-mustard/15 text-kiln-mustard text-xs px-1.5">
                   {scheduledBatches.length}

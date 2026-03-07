@@ -30,7 +30,7 @@ export function DestinationList({
 }: DestinationListProps) {
   if (destinations.length === 0) {
     return (
-      <div className="rounded-xl border border-clay-800 bg-clay-900 p-8 text-center">
+      <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-8 text-center">
         <p className="text-clay-500 text-sm">
           No destinations configured yet. Add one to start pushing results.
         </p>
@@ -39,7 +39,7 @@ export function DestinationList({
   }
 
   return (
-    <div className="rounded-xl border border-clay-800 bg-clay-900 overflow-hidden">
+    <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -53,7 +53,7 @@ export function DestinationList({
           </TableHeader>
           <TableBody>
             {destinations.map((dest) => (
-              <TableRow key={dest.id} className="border-clay-800 hover:bg-clay-800/50">
+              <TableRow key={dest.id} className="border-clay-800 hover:bg-muted/50">
                 <TableCell className="text-clay-200 text-sm font-medium">
                   {dest.name}
                 </TableCell>

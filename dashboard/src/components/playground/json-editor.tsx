@@ -38,7 +38,7 @@ export function JsonEditor({
   return (
     <div className="flex-1 flex flex-col">
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-xs text-clay-500 uppercase tracking-wide font-[family-name:var(--font-sans)]">
+        <label className="text-xs text-clay-500 uppercase tracking-wider font-[family-name:var(--font-sans)]">
           Data (JSON)
         </label>
         {error && (

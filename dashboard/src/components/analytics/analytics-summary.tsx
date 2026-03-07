@@ -42,11 +42,11 @@ export function AnalyticsSummary({ data }: { data: FeedbackSummary | null }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((c) => (
-        <Card key={c.label} className="border-clay-800 bg-clay-900">
-          <CardContent className="p-4">
+        <Card key={c.label} className="border-clay-800 bg-white shadow-sm">
+          <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-2">
               <c.icon className={`h-4 w-4 ${c.color}`} />
-              <span className="text-xs text-clay-500 uppercase tracking-wide">
+              <span className="text-xs text-clay-500 uppercase tracking-wider">
                 {c.label}
               </span>
             </div>

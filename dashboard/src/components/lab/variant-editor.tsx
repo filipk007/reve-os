@@ -43,7 +43,7 @@ export function VariantEditor({
         className="w-full sm:max-w-2xl bg-clay-900 border-clay-800 overflow-y-auto"
       >
         <SheetHeader>
-          <SheetTitle className="text-kiln-cream">
+          <SheetTitle className="text-clay-100">
             {variant ? "Edit Variant" : "New Variant"}
           </SheetTitle>
           <SheetDescription className="text-clay-500">
@@ -54,7 +54,7 @@ export function VariantEditor({
         </SheetHeader>
         <div className="space-y-4 px-4 pb-4">
           <div>
-            <label className="text-xs text-clay-500 uppercase tracking-wide mb-1.5 block">
+            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
               Label
             </label>
             <Input
@@ -65,7 +65,7 @@ export function VariantEditor({
             />
           </div>
           <div>
-            <label className="text-xs text-clay-500 uppercase tracking-wide mb-1.5 block">
+            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
               Skill Prompt (Markdown)
             </label>
             <Textarea

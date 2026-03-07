@@ -55,7 +55,7 @@
 }
 
 body {
-  background-color: #ffffff;
+  background-color: #fafaf9;
   color: #111111;
   font-family: var(--font-body);
 }
@@ -104,7 +104,7 @@ body {
 
 :root {
   --radius: 0.625rem;
-  --background: #ffffff;
+  --background: #fafaf9;
   --foreground: #111111;
   --card: #ffffff;
   --card-foreground: #111111;
@@ -139,7 +139,7 @@ body {
 
 /* Keep .dark for shadcn compat — same values in light mode */
 .dark {
-  --background: #ffffff;
+  --background: #fafaf9;
   --foreground: #111111;
   --card: #ffffff;
   --card-foreground: #111111;

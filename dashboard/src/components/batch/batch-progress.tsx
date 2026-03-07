@@ -22,8 +22,8 @@ export function BatchProgress({
   const pct = total > 0 ? Math.round((processed / total) * 100) : 0;
 
   return (
-    <Card className="border-clay-800 bg-clay-900">
-      <CardContent className="p-4">
+    <Card className="border-clay-800 bg-white shadow-sm">
+      <CardContent className="p-5">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-clay-300 font-[family-name:var(--font-sans)]">
             {processed} / {total} rows processed

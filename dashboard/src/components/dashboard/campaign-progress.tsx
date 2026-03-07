@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Megaphone, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatNumber, formatPercent } from "@/lib/utils";
 import type { OutcomeDashboard, CampaignStatus } from "@/lib/types";
@@ -26,32 +27,25 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
 
   if (activeCampaigns.length === 0) {
     return (
-      <Card className="bg-clay-800 border-clay-700">
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Megaphone className="h-8 w-8 text-clay-600 mb-3" />
-            <p className="text-clay-400 text-sm mb-1">
-              No active campaigns
-            </p>
-            <p className="text-clay-500 text-xs mb-4">
-              Create a campaign to start tracking outcomes
-            </p>
-            <Link
-              href="/campaigns"
-              className="inline-flex items-center gap-1.5 text-xs text-kiln-teal hover:text-kiln-teal-light transition-colors"
-            >
-              Go to Campaigns
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+      <EmptyState
+        title="No active campaigns"
+        description="Create a campaign to start tracking outcomes."
+        icon={Megaphone}
+      >
+        <Link
+          href="/campaigns"
+          className="inline-flex items-center gap-1.5 text-xs text-kiln-teal hover:text-kiln-teal-light transition-colors"
+        >
+          Go to Campaigns
+          <ArrowRight className="h-3 w-3" />
+        </Link>
+      </EmptyState>
     );
   }
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xs text-clay-500 uppercase tracking-wide font-[family-name:var(--font-sans)]">
+      <h3 className="text-base font-semibold text-clay-200 font-[family-name:var(--font-sans)]">
         Active Campaigns
       </h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -69,7 +63,7 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <Card className="bg-clay-800 border-clay-700 hover:border-clay-600 transition-all duration-200">
+              <Card className="border-clay-800 bg-white shadow-sm hover:border-clay-600 transition-all duration-200">
                 <CardContent className="p-5">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">

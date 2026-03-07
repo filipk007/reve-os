@@ -51,7 +51,7 @@ export function VariantList({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Default card */}
-          <Card className="border-clay-800 bg-clay-900 border-kiln-teal/20">
+          <Card className="border-clay-800 bg-white shadow-sm border-kiln-teal/20">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export function VariantList({
           </Card>
 
           {variants.map((v) => (
-            <Card key={v.id} className="border-clay-800 bg-clay-900">
+            <Card key={v.id} className="border-clay-800 bg-white shadow-sm">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <h5 className="font-medium text-clay-100 text-sm truncate">

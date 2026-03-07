@@ -199,7 +199,7 @@ export default function PipelinesPage() {
           className="w-full sm:max-w-lg bg-clay-900 border-clay-800 overflow-y-auto"
         >
           <SheetHeader>
-            <SheetTitle className="text-kiln-cream">
+            <SheetTitle className="text-clay-100">
               Test: {testingPipeline}
             </SheetTitle>
             <SheetDescription className="text-clay-500">

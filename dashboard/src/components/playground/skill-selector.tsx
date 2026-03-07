@@ -20,7 +20,7 @@ export function SkillSelector({
 }) {
   return (
     <div>
-      <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5 font-[family-name:var(--font-sans)]">
+      <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5 font-[family-name:var(--font-sans)]">
         Skill
       </label>
       <Select value={value} onValueChange={onChange}>

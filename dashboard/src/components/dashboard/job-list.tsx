@@ -214,25 +214,25 @@ export function JobList() {
         )}
       </div>
 
-      <div className="rounded-xl border border-clay-800 bg-clay-900 overflow-hidden" aria-live="polite" aria-atomic="false">
+      <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden" aria-live="polite" aria-atomic="false">
         {/* Desktop table */}
         <div className="hidden sm:block overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="border-clay-800 hover:bg-transparent">
-                <TableHead className="text-clay-500 text-xs uppercase tracking-wide w-8" />
-                <TableHead className="text-clay-500 text-xs uppercase tracking-wide">Job ID</TableHead>
+                <TableHead className="text-clay-500 text-xs uppercase tracking-wider w-8" />
+                <TableHead className="text-clay-500 text-xs uppercase tracking-wider">Job ID</TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wide cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("skill")}
                 >
                   <span className="inline-flex items-center">
                     Skill <SortIcon col="skill" />
                   </span>
                 </TableHead>
-                <TableHead className="text-clay-500 text-xs uppercase tracking-wide">Row ID</TableHead>
+                <TableHead className="text-clay-500 text-xs uppercase tracking-wider">Row ID</TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wide cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("priority")}
                 >
                   <span className="inline-flex items-center">
@@ -240,16 +240,16 @@ export function JobList() {
                   </span>
                 </TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wide cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("status")}
                 >
                   <span className="inline-flex items-center">
                     Status <SortIcon col="status" />
                   </span>
                 </TableHead>
-                <TableHead className="text-clay-500 text-xs uppercase tracking-wide">Retries</TableHead>
+                <TableHead className="text-clay-500 text-xs uppercase tracking-wider">Retries</TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wide cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("duration_ms")}
                 >
                   <span className="inline-flex items-center">
@@ -257,7 +257,7 @@ export function JobList() {
                   </span>
                 </TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wide cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("created_at")}
                 >
                   <span className="inline-flex items-center">
@@ -273,7 +273,7 @@ export function JobList() {
                 return (
                   <TableRow
                     key={job.id}
-                    className="border-clay-800 hover:bg-clay-800/50 transition-colors cursor-pointer"
+                    className="border-clay-800 hover:bg-muted/50 transition-colors cursor-pointer"
                     onClick={() => handleRowClick(job.id)}
                   >
                     <TableCell className="text-clay-600">
@@ -319,7 +319,7 @@ export function JobList() {
             <button
               key={job.id}
               onClick={() => handleRowClick(job.id)}
-              className="w-full text-left px-4 py-3 hover:bg-clay-800/50 transition-colors"
+              className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors"
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-kiln-teal font-medium text-sm">{job.skill}</span>
@@ -374,7 +374,7 @@ export function JobList() {
           {selectedJob && (
             <>
               <SheetHeader>
-                <SheetTitle className="text-kiln-cream font-[family-name:var(--font-sans)]">
+                <SheetTitle className="text-clay-100 font-[family-name:var(--font-sans)]">
                   Job Detail
                 </SheetTitle>
                 <SheetDescription className="text-clay-500 font-[family-name:var(--font-mono)] text-xs">
@@ -403,7 +403,7 @@ export function JobList() {
 
                 {selectedJob.result && (
                   <div>
-                    <p className="text-xs text-clay-500 uppercase tracking-wide mb-2 font-[family-name:var(--font-sans)]">
+                    <p className="text-xs text-clay-500 uppercase tracking-wider mb-2 font-[family-name:var(--font-sans)]">
                       Output
                     </p>
                     <pre className="rounded-lg bg-clay-950 border border-clay-800 p-3 text-xs text-clay-200 font-[family-name:var(--font-mono)] overflow-x-auto max-h-96 whitespace-pre-wrap">
@@ -414,7 +414,7 @@ export function JobList() {
 
                 {selectedJob.status === "completed" && (
                   <div>
-                    <p className="text-xs text-clay-500 uppercase tracking-wide mb-2 font-[family-name:var(--font-sans)]">
+                    <p className="text-xs text-clay-500 uppercase tracking-wider mb-2 font-[family-name:var(--font-sans)]">
                       Rate Output
                     </p>
                     <FeedbackButtons

@@ -43,7 +43,7 @@ export function CsvUploader({
         const file = e.dataTransfer.files[0];
         if (file) handleFile(file);
       }}
-      className="cursor-pointer border-2 border-dashed border-clay-700 bg-clay-900/50 hover:border-kiln-teal/50 transition-all duration-200"
+      className="cursor-pointer border-2 border-dashed border-clay-700 bg-white/50 hover:border-kiln-teal/50 transition-all duration-200"
     >
       <CardContent className="flex flex-col items-center justify-center py-14 text-center">
         <Upload className="h-8 w-8 text-clay-500 mb-3" />

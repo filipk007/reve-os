@@ -30,7 +30,7 @@ export function PipelineList({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {pipelines.map((p) => (
-        <Card key={p.name} className="border-clay-800 bg-clay-900 flex flex-col">
+        <Card key={p.name} className="border-clay-800 bg-white shadow-sm flex flex-col">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <h4 className="font-semibold text-clay-100">{p.name}</h4>

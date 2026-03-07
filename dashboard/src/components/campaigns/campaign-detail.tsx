@@ -240,10 +240,10 @@ export function CampaignDetail({
       </div>
 
       {/* Progress Section */}
-      <Card className="border-clay-800 bg-clay-900">
+      <Card className="border-clay-800 bg-white shadow-sm">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wide">
+            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider">
               Goal Progress
             </h4>
             <span className="text-sm text-clay-400">
@@ -325,9 +325,9 @@ export function CampaignDetail({
       {/* Audience + Schedule row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Audience */}
-        <Card className="border-clay-800 bg-clay-900">
+        <Card className="border-clay-800 bg-white shadow-sm">
           <CardContent className="p-5 space-y-3">
-            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wide flex items-center gap-1.5">
+            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider flex items-center gap-1.5">
               <Users className="h-4 w-4" />
               Audience
             </h4>
@@ -373,9 +373,9 @@ export function CampaignDetail({
         </Card>
 
         {/* Schedule + Config */}
-        <Card className="border-clay-800 bg-clay-900">
+        <Card className="border-clay-800 bg-white shadow-sm">
           <CardContent className="p-5 space-y-3">
-            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wide flex items-center gap-1.5">
+            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider flex items-center gap-1.5">
               <CalendarClock className="h-4 w-4" />
               Configuration
             </h4>
@@ -424,9 +424,9 @@ export function CampaignDetail({
 
       {/* Review Stats */}
       {reviewStats && reviewStats.total > 0 && (
-        <Card className="border-clay-800 bg-clay-900">
+        <Card className="border-clay-800 bg-white shadow-sm">
           <CardContent className="p-5 space-y-3">
-            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wide flex items-center gap-1.5">
+            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider flex items-center gap-1.5">
               <Eye className="h-4 w-4" />
               Review Queue
             </h4>
@@ -476,9 +476,9 @@ export function CampaignDetail({
 
       {/* Last Batch Result */}
       {lastBatchResult && (
-        <Card className="border-clay-800 bg-clay-900">
+        <Card className="border-clay-800 bg-white shadow-sm">
           <CardContent className="p-5 space-y-3">
-            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wide flex items-center gap-1.5">
+            <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider flex items-center gap-1.5">
               <Rocket className="h-4 w-4" />
               Last Batch Result
             </h4>

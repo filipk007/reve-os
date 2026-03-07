@@ -83,7 +83,7 @@ export function ResultsComparison({
           return (
             <Card
               key={v.id}
-              className={`border-clay-800 bg-clay-900 ${
+              className={`border-clay-800 bg-white shadow-sm ${
                 isWinner ? "ring-1 ring-kiln-teal/30" : ""
               }`}
             >

@@ -63,7 +63,7 @@ export function CommandPalette() {
 
               <Command.Group
                 heading="Pages"
-                className="[&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-clay-500 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5"
+                className="[&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-clay-500 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5"
               >
                 {PAGES.map((page) => (
                   <Command.Item
@@ -80,7 +80,7 @@ export function CommandPalette() {
 
               <Command.Group
                 heading="Skills"
-                className="[&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-clay-500 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5"
+                className="[&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-clay-500 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5"
               >
                 {SKILLS.map((skill) => (
                   <Command.Item

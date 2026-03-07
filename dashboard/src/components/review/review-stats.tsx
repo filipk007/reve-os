@@ -49,13 +49,13 @@ export function ReviewStatsBar({ stats }: { stats: ReviewStatsType | null }) {
           className={
             c.highlight
               ? "border-kiln-mustard/30 bg-kiln-mustard/5"
-              : "border-clay-800 bg-clay-900"
+              : "border-clay-800 bg-white shadow-sm"
           }
         >
-          <CardContent className="p-4">
+          <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-2">
               <c.icon className={`h-4 w-4 ${c.color}`} />
-              <span className="text-xs text-clay-500 uppercase tracking-wide">
+              <span className="text-xs text-clay-500 uppercase tracking-wider">
                 {c.label}
               </span>
             </div>

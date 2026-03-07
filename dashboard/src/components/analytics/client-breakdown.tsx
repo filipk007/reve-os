@@ -22,7 +22,7 @@ export function ClientBreakdown({
   const entries = Object.entries(byClient);
   if (entries.length === 0) {
     return (
-      <div className="rounded-xl border border-clay-800 bg-clay-900 p-4">
+      <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-4">
         <h4 className="text-sm font-medium text-clay-300 mb-4">
           By Client
         </h4>
@@ -42,7 +42,7 @@ export function ClientBreakdown({
     .sort((a, b) => b.rate - a.rate);
 
   return (
-    <div className="rounded-xl border border-clay-800 bg-clay-900 p-4">
+    <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-4">
       <h4 className="text-sm font-medium text-clay-300 mb-4">
         Approval by Client
       </h4>

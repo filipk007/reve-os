@@ -62,7 +62,7 @@ export function Header({ title }: { title: string }) {
           </Button>
         </div>
       )}
-      <header className="flex items-center justify-between border-b border-clay-800 bg-clay-900/80 backdrop-blur-sm px-4 md:px-6 py-4">
+      <header className="flex items-center justify-between border-b border-clay-800 bg-white/80 backdrop-blur-sm px-4 md:px-6 py-4">
         <div className="flex items-center gap-3">
           {/* Hamburger menu for mobile */}
           <Button
@@ -76,7 +76,7 @@ export function Header({ title }: { title: string }) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h2 className="text-xl font-semibold font-[family-name:var(--font-sans)] text-kiln-cream">
+          <h2 className="text-xl font-semibold font-[family-name:var(--font-sans)] text-clay-100">
             {title}
           </h2>
         </div>

@@ -48,7 +48,7 @@ function CustomTooltip({
   const rateColor = getBarColor(entry.approval_rate);
 
   return (
-    <div className="bg-clay-800 border border-clay-700 rounded-lg px-3 py-2 shadow-lg">
+    <div className="bg-white border border-clay-800 rounded-lg px-3 py-2 shadow-md">
       <p className="text-xs text-clay-300 font-medium mb-1">{label}</p>
       <div className="flex items-center gap-2">
         <span
@@ -86,9 +86,9 @@ export function ApprovalChart({ feedback }: ApprovalChartProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
     >
-      <Card className="bg-clay-800 border-clay-700">
+      <Card className="border-clay-800 bg-white shadow-sm">
         <CardContent className="p-5">
-          <h3 className="text-xs text-clay-500 uppercase tracking-wide mb-4 font-[family-name:var(--font-sans)]">
+          <h3 className="text-xs text-clay-500 uppercase tracking-wider mb-4 font-[family-name:var(--font-sans)]">
             Approval Rate by Skill (7d)
           </h3>
           <ResponsiveContainer width="100%" height={220}>

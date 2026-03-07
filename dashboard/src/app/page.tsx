@@ -83,7 +83,7 @@ export default function DashboardPage() {
         </div>
 
         <div>
-          <h3 className="text-sm text-clay-500 uppercase tracking-wide mb-3 font-[family-name:var(--font-sans)]">
+          <h3 className="text-base font-semibold text-clay-200 mb-3 font-[family-name:var(--font-sans)]">
             Recent Jobs
           </h3>
           <ErrorBoundary>

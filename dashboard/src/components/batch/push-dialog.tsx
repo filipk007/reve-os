@@ -83,7 +83,7 @@ export function PushDialog({ open, onOpenChange, destinations, jobs }: PushDialo
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                 Destination
               </label>
               <Select value={selectedId} onValueChange={setSelectedId}>

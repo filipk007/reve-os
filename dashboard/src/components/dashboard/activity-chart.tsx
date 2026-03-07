@@ -82,9 +82,9 @@ export function ActivityChart() {
   }
 
   return (
-    <Card className="border-clay-800 bg-clay-900">
-      <CardContent className="p-4">
-        <h3 className="text-xs text-clay-500 uppercase tracking-wide mb-3 font-[family-name:var(--font-sans)]">
+    <Card className="border-clay-800 bg-white shadow-sm">
+      <CardContent className="p-5">
+        <h3 className="text-xs text-clay-500 uppercase tracking-wider mb-3 font-[family-name:var(--font-sans)]">
           Activity
         </h3>
         <ResponsiveContainer width="100%" height={140}>

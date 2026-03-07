@@ -14,7 +14,7 @@ export function EmptyState({
   children?: ReactNode;
 }) {
   return (
-    <Card className="border-clay-800 bg-clay-900/50">
+    <Card className="border-clay-800 bg-white shadow-sm">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
         <div className="mb-4 flex items-center justify-center h-16 w-16 rounded-2xl bg-clay-800/50">
           <Icon className="h-8 w-8 text-clay-500" />

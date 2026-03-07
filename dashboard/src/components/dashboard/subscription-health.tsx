@@ -20,10 +20,10 @@ const HEALTH_CONFIG: Record<
   string,
   { label: string; color: string; bg: string }
 > = {
-  healthy: { label: "Healthy", color: "text-emerald-400", bg: "bg-emerald-500/20" },
-  warning: { label: "Warning", color: "text-yellow-400", bg: "bg-yellow-500/20" },
-  critical: { label: "Critical", color: "text-orange-400", bg: "bg-orange-500/20" },
-  exhausted: { label: "Exhausted", color: "text-red-400", bg: "bg-red-500/20" },
+  healthy: { label: "Healthy", color: "text-status-success", bg: "bg-status-success/15" },
+  warning: { label: "Warning", color: "text-kiln-mustard", bg: "bg-kiln-mustard/15" },
+  critical: { label: "Critical", color: "text-kiln-coral", bg: "bg-kiln-coral/15" },
+  exhausted: { label: "Exhausted", color: "text-kiln-coral", bg: "bg-kiln-coral/15" },
 };
 
 export function SubscriptionHealth() {
@@ -66,7 +66,7 @@ export function SubscriptionHealth() {
 
   if (!data) {
     return (
-      <Card className="border-clay-800 bg-clay-900">
+      <Card className="border-clay-800 bg-white shadow-sm">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-40 bg-clay-800 rounded" />
         </CardHeader>
@@ -89,10 +89,10 @@ export function SubscriptionHealth() {
   }));
 
   return (
-    <Card className="border-clay-800 bg-clay-900">
+    <Card className="border-clay-800 bg-white shadow-sm">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm text-clay-500 uppercase tracking-wide font-[family-name:var(--font-sans)]">
+          <CardTitle className="text-base font-semibold text-clay-200 font-[family-name:var(--font-sans)]">
             Subscription Usage
           </CardTitle>
           <Badge
@@ -105,12 +105,12 @@ export function SubscriptionHealth() {
       </CardHeader>
       <CardContent className="space-y-4">
         {showBanner && (
-          <div className="rounded-md bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-300">
+          <div className="rounded-md bg-kiln-coral/10 border border-kiln-coral/30 p-3 text-sm text-kiln-coral">
             {data.subscription_health === "exhausted"
               ? "Subscription quota exhausted. Jobs will fail until quota resets."
               : "Subscription nearing limit. A recent error was detected."}
             {data.last_error && (
-              <p className="mt-1 text-xs text-red-400/80 truncate">
+              <p className="mt-1 text-xs text-kiln-coral/80 truncate">
                 {data.last_error.message}
               </p>
             )}

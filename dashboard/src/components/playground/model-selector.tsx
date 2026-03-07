@@ -13,7 +13,7 @@ export function ModelSelector({
 }) {
   return (
     <div>
-      <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5 font-[family-name:var(--font-sans)]">
+      <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5 font-[family-name:var(--font-sans)]">
         Model
       </label>
       <div className="flex gap-2">

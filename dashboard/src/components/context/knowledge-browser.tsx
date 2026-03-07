@@ -93,7 +93,7 @@ export function KnowledgeBrowser({
                   return (
                     <Card
                       key={file.path}
-                      className="bg-clay-900 border-clay-800 p-4 hover:border-clay-700 transition-colors cursor-pointer"
+                      className="bg-white border-clay-800 shadow-sm p-4 hover:border-clay-700 transition-colors cursor-pointer"
                       onClick={() => onSelect(file)}
                     >
                       <div className="flex items-start justify-between">

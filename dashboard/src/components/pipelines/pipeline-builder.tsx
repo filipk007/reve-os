@@ -137,7 +137,7 @@ export function PipelineBuilder({
         {/* Name and description */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-clay-500 uppercase tracking-wide mb-1.5 block">
+            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
               Pipeline Name
             </label>
             <Input
@@ -154,7 +154,7 @@ export function PipelineBuilder({
             )}
           </div>
           <div>
-            <label className="text-xs text-clay-500 uppercase tracking-wide mb-1.5 block">
+            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
               Description
             </label>
             <Input
@@ -171,7 +171,7 @@ export function PipelineBuilder({
 
         {/* Pipeline steps */}
         <div>
-          <p className="text-xs text-clay-500 uppercase tracking-wide mb-3">
+          <p className="text-xs text-clay-500 uppercase tracking-wider mb-3">
             Pipeline Steps ({steps.length})
           </p>
 

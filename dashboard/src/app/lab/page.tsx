@@ -237,7 +237,7 @@ export default function LabPage() {
 
           <TabsContent value="experiments">
             <div className="space-y-6">
-              <div className="rounded-xl border border-clay-800 bg-clay-900 p-4">
+              <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-4">
                 <h4 className="text-sm font-medium text-clay-300 mb-4">
                   New Experiment
                 </h4>
@@ -301,7 +301,7 @@ export default function LabPage() {
           {viewingExp && (
             <>
               <SheetHeader>
-                <SheetTitle className="text-kiln-cream">
+                <SheetTitle className="text-clay-100">
                   {viewingExp.name}
                 </SheetTitle>
                 <SheetDescription className="text-clay-500">

@@ -45,23 +45,23 @@ export function SkillPerformanceTable({
   const sorted = [...skills].sort((a, b) => b.total - a.total);
 
   return (
-    <div className="rounded-xl border border-clay-800 bg-clay-900 overflow-hidden">
+    <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow className="border-clay-800 hover:bg-transparent">
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wide">
+            <TableHead className="text-clay-500 text-xs uppercase tracking-wider">
               Skill
             </TableHead>
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wide text-right">
+            <TableHead className="text-clay-500 text-xs uppercase tracking-wider text-right">
               Ratings
             </TableHead>
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wide text-right">
+            <TableHead className="text-clay-500 text-xs uppercase tracking-wider text-right">
               Up
             </TableHead>
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wide text-right">
+            <TableHead className="text-clay-500 text-xs uppercase tracking-wider text-right">
               Down
             </TableHead>
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wide w-48">
+            <TableHead className="text-clay-500 text-xs uppercase tracking-wider w-48">
               Approval
             </TableHead>
           </TableRow>
@@ -70,7 +70,7 @@ export function SkillPerformanceTable({
           {sorted.map((s) => (
             <TableRow
               key={s.skill}
-              className="border-clay-800 hover:bg-clay-800/50"
+              className="border-clay-800 hover:bg-muted/50"
             >
               <TableCell className="text-kiln-teal font-medium">
                 {s.skill}

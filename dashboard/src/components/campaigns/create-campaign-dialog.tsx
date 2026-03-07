@@ -202,7 +202,7 @@ export function CreateCampaignDialog({
           {/* Name + Description */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                 Name *
               </label>
               <Input
@@ -213,7 +213,7 @@ export function CreateCampaignDialog({
               />
             </div>
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                 Model
               </label>
               <Select value={model} onValueChange={setModel}>
@@ -230,7 +230,7 @@ export function CreateCampaignDialog({
           </div>
 
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
               Description
             </label>
             <Textarea
@@ -245,7 +245,7 @@ export function CreateCampaignDialog({
           {/* Pipeline + Destination + Client */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                 Pipeline *
               </label>
               <Select value={pipeline} onValueChange={setPipeline}>
@@ -262,7 +262,7 @@ export function CreateCampaignDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                 Destination
               </label>
               <Select
@@ -285,7 +285,7 @@ export function CreateCampaignDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                 Client
               </label>
               <Select
@@ -311,7 +311,7 @@ export function CreateCampaignDialog({
 
           {/* Goal */}
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
               Goal
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -352,7 +352,7 @@ export function CreateCampaignDialog({
           {/* Schedule */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                 Frequency
               </label>
               <Select value={frequency} onValueChange={setFrequency}>
@@ -368,7 +368,7 @@ export function CreateCampaignDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
                 Batch Size
               </label>
               <Input
@@ -384,7 +384,7 @@ export function CreateCampaignDialog({
 
           {/* Confidence Threshold */}
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
               Confidence Threshold:{" "}
               <span className="text-kiln-teal">
                 {(confidenceThreshold * 100).toFixed(0)}%
@@ -408,7 +408,7 @@ export function CreateCampaignDialog({
 
           {/* Instructions */}
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
               Custom Instructions
             </label>
             <Textarea
@@ -422,7 +422,7 @@ export function CreateCampaignDialog({
 
           {/* Audience CSV Upload */}
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
               Audience (CSV)
             </label>
             <div

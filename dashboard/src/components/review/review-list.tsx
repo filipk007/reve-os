@@ -3,8 +3,10 @@
 import { useState } from "react";
 import type { ReviewItem } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatRelativeTime } from "@/lib/utils";
 import {
   ChevronDown,
@@ -76,7 +78,7 @@ function ReviewItemRow({
   const StatusIcon = status.icon;
 
   return (
-    <Card className="border-clay-800 bg-clay-900 hover:border-clay-700 transition-colors">
+    <Card className="border-clay-800 bg-white shadow-sm hover:border-clay-700 transition-colors">
       <CardContent className="p-0">
         {/* Main row — clickable header */}
         <button
@@ -129,7 +131,7 @@ function ReviewItemRow({
           <div className="border-t border-clay-800 px-4 py-3 space-y-3">
             {/* Input data */}
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wide mb-1">
+              <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
                 Input Data
               </p>
               <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-800 rounded-md p-3 overflow-x-auto max-h-40">
@@ -139,7 +141,7 @@ function ReviewItemRow({
 
             {/* Output */}
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wide mb-1">
+              <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
                 Output
               </p>
               <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-800 rounded-md p-3 overflow-x-auto max-h-60">
@@ -150,7 +152,7 @@ function ReviewItemRow({
             {/* Reviewer note */}
             {item.reviewer_note && (
               <div>
-                <p className="text-xs text-clay-500 uppercase tracking-wide mb-1">
+                <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
                   Reviewer Note
                 </p>
                 <p className="text-sm text-clay-300 bg-clay-950 border border-clay-800 rounded-md p-3">
@@ -193,15 +195,15 @@ export function ReviewList({
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i} className="border-clay-800 bg-clay-900 animate-pulse">
+          <Card key={i} className="border-clay-800 bg-white shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
-                <div className="h-4 w-4 bg-clay-800 rounded" />
-                <div className="h-4 w-24 bg-clay-800 rounded" />
-                <div className="h-5 w-12 bg-clay-800 rounded-full" />
-                <div className="h-5 w-16 bg-clay-800 rounded-full" />
+                <Skeleton className="h-4 w-4 bg-clay-900 rounded" />
+                <Skeleton className="h-4 w-24 bg-clay-900 rounded" />
+                <Skeleton className="h-5 w-12 bg-clay-900 rounded-full" />
+                <Skeleton className="h-5 w-16 bg-clay-900 rounded-full" />
                 <div className="flex-1" />
-                <div className="h-4 w-16 bg-clay-800 rounded" />
+                <Skeleton className="h-4 w-16 bg-clay-900 rounded" />
               </div>
             </CardContent>
           </Card>
@@ -212,16 +214,11 @@ export function ReviewList({
 
   if (items.length === 0) {
     return (
-      <Card className="border-clay-800 bg-clay-900">
-        <CardContent className="p-12 text-center">
-          <Inbox className="h-10 w-10 text-clay-600 mx-auto mb-3" />
-          <p className="text-clay-400 text-sm">No review items found</p>
-          <p className="text-clay-600 text-xs mt-1">
-            Items will appear here when outputs fall below the confidence
-            threshold
-          </p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        title="No review items found"
+        description="Items will appear here when outputs fall below the confidence threshold."
+        icon={Inbox}
+      />
     );
   }
 

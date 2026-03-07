@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { LayoutDashboard, FlaskConical, Layers, BookOpen, GitBranch, TestTubes, BarChart3, Settings, Rocket, ClipboardCheck } from "lucide-react";
+import { LayoutDashboard, FlaskConical, Layers, BookOpen, GitBranch, TestTubes, BarChart3, Settings, Rocket, ClipboardCheck, MoreHorizontal } from "lucide-react";
 
 const NAV = [
   {
@@ -151,7 +151,7 @@ export function Sidebar() {
             className="rounded-md"
           />
           <div className="hidden lg:block">
-            <h1 className="text-lg font-bold text-kiln-cream font-[family-name:var(--font-sans)]">
+            <h1 className="text-lg font-bold text-clay-100 font-[family-name:var(--font-sans)]">
               Clay OS
             </h1>
             <p className="text-[10px] text-clay-500 tracking-wider uppercase">
@@ -179,7 +179,7 @@ export function Sidebar() {
               className="rounded-md"
             />
             <div>
-              <h1 className="text-lg font-bold text-kiln-cream font-[family-name:var(--font-sans)]">
+              <h1 className="text-lg font-bold text-clay-100 font-[family-name:var(--font-sans)]">
                 Clay OS
               </h1>
               <p className="text-[10px] text-clay-500 tracking-wider uppercase">
@@ -191,25 +191,41 @@ export function Sidebar() {
         </SheetContent>
       </Sheet>
 
-      {/* Mobile bottom nav - fixed at bottom on small screens */}
+      {/* Mobile bottom nav - fixed at bottom, 5 primary items */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-clay-800 bg-white/95 backdrop-blur-sm">
         <nav className="flex items-center justify-around py-2">
-          {NAV.map((item) => {
+          {NAV.slice(0, 4).map((item) => {
             const active = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-1 text-xs transition-colors",
+                  "flex flex-col items-center gap-0.5 px-3 py-1 transition-colors",
                   active ? "text-kiln-teal" : "text-clay-500"
                 )}
               >
                 <item.icon className="h-5 w-5" />
-                <span>{item.label}</span>
+                {active && <span className="h-1 w-1 rounded-full bg-kiln-teal" />}
               </Link>
             );
           })}
+          <button
+            onClick={() =>
+              document.dispatchEvent(new CustomEvent("toggle-mobile-sidebar"))
+            }
+            className={cn(
+              "flex flex-col items-center gap-0.5 px-3 py-1 transition-colors",
+              NAV.slice(4).some((item) => pathname === item.href)
+                ? "text-kiln-teal"
+                : "text-clay-500"
+            )}
+          >
+            <MoreHorizontal className="h-5 w-5" />
+            {NAV.slice(4).some((item) => pathname === item.href) && (
+              <span className="h-1 w-1 rounded-full bg-kiln-teal" />
+            )}
+          </button>
         </nav>
       </div>
     </>

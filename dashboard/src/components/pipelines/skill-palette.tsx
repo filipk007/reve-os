@@ -32,8 +32,8 @@ function DraggableSkill({ skill }: { skill: string }) {
 
 export function SkillPalette({ skills }: { skills: string[] }) {
   return (
-    <div className="rounded-xl border border-clay-800 bg-clay-900 p-4">
-      <p className="text-xs text-clay-500 uppercase tracking-wide mb-3">
+    <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-4">
+      <p className="text-xs text-clay-500 uppercase tracking-wider mb-3">
         Drag skills to build pipeline
       </p>
       <div className="flex flex-wrap gap-2">

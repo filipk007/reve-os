@@ -92,7 +92,7 @@ export function ResultViewer({
 
   if (loading) {
     return (
-      <Card className="border-clay-800 bg-clay-900 h-full">
+      <Card className="border-clay-800 bg-white shadow-sm h-full">
         <CardContent className="flex h-full items-center justify-center">
           <ProgressSteps elapsed={elapsed} />
         </CardContent>
@@ -117,7 +117,7 @@ export function ResultViewer({
   delete display._meta;
 
   return (
-    <Card className="border-clay-800 bg-clay-900 flex flex-col h-full overflow-hidden">
+    <Card className="border-clay-800 bg-white shadow-sm flex flex-col h-full overflow-hidden">
       {meta && (
         <CardHeader className="flex-row items-center gap-3 border-b border-clay-800 px-4 py-2.5 space-y-0">
           <Badge

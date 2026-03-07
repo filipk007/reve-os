@@ -154,7 +154,7 @@ export default function CampaignsPage() {
             {/* Top bar: stats + filter + create */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm font-medium text-clay-300 uppercase tracking-wide">
+                <h3 className="text-sm font-medium text-clay-300 uppercase tracking-wider">
                   Campaigns
                 </h3>
                 {campaigns.length > 0 && (

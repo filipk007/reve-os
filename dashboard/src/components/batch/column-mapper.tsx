@@ -24,9 +24,9 @@ export function ColumnMapper({
   const fields = SKILL_FIELDS[skill] || [];
 
   return (
-    <Card className="border-clay-800 bg-clay-900">
+    <Card className="border-clay-800 bg-white shadow-sm">
       <CardContent className="p-4">
-        <h3 className="text-xs text-clay-500 uppercase tracking-wide mb-3 font-[family-name:var(--font-sans)]">
+        <h3 className="text-xs text-clay-500 uppercase tracking-wider mb-3 font-[family-name:var(--font-sans)]">
           Column Mapping
         </h3>
         <div className="grid grid-cols-2 gap-3">
