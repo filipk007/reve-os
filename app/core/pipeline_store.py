@@ -73,7 +73,9 @@ class PipelineStore:
             return None
         updates = data.model_dump(exclude_none=True)
         if updates:
-            updated = pipeline.model_copy(update=updates)
+            merged = pipeline.model_dump()
+            merged.update(updates)
+            updated = PipelineDefinition(**merged)
             self._pipelines[name] = updated
             self._save(name)
             return updated
