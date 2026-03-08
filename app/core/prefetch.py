@@ -96,9 +96,9 @@ class ExaPrefetcher:
             query,
             type="auto",
             category="news",
-            num_results=self._num_results,
+            num_results=min(self._num_results, 5),
             start_published_date=_days_ago_iso(90),
-            highlights={"max_characters": 4000},
+            highlights={"max_characters": 500},
         )
         return self._parse_response(response, "news")
 
@@ -108,8 +108,8 @@ class ExaPrefetcher:
             query,
             type="auto",
             category="company",
-            num_results=5,
-            highlights={"max_characters": 4000},
+            num_results=3,
+            highlights={"max_characters": 500},
         )
         return self._parse_response(response, "company")
 
@@ -119,9 +119,9 @@ class ExaPrefetcher:
             query,
             type="auto",
             category="news",
-            num_results=5,
+            num_results=3,
             start_published_date=_days_ago_iso(60),
-            highlights={"max_characters": 4000},
+            highlights={"max_characters": 500},
         )
         return self._parse_response(response, "leadership")
 
