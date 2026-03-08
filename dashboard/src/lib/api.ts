@@ -35,17 +35,40 @@ import type {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://clay.nomynoms.com";
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
 
+export class NetworkError extends Error {
+  constructor(url: string) {
+    super(`Backend unreachable at ${url}. Check that the server is running and NEXT_PUBLIC_API_URL is correct.`);
+    this.name = "NetworkError";
+  }
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": API_KEY,
-      ...init?.headers,
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": API_KEY,
+        ...init?.headers,
+      },
+    });
+  } catch (e) {
+    if (e instanceof TypeError) {
+      throw new NetworkError(API_URL);
+    }
+    throw e;
+  }
   if (!res.ok) {
-    throw new Error(`API ${res.status}: ${res.statusText}`);
+    let detail = res.statusText;
+    try {
+      const body = await res.json();
+      if (body.error_message) detail = body.error_message;
+      else if (body.detail) detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+    } catch {
+      // response body wasn't JSON — keep statusText
+    }
+    throw new Error(`API ${res.status}: ${detail}`);
   }
   return res.json();
 }

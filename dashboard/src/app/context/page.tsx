@@ -27,6 +27,7 @@ import {
   updateSkillContent,
   createSkillFile,
   deleteSkillFile,
+  NetworkError,
 } from "@/lib/api";
 import {
   Dialog,
@@ -38,6 +39,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+
+function showErrorToast(title: string, error: unknown, onRetry?: () => void) {
+  const isNetwork = error instanceof NetworkError;
+  toast.error(isNetwork ? "Backend unreachable" : title, {
+    description: (error as Error).message,
+    action: isNetwork && onRetry ? { label: "Retry", onClick: onRetry } : undefined,
+  });
+}
 
 export default function ContextPage() {
   const explorer = useFileExplorer();
@@ -109,12 +118,15 @@ export default function ContextPage() {
       const name = prompt("Skill name (lowercase, hyphens):");
       if (!name) return;
       const template = `---\nmodel_tier: sonnet\n---\n\n# ${name}\n\nYour skill instructions here.\n`;
-      createSkillFile(name.toLowerCase().replace(/\s+/g, "-"), template)
+      const slug = name.toLowerCase().replace(/\s+/g, "-");
+      createSkillFile(slug, template)
         .then(() => {
           toast.success("Skill created");
           explorer.loadAll();
         })
-        .catch((e) => toast.error("Failed to create skill", { description: (e as Error).message }));
+        .catch((e) => showErrorToast("Failed to create skill", e, () => {
+          createSkillFile(slug, template).then(() => { toast.success("Skill created"); explorer.loadAll(); });
+        }));
     }
   }, [currentDriveId, explorer]);
 
@@ -175,7 +187,7 @@ export default function ContextPage() {
       setEditingClient(null);
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to save client", { description: (e as Error).message });
+      showErrorToast("Failed to save client", e, () => handleSaveClient(data));
     } finally {
       setClientSaving(false);
     }
@@ -189,7 +201,7 @@ export default function ContextPage() {
       setKbEditorOpen(false);
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to save file", { description: (e as Error).message });
+      showErrorToast("Failed to save file", e, () => handleSaveKb(category, filename, content));
     } finally {
       setKbSaving(false);
     }
@@ -203,7 +215,7 @@ export default function ContextPage() {
       setKbEditorOpen(false);
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to create file", { description: (e as Error).message });
+      showErrorToast("Failed to create file", e, () => handleCreateKb(category, filename, content));
     } finally {
       setKbSaving(false);
     }
@@ -229,7 +241,7 @@ export default function ContextPage() {
       }
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to delete", { description: (e as Error).message });
+      showErrorToast("Failed to delete", e, handleDelete);
     }
   };
 
@@ -249,7 +261,7 @@ export default function ContextPage() {
       explorer.setEditMode(false);
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to save", { description: (e as Error).message });
+      showErrorToast("Failed to save", e, () => handleInlineSave(content));
     }
   };
 
