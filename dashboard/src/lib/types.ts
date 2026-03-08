@@ -516,6 +516,9 @@ export interface WebhookResponse {
     model: string;
     duration_ms: number;
     cached: boolean;
+    input_tokens_est?: number;
+    output_tokens_est?: number;
+    cost_est_usd?: number;
   };
   error?: boolean;
   error_message?: string;

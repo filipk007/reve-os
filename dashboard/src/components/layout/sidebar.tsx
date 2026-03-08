@@ -12,7 +12,12 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { LayoutDashboard, FlaskConical, TestTubes, Rocket, Library, Settings } from "lucide-react";
+import { LayoutDashboard, FlaskConical, TestTubes, Rocket, Library, Settings, Activity } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 const NAV = [
   {
@@ -46,10 +51,16 @@ const NAV = [
     shortcut: "5",
   },
   {
+    href: "/status",
+    label: "Status",
+    icon: Activity,
+    shortcut: "6",
+  },
+  {
     href: "/settings",
     label: "Settings",
     icon: Settings,
-    shortcut: "6",
+    shortcut: "7",
   },
 ];
 
@@ -68,7 +79,7 @@ export function Sidebar() {
   // Keyboard shortcuts for navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && ["1", "2", "3", "4", "5", "6"].includes(e.key)) {
+      if ((e.metaKey || e.ctrlKey) && ["1", "2", "3", "4", "5", "6", "7"].includes(e.key)) {
         e.preventDefault();
         const idx = parseInt(e.key) - 1;
         const nav = NAV[idx];
@@ -83,7 +94,7 @@ export function Sidebar() {
     <nav className="flex flex-col gap-1">
       {NAV.map((item) => {
         const active = pathname === item.href;
-        return (
+        const btn = (
           <Button
             key={item.href}
             variant="ghost"
@@ -109,6 +120,27 @@ export function Sidebar() {
             </Link>
           </Button>
         );
+
+        if (compact) {
+          return (
+            <Tooltip key={item.href}>
+              <TooltipTrigger asChild>{btn}</TooltipTrigger>
+              <TooltipContent
+                side="right"
+                className="bg-clay-900 border-clay-700 text-clay-200 text-xs"
+              >
+                <span className="flex items-center gap-2">
+                  {item.label}
+                  <kbd className="rounded border border-clay-700 bg-clay-800 px-1 py-0.5 font-mono text-[10px] text-clay-400">
+                    {"\u2318"}{item.shortcut}
+                  </kbd>
+                </span>
+              </TooltipContent>
+            </Tooltip>
+          );
+        }
+
+        return btn;
       })}
     </nav>
   );
