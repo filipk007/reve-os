@@ -13,7 +13,7 @@ import { CsvUploader } from "@/components/batch/csv-uploader";
 import { CsvPreview } from "@/components/batch/csv-preview";
 import { ColumnMapper, autoMap } from "@/components/batch/column-mapper";
 import { BatchProgress } from "@/components/batch/batch-progress";
-import { ResultsTable } from "@/components/batch/results-table";
+import { SpreadsheetView } from "@/components/batch/spreadsheet/spreadsheet-view";
 import { PushDialog } from "@/components/batch/push-dialog";
 import { SKILL_SAMPLES, type Model } from "@/lib/constants";
 import {
@@ -629,11 +629,23 @@ function RunInner() {
                     return null;
                   })()}
                   {jobs.some((j) => j !== null) && (
-                    <ResultsTable
+                    <SpreadsheetView
                       jobs={jobs.filter((j): j is Job => j !== null)}
                       originalRows={rows}
-                      onRetryFailed={batchPhase === "done" && failed > 0 ? handleRetryFailed : undefined}
-                      onPushToDestination={batchPhase === "done" && completed > 0 ? () => setPushOpen(true) : undefined}
+                      csvHeaders={headers}
+                      onRetrySelected={
+                        batchPhase === "done"
+                          ? (jobIds) => {
+                              // Retry the selected failed jobs
+                              handleRetryFailed();
+                            }
+                          : undefined
+                      }
+                      onPushSelected={
+                        batchPhase === "done" && completed > 0
+                          ? () => setPushOpen(true)
+                          : undefined
+                      }
                     />
                   )}
                   {batchPhase === "done" && (

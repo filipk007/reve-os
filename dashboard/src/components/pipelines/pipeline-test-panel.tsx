@@ -11,7 +11,13 @@ import { formatDuration } from "@/lib/utils";
 import { CheckCircle, XCircle, Loader2, Play } from "lucide-react";
 import { toast } from "sonner";
 
-export function PipelineTestPanel({ pipelineName }: { pipelineName: string }) {
+export function PipelineTestPanel({
+  pipelineName,
+  onResults,
+}: {
+  pipelineName: string;
+  onResults?: (result: PipelineTestResult) => void;
+}) {
   const [dataStr, setDataStr] = useState(
     JSON.stringify(
       {
@@ -41,6 +47,7 @@ export function PipelineTestPanel({ pipelineName }: { pipelineName: string }) {
     try {
       const res = await testPipeline(pipelineName, { data });
       setResult(res);
+      onResults?.(res);
     } catch (e) {
       toast.error("Test failed", { description: (e as Error).message });
     } finally {

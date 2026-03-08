@@ -8,12 +8,12 @@ import { PipelineList } from "@/components/pipelines/pipeline-list";
 import { PipelineBuilder } from "@/components/pipelines/pipeline-builder";
 import { PipelineTestPanel } from "@/components/pipelines/pipeline-test-panel";
 import { VariantList } from "@/components/lab/variant-list";
-import { VariantEditor } from "@/components/lab/variant-editor";
+// VariantEditor Sheet removed — editing now happens at /skills/editor
 import { ExperimentList } from "@/components/lab/experiment-list";
 import { ExperimentSetup } from "@/components/lab/experiment-setup";
 import { ExperimentRunner } from "@/components/lab/experiment-runner";
 import { ResultsComparison } from "@/components/lab/results-comparison";
-import type { PipelineDefinition, PipelineStepConfig, VariantDef, Experiment } from "@/lib/types";
+import type { PipelineDefinition, PipelineStepConfig, PipelineTestResult, VariantDef, Experiment } from "@/lib/types";
 import {
   fetchPipelines,
   fetchSkills,
@@ -73,6 +73,7 @@ function SkillsInner() {
   const [pipelineSaving, setPipelineSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<PipelineDefinition | null>(null);
   const [testingPipeline, setTestingPipeline] = useState<string | null>(null);
+  const [pipelineTestResults, setPipelineTestResults] = useState<PipelineTestResult | null>(null);
 
   // ─── Lab state ───
   const [selectedSkill, setSelectedSkill] = useState("");
@@ -317,6 +318,7 @@ function SkillsInner() {
                 initial={editing}
                 saving={pipelineSaving}
                 onSave={handlePipelineSave}
+                testResults={pipelineTestResults}
               />
             </TabsContent>
           </Tabs>
@@ -470,20 +472,16 @@ function SkillsInner() {
           </SheetHeader>
           {testingPipeline && (
             <div className="px-4 pb-4">
-              <PipelineTestPanel pipelineName={testingPipeline} />
+              <PipelineTestPanel
+                pipelineName={testingPipeline}
+                onResults={(result) => setPipelineTestResults(result)}
+              />
             </div>
           )}
         </SheetContent>
       </Sheet>
 
       {/* ─── Lab Dialogs ─── */}
-      <VariantEditor
-        open={editorOpen}
-        onOpenChange={setEditorOpen}
-        variant={editingVariant}
-        saving={labSaving}
-        onSave={handleSaveVariant}
-      />
 
       <Sheet
         open={viewingExp !== null}
