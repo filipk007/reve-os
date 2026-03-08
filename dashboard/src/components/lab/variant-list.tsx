@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { VariantDef } from "@/lib/types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export function VariantList({
   onDelete: (v: VariantDef) => void;
   onFork: () => void;
 }) {
+  const router = useRouter();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -84,7 +86,11 @@ export function VariantList({
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 text-clay-500 hover:text-clay-200"
-                      onClick={() => onEdit(v)}
+                      onClick={() =>
+                        router.push(
+                          `/skills/editor?skill=${encodeURIComponent(skill)}&variant=${encodeURIComponent(v.id)}`
+                        )
+                      }
                     >
                       <Edit2 className="h-3 w-3" />
                     </Button>

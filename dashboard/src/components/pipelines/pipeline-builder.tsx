@@ -16,13 +16,16 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
-import type { PipelineDefinition, PipelineStepConfig } from "@/lib/types";
+import { AnimatePresence } from "framer-motion";
+import type { PipelineDefinition, PipelineStepConfig, PipelineTestResult } from "@/lib/types";
 import { SkillPalette } from "./skill-palette";
 import { PipelineStepCard } from "./pipeline-step-card";
+import { FlowConnector } from "./flow-connector";
+import { FlowDragOverlay } from "./flow-drag-overlay";
+import { FlowEmptyState } from "./flow-empty-state";
+import type { StepTestResult } from "./flow-step-test-overlay";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -30,13 +33,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Save, ArrowDown } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 
 export function PipelineBuilder({
   skills,
   initial,
   saving,
   onSave,
+  testResults,
 }: {
   skills: string[];
   initial?: PipelineDefinition | null;
@@ -45,10 +49,15 @@ export function PipelineBuilder({
     name: string;
     description: string;
     steps: PipelineStepConfig[];
+    confidence_threshold?: number;
   }) => void;
+  testResults?: PipelineTestResult | null;
 }) {
   const [name, setName] = useState(initial?.name || "");
   const [description, setDescription] = useState(initial?.description || "");
+  const [confidenceThreshold, setConfidenceThreshold] = useState(
+    initial?.confidence_threshold ?? 0.7
+  );
   const [steps, setSteps] = useState<(PipelineStepConfig & { _id: string })[]>(
     () =>
       (initial?.steps || []).map((s, i) => ({
@@ -106,6 +115,18 @@ export function PipelineBuilder({
     setAddSkill("");
   };
 
+  const handleInsertStep = (atIndex: number) => {
+    // Open the skill selector or insert a placeholder
+    if (!addSkill) return;
+    setSteps((prev) => {
+      const newStep = { skill: addSkill, _id: `step-${Date.now()}-${Math.random()}` };
+      const next = [...prev];
+      next.splice(atIndex, 0, newStep);
+      return next;
+    });
+    setAddSkill("");
+  };
+
   const handleStepChange = (id: string, updated: PipelineStepConfig) => {
     setSteps((prev) =>
       prev.map((s) => (s._id === id ? { ...updated, _id: s._id } : s))
@@ -121,8 +142,23 @@ export function PipelineBuilder({
       name,
       description,
       steps: steps.map(({ _id, ...rest }) => rest),
+      confidence_threshold: confidenceThreshold,
     });
   };
+
+  // Map test results to individual steps
+  const getStepTestResult = (skill: string, index: number): StepTestResult | null => {
+    if (!testResults?.steps) return null;
+    const stepResult = testResults.steps[index];
+    if (!stepResult || stepResult.skill !== skill) {
+      // Try matching by skill name as fallback
+      return testResults.steps.find((s) => s.skill === skill) || null;
+    }
+    return stepResult;
+  };
+
+  const activeStep = activeId ? steps.find((s) => s._id === activeId) : null;
+  const activeIndex = activeStep ? steps.indexOf(activeStep) : -1;
 
   const isValid = name.length >= 2 && /^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(name) && steps.length > 0;
 
@@ -134,8 +170,8 @@ export function PipelineBuilder({
       onDragEnd={handleDragEnd}
     >
       <div className="space-y-6">
-        {/* Name and description */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Name, description, and confidence threshold */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
               Pipeline Name
@@ -164,6 +200,20 @@ export function PipelineBuilder({
               className="border-clay-700 bg-clay-900 text-clay-100 placeholder:text-clay-600 focus-visible:ring-kiln-teal/50"
             />
           </div>
+          <div>
+            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
+              Confidence Threshold
+            </label>
+            <Input
+              type="number"
+              min={0}
+              max={1}
+              step={0.05}
+              value={confidenceThreshold}
+              onChange={(e) => setConfidenceThreshold(parseFloat(e.target.value) || 0)}
+              className="border-clay-700 bg-clay-900 text-clay-100 placeholder:text-clay-600 focus-visible:ring-kiln-teal/50"
+            />
+          </div>
         </div>
 
         {/* Skill palette */}
@@ -179,36 +229,35 @@ export function PipelineBuilder({
             items={steps.map((s) => s._id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2">
-              {steps.map((step, i) => (
-                <div key={step._id}>
-                  {i > 0 && (
-                    <div className="flex justify-center py-1">
-                      <ArrowDown className="h-4 w-4 text-clay-600" />
-                    </div>
-                  )}
-                  <PipelineStepCard
-                    step={step}
-                    index={i}
-                    id={step._id}
-                    onChange={(updated) => handleStepChange(step._id, updated)}
-                    onRemove={() => handleRemoveStep(step._id)}
-                  />
-                </div>
-              ))}
+            <div>
+              <AnimatePresence mode="popLayout">
+                {steps.map((step, i) => (
+                  <div key={step._id}>
+                    {i > 0 && (
+                      <FlowConnector
+                        index={i}
+                        onInsert={handleInsertStep}
+                      />
+                    )}
+                    <PipelineStepCard
+                      step={step}
+                      index={i}
+                      total={steps.length}
+                      id={step._id}
+                      onChange={(updated) => handleStepChange(step._id, updated)}
+                      onRemove={() => handleRemoveStep(step._id)}
+                      testResult={getStepTestResult(step.skill, i)}
+                    />
+                  </div>
+                ))}
+              </AnimatePresence>
             </div>
           </SortableContext>
 
-          {steps.length === 0 && (
-            <div className="rounded-lg border-2 border-dashed border-clay-800 p-8 text-center">
-              <p className="text-sm text-clay-500">
-                Drag skills from above or use the button below to add steps.
-              </p>
-            </div>
-          )}
+          {steps.length === 0 && <FlowEmptyState />}
 
           {/* Manual add */}
-          <div className="flex items-center gap-2 mt-3">
+          <div className="flex items-center gap-2 mt-4">
             <Select value={addSkill} onValueChange={setAddSkill}>
               <SelectTrigger className="flex-1 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm">
                 <SelectValue placeholder="Add a step..." />
@@ -246,6 +295,16 @@ export function PipelineBuilder({
           </Button>
         </div>
       </div>
+
+      {/* Drag overlay */}
+      <DragOverlay>
+        {activeStep ? (
+          <FlowDragOverlay
+            skillName={activeStep.skill}
+            index={activeIndex}
+          />
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 }
