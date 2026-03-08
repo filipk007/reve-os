@@ -11,7 +11,7 @@ Max 300 characters (LinkedIn limit).
 
 ## Context Files to Load
 - clients/{{client_slug}}.md
-- knowledge_base/voice/linkedin-voice.md
+- knowledge_base/_defaults/writing-style.md
 - knowledge_base/personas/{{persona_slug}}.md
 
 ## Output Format
@@ -28,6 +28,13 @@ Exact keys required:
 ## Data Fields (flexible — use what's available)
 Ideal fields: first_name, title, company_name, industry, linkedin_summary,
 signal_type, signal_detail, mutual_connections, recent_post_topic
+
+### Confidence Guidance
+- **0.9-1.0**: Rich data — name, title, company, plus LinkedIn summary or recent post topic
+- **0.7-0.8**: Name, title, company, and a signal to reference
+- **0.5-0.6**: Name and title only — enough for a curiosity approach but limited personalization
+- **0.3-0.4**: Just a name and company — note will be very generic
+- **Below 0.3**: Almost no data — hard to write anything that feels personal
 
 ## Rules
 1. HARD LIMIT: 300 characters including spaces. Count carefully.
@@ -63,4 +70,21 @@ signal_type, signal_detail, mutual_connections, recent_post_topic
   "approach": "signal-reference",
   "character_count": 168,
   "confidence_score": 0.85
+}
+
+### Example 2 — Minimal Data
+
+#### Input:
+{
+  "first_name": "David",
+  "title": "Head of Platform",
+  "company_name": "Notion"
+}
+
+#### Output:
+{
+  "connection_note": "David — been following what Notion's platform team is building. Would be great to connect with someone thinking about this space.",
+  "approach": "curiosity",
+  "character_count": 131,
+  "confidence_score": 0.45
 }

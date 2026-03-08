@@ -11,7 +11,7 @@ specific, and genuinely helpful. Never salesy.
 
 ## Context Files to Load
 - knowledge_base/frameworks/josh-braun-pvc.md
-- knowledge_base/voice/writing-style.md
+- knowledge_base/_defaults/writing-style.md
 - knowledge_base/signals/signal-openers.md
 - knowledge_base/personas/{{persona_slug}}.md
 - clients/{{client_slug}}.md
@@ -80,5 +80,23 @@ context that overrides general defaults (e.g., specific angle, client value prop
   "personalization_hook": "Series D raise + scaling enterprise sales + Salesforce background",
   "framework_notes": "P: Acknowledged raise + specific challenge. V: Outbound at scale without headcount bloat. C: Low-commitment 'worth a quick look?'",
   "confidence_score": 0.92
+}
+
+### Example 2 — Minimal Data
+
+#### Input:
+{
+  "first_name": "Mike",
+  "company_name": "TechCorp",
+  "title": "Director of Engineering"
+}
+
+#### Output:
+{
+  "email_subject": "quick question about your eng team",
+  "email_body": "Mike — I work with engineering leaders who are rethinking how their teams handle video content at scale.\n\nIf TechCorp processes any video, there might be a simpler path than building ML infrastructure in-house.\n\nWorth a quick look?",
+  "personalization_hook": "Engineering leader title + implied team management responsibility",
+  "framework_notes": "P: Referenced their role and likely challenge. V: Simpler path than building in-house. C: Low-commitment 'worth a quick look?'",
+  "confidence_score": 0.35
 }
 

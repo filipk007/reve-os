@@ -81,7 +81,7 @@ export function PlayClayConfig({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-clay-800 bg-clay-950 max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="border-clay-800 bg-clay-950 max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-clay-100 flex items-center gap-2">
             <Settings2 className="h-5 w-5 text-kiln-teal" />

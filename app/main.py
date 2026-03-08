@@ -18,6 +18,7 @@ from app.core.destination_store import DestinationStore
 from app.core.feedback_store import FeedbackStore
 from app.core.memory_store import MemoryStore
 from app.core.pipeline_store import PipelineStore
+from app.core.play_store import PlayStore
 from app.core.usage_store import UsageStore
 from app.core.experiment_store import ExperimentStore
 from app.core.campaign_store import CampaignStore
@@ -26,7 +27,7 @@ from app.core.campaign_runner import CampaignRunner
 from app.core.cleanup_worker import DataCleanupWorker
 from app.core.retry_worker import RetryWorker
 from app.core.subscription_monitor import SubscriptionMonitor
-from app.routers import batch, campaigns, context, destinations, experiments, feedback, health, pipeline, pipelines, review_queue, usage, webhook
+from app.routers import batch, campaigns, context, destinations, experiments, feedback, health, pipeline, pipelines, plays, review_queue, usage, webhook
 
 logging.basicConfig(
     level=logging.INFO,
@@ -63,6 +64,7 @@ app.include_router(feedback.router)
 app.include_router(pipelines.router)
 app.include_router(experiments.router)
 app.include_router(campaigns.router)
+app.include_router(plays.router)
 app.include_router(review_queue.router)
 app.include_router(usage.router)
 
@@ -89,6 +91,8 @@ async def startup():
     app.state.feedback_store.load()
     app.state.pipeline_store = PipelineStore(pipelines_dir=settings.pipelines_dir)
     app.state.pipeline_store.load()
+    app.state.play_store = PlayStore(plays_dir=settings.plays_dir, pipelines_dir=settings.pipelines_dir)
+    app.state.play_store.load()
     app.state.experiment_store = ExperimentStore(
         skills_dir=settings.skills_dir,
         data_dir=settings.data_dir,
