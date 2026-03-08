@@ -7,57 +7,46 @@ import pytest
 from app.core.claude_executor import ClaudeExecutor, SubscriptionLimitError
 
 
-class TestExtractContent:
-    def test_list_envelope_with_text_blocks(self):
-        envelope = [
-            {"type": "text", "text": "Hello"},
-            {"type": "text", "text": "World"},
-        ]
-        result = ClaudeExecutor._extract_content(envelope)
-        assert result == "Hello\nWorld"
+class TestOutputFormatText:
+    """The executor now uses --output-format text, so stdout is raw text parsed by _parse_json."""
 
-    def test_list_envelope_skips_non_text(self):
-        envelope = [
-            {"type": "tool_use", "name": "foo"},
-            {"type": "text", "text": "Only this"},
-        ]
-        result = ClaudeExecutor._extract_content(envelope)
-        assert result == "Only this"
+    @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
+    async def test_text_output_parsed_as_json(self, mock_exec):
+        mock_exec.return_value = _mock_proc(
+            returncode=0, stdout=b'{"answer": 42}',
+        )
+        executor = ClaudeExecutor()
+        result = await executor.execute("prompt")
+        assert result["result"] == {"answer": 42}
 
-    def test_dict_with_result_key(self):
-        envelope = {"result": '{"answer": 42}'}
-        result = ClaudeExecutor._extract_content(envelope)
-        assert result == '{"answer": 42}'
+    @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
+    async def test_text_with_fences_parsed(self, mock_exec):
+        mock_exec.return_value = _mock_proc(
+            returncode=0,
+            stdout=b'Here is the result:\n```json\n{"ok": true}\n```',
+        )
+        executor = ClaudeExecutor()
+        result = await executor.execute("prompt")
+        assert result["result"] == {"ok": True}
 
-    def test_dict_with_text_key(self):
-        envelope = {"text": "hello"}
-        assert ClaudeExecutor._extract_content(envelope) == "hello"
+    @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
+    async def test_text_with_embedded_json(self, mock_exec):
+        mock_exec.return_value = _mock_proc(
+            returncode=0,
+            stdout=b'Some text {"extracted": "yes"} more text',
+        )
+        executor = ClaudeExecutor()
+        result = await executor.execute("prompt")
+        assert result["result"] == {"extracted": "yes"}
 
-    def test_dict_with_content_key(self):
-        envelope = {"content": "body"}
-        assert ClaudeExecutor._extract_content(envelope) == "body"
-
-    def test_dict_priority_result_over_text(self):
-        envelope = {"result": "winner", "text": "loser"}
-        assert ClaudeExecutor._extract_content(envelope) == "winner"
-
-    def test_fallback_reserializes(self):
-        envelope = {"unknown_key": "value"}
-        result = ClaudeExecutor._extract_content(envelope)
-        parsed = json.loads(result)
-        assert parsed == {"unknown_key": "value"}
-
-    def test_empty_list_fallback(self):
-        envelope = []
-        result = ClaudeExecutor._extract_content(envelope)
-        assert result == "[]"
-
-    def test_list_with_no_text_blocks(self):
-        envelope = [{"type": "image", "data": "..."}]
-        result = ClaudeExecutor._extract_content(envelope)
-        # No text blocks found -> fallback to JSON serialization
-        parsed = json.loads(result)
-        assert parsed == [{"type": "image", "data": "..."}]
+    @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
+    async def test_unparseable_text_raises(self, mock_exec):
+        mock_exec.return_value = _mock_proc(
+            returncode=0, stdout=b"No JSON here at all",
+        )
+        executor = ClaudeExecutor()
+        with pytest.raises(ValueError, match="Could not parse JSON"):
+            await executor.execute("prompt")
 
 
 class TestParseJson:
@@ -123,10 +112,9 @@ def _mock_proc(returncode=0, stdout=b"", stderr=b""):
 class TestExecuteSuccess:
     @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
     async def test_basic_success(self, mock_exec):
-        envelope = [{"type": "text", "text": '{"answer": 42}'}]
         mock_exec.return_value = _mock_proc(
             returncode=0,
-            stdout=json.dumps(envelope).encode(),
+            stdout=b'{"answer": 42}',
         )
         executor = ClaudeExecutor()
         result = await executor.execute("What is 6*7?", model="opus", timeout=30)
@@ -134,13 +122,12 @@ class TestExecuteSuccess:
         assert result["duration_ms"] >= 0
         assert result["prompt_chars"] == len("What is 6*7?")
         assert result["response_chars"] > 0
+        assert result["usage"] is None
 
     @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
     async def test_model_map_resolved(self, mock_exec):
-        envelope = [{"type": "text", "text": '{"ok": true}'}]
         mock_exec.return_value = _mock_proc(
-            returncode=0,
-            stdout=json.dumps(envelope).encode(),
+            returncode=0, stdout=b'{"ok": true}',
         )
         executor = ClaudeExecutor()
         await executor.execute("prompt", model="haiku")
@@ -151,10 +138,8 @@ class TestExecuteSuccess:
 
     @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
     async def test_unknown_model_passthrough(self, mock_exec):
-        envelope = [{"type": "text", "text": '{"ok": true}'}]
         mock_exec.return_value = _mock_proc(
-            returncode=0,
-            stdout=json.dumps(envelope).encode(),
+            returncode=0, stdout=b'{"ok": true}',
         )
         executor = ClaudeExecutor()
         await executor.execute("prompt", model="custom-model-v2")
@@ -164,10 +149,8 @@ class TestExecuteSuccess:
 
     @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
     async def test_env_strips_claudecode_and_api_key(self, mock_exec):
-        envelope = [{"type": "text", "text": '{"ok": true}'}]
         mock_exec.return_value = _mock_proc(
-            returncode=0,
-            stdout=json.dumps(envelope).encode(),
+            returncode=0, stdout=b'{"ok": true}',
         )
         executor = ClaudeExecutor()
         with patch.dict("os.environ", {"CLAUDECODE": "1", "ANTHROPIC_API_KEY": "sk-xxx", "HOME": "/home/test"}):
@@ -179,29 +162,22 @@ class TestExecuteSuccess:
         assert "HOME" in env
 
     @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
-    async def test_usage_extracted_from_envelope(self, mock_exec):
-        envelope = {
-            "result": '{"answer": 1}',
-            "usage": {"input_tokens": 500, "output_tokens": 200},
-        }
-        mock_exec.return_value = _mock_proc(
-            returncode=0,
-            stdout=json.dumps(envelope).encode(),
-        )
+    async def test_raw_length_in_result(self, mock_exec):
+        raw = b'{"answer": 1}'
+        mock_exec.return_value = _mock_proc(returncode=0, stdout=raw)
         executor = ClaudeExecutor()
         result = await executor.execute("prompt")
-        assert result["usage"] == {"input_tokens": 500, "output_tokens": 200}
+        assert result["raw_length"] == len(raw)
 
     @patch("app.core.claude_executor.asyncio.create_subprocess_exec")
-    async def test_usage_none_for_list_envelope(self, mock_exec):
-        envelope = [{"type": "text", "text": '{"answer": 1}'}]
-        mock_exec.return_value = _mock_proc(
-            returncode=0,
-            stdout=json.dumps(envelope).encode(),
-        )
+    async def test_output_format_text_flag(self, mock_exec):
+        """Executor uses --output-format text."""
+        mock_exec.return_value = _mock_proc(returncode=0, stdout=b'{"ok": true}')
         executor = ClaudeExecutor()
-        result = await executor.execute("prompt")
-        assert result["usage"] is None
+        await executor.execute("prompt")
+        call_args = mock_exec.call_args[0]
+        idx = list(call_args).index("--output-format")
+        assert call_args[idx + 1] == "text"
 
 
 # ---------------------------------------------------------------------------

@@ -10,12 +10,15 @@ from fastapi.testclient import TestClient
 # Helper for startup tests — creates mock constructors
 # ---------------------------------------------------------------------------
 
-def _mock_cls(name, has_load=False, has_start=False):
+def _mock_cls(name, has_load=False, has_start=False, has_build=False):
     instance = MagicMock(name=name)
     if has_start:
         instance.start = AsyncMock()
     if has_load:
         instance.load = MagicMock()
+    if has_build:
+        instance.build = MagicMock()
+        instance.doc_count = 0
     instance.start_workers = AsyncMock()
     cls = MagicMock(return_value=instance)
     return cls, instance
@@ -36,6 +39,8 @@ def _build_startup_patches():
         "PlayStore": {"has_load": True},
         "ExperimentStore": {"has_load": True},
         "UsageStore": {"has_load": True},
+        "MemoryStore": {"has_load": True},
+        "ContextIndex": {"has_build": True},
         "RetryWorker": {"has_load": True, "has_start": True},
         "SubscriptionMonitor": {"has_start": True},
         "CampaignStore": {"has_load": True},
@@ -329,6 +334,7 @@ class TestStartupConstructorArgs:
             mock_settings.cleanup_failed_callback_days = 7
             mock_settings.webhook_api_key = ""
             mock_settings.enable_smart_routing = False
+            mock_settings.base_dir = "/tmp"
             for p in patches.values():
                 p.start()
             try:
@@ -364,6 +370,7 @@ class TestStartupConstructorArgs:
             mock_settings.cleanup_failed_callback_days = 7
             mock_settings.webhook_api_key = ""
             mock_settings.enable_smart_routing = False
+            mock_settings.base_dir = "/tmp"
             for p in patches.values():
                 p.start()
             try:
@@ -399,6 +406,7 @@ class TestStartupConstructorArgs:
             mock_settings.cleanup_failed_callback_days = 7
             mock_settings.webhook_api_key = ""
             mock_settings.enable_smart_routing = False
+            mock_settings.base_dir = "/tmp"
             for p in patches.values():
                 p.start()
             try:
