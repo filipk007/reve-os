@@ -16,19 +16,17 @@ import {
   LayoutDashboard,
   FlaskConical,
   TestTubes,
-  Rocket,
   Library,
   Settings,
   Activity,
   FolderTree,
   PenLine,
   Radar,
-  Mail,
-  CheckSquare,
   Brain,
   Search,
   Target,
   MoreHorizontal,
+  Mail,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -68,10 +66,8 @@ const NAV_SECTIONS: NavSection[] = [
     icon: PenLine,
     accentColor: "kiln-teal",
     items: [
-      { href: "/outbound", label: "Outbound Home", icon: PenLine },
-      { href: "/outbound/campaigns", label: "Campaigns", icon: Rocket, shortcut: "3" },
-      { href: "/outbound/sequences", label: "Sequences", icon: Mail, shortcut: "4" },
-      { href: "/outbound/review", label: "Review Queue", icon: CheckSquare, shortcut: "5" },
+      { href: "/outbound", label: "Outbound", icon: PenLine, shortcut: "3" },
+      { href: "/email-lab", label: "Email Lab", icon: Mail, shortcut: "8" },
     ],
   },
   {
@@ -81,9 +77,9 @@ const NAV_SECTIONS: NavSection[] = [
     accentColor: "kiln-indigo",
     items: [
       { href: "/analyze", label: "Analyze Home", icon: Brain },
-      { href: "/analyze/research", label: "Research", icon: Search, shortcut: "6" },
-      { href: "/analyze/scoring", label: "Scoring", icon: Target, shortcut: "7" },
-      { href: "/analyze/plays", label: "Plays", icon: Library, shortcut: "8" },
+      { href: "/analyze/research", label: "Research", icon: Search, shortcut: "4" },
+      { href: "/analyze/scoring", label: "Scoring", icon: Target, shortcut: "5" },
+      { href: "/analyze/plays", label: "Plays", icon: Library, shortcut: "6" },
     ],
   },
   {
@@ -91,7 +87,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: "Platform",
     accentColor: "clay-500",
     items: [
-      { href: "/context", label: "Context", icon: FolderTree, shortcut: "9" },
+      { href: "/context", label: "Context", icon: FolderTree, shortcut: "7" },
       { href: "/lab", label: "Skills Lab", icon: TestTubes },
       { href: "/status", label: "Status", icon: Activity },
       { href: "/settings", label: "Settings", icon: Settings },
