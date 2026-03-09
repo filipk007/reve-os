@@ -4,46 +4,51 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── The Kiln Light Theme ── */
+/* ── Dark Retro Mac Theme — "Dark Platinum" ── */
 @theme {
-  /* Light palette — clay scale inverted so existing class names work */
-  --color-clay-950: #ffffff;
-  --color-clay-900: #fafaf9;
-  --color-clay-850: #f5f5f3;
-  --color-clay-800: #e5e5e3;
-  --color-clay-700: #d4d4d2;
-  --color-clay-600: #a8a8a5;
-  --color-clay-500: #737371;
-  --color-clay-400: #525251;
-  --color-clay-300: #3a3a39;
-  --color-clay-200: #1f1f1e;
-  --color-clay-100: #111111;
+  /* Dark Platinum base scale */
+  --color-clay-950: #0a0a0b;
+  --color-clay-900: #0e0e10;
+  --color-clay-850: #141416;
+  --color-clay-800: #1c1c1f;
+  --color-clay-700: #232327;
+  --color-clay-600: #2a2a2e;
+  --color-clay-500: #3a3a40;
+  --color-clay-400: #4a4a52;
+  --color-clay-300: #6a6862;
+  --color-clay-200: #9a9892;
+  --color-clay-100: #e8e6e3;
 
-  /* Brand accents — thekiln.com */
-  --color-kiln-teal: #015870;
-  --color-kiln-teal-light: #0a7a9e;
-  --color-kiln-teal-dark: #013d55;
-  --color-kiln-rose: #C4A093;
-  --color-kiln-mustard: #ca8a04;
-  --color-kiln-coral: #f03603;
-  --color-kiln-cream: #111111;
+  /* Retro Mac accents */
+  --color-kiln-teal: #4a9ead;
+  --color-kiln-teal-light: #5cb8c8;
+  --color-kiln-teal-dark: #3a8a9a;
+  --color-kiln-rose: #c4a083;
+  --color-kiln-mustard: #d4a843;
+  --color-kiln-coral: #c45a4a;
+  --color-kiln-cream: #e8e6e3;
 
-  /* Status colors */
-  --color-status-success: #16a34a;
-  --color-status-warning: #ca8a04;
-  --color-status-error: #f03603;
-  --color-status-info: #015870;
+  /* Status colors — muted, dignified */
+  --color-status-success: #5a9a6a;
+  --color-status-warning: #d4a843;
+  --color-status-error: #c45a4a;
+  --color-status-info: #4a9ead;
 
-  /* Typography */
-  --font-sans: "DM Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Fragment Mono", "JetBrains Mono", ui-monospace, monospace;
+  /* Phosphor green for terminal/code */
+  --color-phosphor: #7acea0;
+
+  /* Typography — Apple bloodline */
+  --font-sans: "SF Pro Display", -apple-system, "Helvetica Neue", system-ui, sans-serif;
+  --font-body: "SF Pro Text", -apple-system, "Helvetica Neue", system-ui, sans-serif;
+  --font-mono: "SF Mono", "Fragment Mono", "Berkeley Mono", "JetBrains Mono", ui-monospace, monospace;
 
   /* Animations */
   --animate-float: float 6s ease-in-out infinite;
   --animate-float-slow: float-slow 8s ease-in-out infinite;
+  --animate-retro-pulse: retro-pulse 2s ease-in-out infinite;
 }
 
+/* ── Keyframes ── */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
@@ -54,9 +59,25 @@
   50% { transform: translateY(-5px); }
 }
 
+@keyframes retro-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.82; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes retro-skeleton {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.16; }
+}
+
+/* ── Body ── */
 body {
-  background-color: #fafaf9;
-  color: #111111;
+  background-color: #0a0a0b;
+  color: #e8e6e3;
   font-family: var(--font-body);
 }
 
@@ -102,74 +123,75 @@ body {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ── Root theme: Dark Platinum ── */
 :root {
-  --radius: 0.625rem;
-  --background: #fafaf9;
-  --foreground: #111111;
-  --card: #ffffff;
-  --card-foreground: #111111;
-  --popover: #ffffff;
-  --popover-foreground: #111111;
-  --primary: #015870;
-  --primary-foreground: #ffffff;
-  --secondary: #f5f5f3;
-  --secondary-foreground: #111111;
-  --muted: #f5f5f3;
-  --muted-foreground: #737371;
-  --accent: #015870;
-  --accent-foreground: #ffffff;
-  --destructive: #f03603;
-  --border: #e5e5e3;
-  --input: #e5e5e3;
-  --ring: #015870;
-  --chart-1: #015870;
-  --chart-2: #C4A093;
-  --chart-3: #ca8a04;
-  --chart-4: #f03603;
-  --chart-5: #4a9eb8;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #111111;
-  --sidebar-primary: #015870;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f5f5f3;
-  --sidebar-accent-foreground: #111111;
-  --sidebar-border: #e5e5e3;
-  --sidebar-ring: #015870;
+  --radius: 0.5rem;
+  --background: #0a0a0b;
+  --foreground: #e8e6e3;
+  --card: #141416;
+  --card-foreground: #e8e6e3;
+  --popover: #232327;
+  --popover-foreground: #e8e6e3;
+  --primary: #4a9ead;
+  --primary-foreground: #0a0a0b;
+  --secondary: #1c1c1f;
+  --secondary-foreground: #e8e6e3;
+  --muted: #1c1c1f;
+  --muted-foreground: #9a9892;
+  --accent: #4a9ead;
+  --accent-foreground: #0a0a0b;
+  --destructive: #c45a4a;
+  --border: #3a3a40;
+  --input: #3a3a40;
+  --ring: #4a9ead;
+  --chart-1: #4a9ead;
+  --chart-2: #c4a083;
+  --chart-3: #d4a843;
+  --chart-4: #c45a4a;
+  --chart-5: #7acea0;
+  --sidebar: #1c1c1f;
+  --sidebar-foreground: #e8e6e3;
+  --sidebar-primary: #4a9ead;
+  --sidebar-primary-foreground: #0a0a0b;
+  --sidebar-accent: #232327;
+  --sidebar-accent-foreground: #e8e6e3;
+  --sidebar-border: #2a2a2e;
+  --sidebar-ring: #4a9ead;
 }
 
-/* Keep .dark for shadcn compat — same values in light mode */
+/* Keep .dark for shadcn compat — same dark values */
 .dark {
-  --background: #fafaf9;
-  --foreground: #111111;
-  --card: #ffffff;
-  --card-foreground: #111111;
-  --popover: #ffffff;
-  --popover-foreground: #111111;
-  --primary: #015870;
-  --primary-foreground: #ffffff;
-  --secondary: #f5f5f3;
-  --secondary-foreground: #111111;
-  --muted: #f5f5f3;
-  --muted-foreground: #737371;
-  --accent: #015870;
-  --accent-foreground: #ffffff;
-  --destructive: #f03603;
-  --border: #e5e5e3;
-  --input: #e5e5e3;
-  --ring: #015870;
-  --chart-1: #015870;
-  --chart-2: #C4A093;
-  --chart-3: #ca8a04;
-  --chart-4: #f03603;
-  --chart-5: #4a9eb8;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #111111;
-  --sidebar-primary: #015870;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f5f5f3;
-  --sidebar-accent-foreground: #111111;
-  --sidebar-border: #e5e5e3;
-  --sidebar-ring: #015870;
+  --background: #0a0a0b;
+  --foreground: #e8e6e3;
+  --card: #141416;
+  --card-foreground: #e8e6e3;
+  --popover: #232327;
+  --popover-foreground: #e8e6e3;
+  --primary: #4a9ead;
+  --primary-foreground: #0a0a0b;
+  --secondary: #1c1c1f;
+  --secondary-foreground: #e8e6e3;
+  --muted: #1c1c1f;
+  --muted-foreground: #9a9892;
+  --accent: #4a9ead;
+  --accent-foreground: #0a0a0b;
+  --destructive: #c45a4a;
+  --border: #3a3a40;
+  --input: #3a3a40;
+  --ring: #4a9ead;
+  --chart-1: #4a9ead;
+  --chart-2: #c4a083;
+  --chart-3: #d4a843;
+  --chart-4: #c45a4a;
+  --chart-5: #7acea0;
+  --sidebar: #1c1c1f;
+  --sidebar-foreground: #e8e6e3;
+  --sidebar-primary: #4a9ead;
+  --sidebar-primary-foreground: #0a0a0b;
+  --sidebar-accent: #232327;
+  --sidebar-accent-foreground: #e8e6e3;
+  --sidebar-border: #2a2a2e;
+  --sidebar-ring: #4a9ead;
 }
 
 @layer base {
@@ -184,6 +206,119 @@ body {
   }
 }
 
+/* ── Retro Mac Utility Classes ── */
+
+/* Noise grain texture overlay — apply to bg-deep containers */
+.retro-grain {
+  position: relative;
+}
+.retro-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+/* CRT scanline hint — barely perceptible */
+.retro-scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.015) 2px,
+    rgba(255, 255, 255, 0.015) 3px
+  );
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+/* Window chrome — inset glow on active panels */
+.retro-glow-active {
+  box-shadow: inset 0 0 20px rgba(74, 158, 173, 0.05);
+}
+
+/* Carved-in inset shadow for inputs */
+.retro-inset {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Raised surface — buttons, elevated cards */
+.retro-raised {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Pressed-in state for buttons */
+.retro-pressed {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Window shadow — cards */
+.retro-window {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+}
+
+/* Phosphor glow for terminal text */
+.retro-phosphor {
+  color: #7acea0;
+  text-shadow: 0 0 6px rgba(122, 206, 160, 0.3);
+}
+
+/* Teal focus glow */
+.retro-focus-glow {
+  box-shadow: 0 0 0 3px rgba(74, 158, 173, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Traffic light dots */
+.retro-traffic-lights {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.retro-traffic-lights span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.retro-traffic-lights .dot-close { background: #c45a4a; opacity: 0.6; }
+.retro-traffic-lights .dot-minimize { background: #d4a843; opacity: 0.6; }
+.retro-traffic-lights .dot-zoom { background: #5a9a6a; opacity: 0.6; }
+
+/* Keycap badges — small keyboard shortcut indicators */
+.retro-keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.4;
+  color: #6a6862;
+  background: #0e0e10;
+  border: 1px solid #2a2a2e;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Title bar stripe texture — 1px alternating at low opacity */
+.retro-stripes {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(255, 255, 255, 0.02) 1px,
+    rgba(255, 255, 255, 0.02) 2px
+  );
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -193,12 +328,6 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* Shimmer animation for progress bars */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
 }
 
 @theme {

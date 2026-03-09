@@ -106,19 +106,23 @@ export function Sidebar() {
             variant="ghost"
             asChild
             className={cn(
-              "h-10 transition-all duration-200",
+              "h-10 transition-all duration-150 relative",
               compact ? "justify-center px-2" : "justify-start gap-3 px-3",
               active
                 ? "bg-kiln-teal/10 text-kiln-teal hover:bg-kiln-teal/15 hover:text-kiln-teal"
-                : "text-clay-400 hover:bg-clay-800 hover:text-clay-200"
+                : "text-clay-200 hover:bg-clay-700 hover:text-clay-100"
             )}
           >
             <Link href={item.href} onClick={onNavigate}>
+              {/* Active accent bar */}
+              {active && !compact && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-full bg-kiln-teal" />
+              )}
               <item.icon className="h-5 w-5 shrink-0" />
               {!compact && (
                 <>
                   <span className="flex-1">{item.label}</span>
-                  <kbd className="hidden lg:inline-block text-[10px] text-clay-600 font-mono border border-clay-800 rounded px-1 py-0.5">
+                  <kbd className="retro-keycap hidden lg:inline-block">
                     {"\u2318"}{item.shortcut}
                   </kbd>
                 </>
@@ -131,13 +135,10 @@ export function Sidebar() {
           return (
             <Tooltip key={item.href}>
               <TooltipTrigger asChild>{btn}</TooltipTrigger>
-              <TooltipContent
-                side="right"
-                className="bg-clay-900 border-clay-700 text-clay-200 text-xs"
-              >
+              <TooltipContent side="right">
                 <span className="flex items-center gap-2">
                   {item.label}
-                  <kbd className="rounded border border-clay-700 bg-clay-800 px-1 py-0.5 font-mono text-[10px] text-clay-400">
+                  <kbd className="retro-keycap">
                     {"\u2318"}{item.shortcut}
                   </kbd>
                 </span>
@@ -154,7 +155,7 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop sidebar: full width on lg, icon-only on md */}
-      <aside className="relative z-10 hidden md:flex shrink-0 border-r border-clay-800 bg-white p-4 flex-col gap-1 lg:w-56 w-16">
+      <aside className="relative z-10 hidden md:flex shrink-0 border-r border-clay-600 bg-clay-800 p-4 flex-col gap-1 lg:w-56 w-16">
         {/* Logo */}
         <div className="mb-6 px-3 flex items-center gap-3">
           <Image
@@ -165,14 +166,19 @@ export function Sidebar() {
             className="rounded-md"
           />
           <div className="hidden lg:block">
-            <h1 className="text-lg font-bold text-clay-100 font-[family-name:var(--font-sans)]">
+            <h1 className="text-lg font-bold text-clay-100 font-[family-name:var(--font-sans)] tracking-tight">
               Clay OS
             </h1>
-            <p className="text-[10px] text-clay-500 tracking-wider uppercase">
+            <p className="text-[10px] text-clay-300 tracking-[0.1em] uppercase font-mono">
               Webhook Dashboard
             </p>
           </div>
         </div>
+
+        {/* Section label */}
+        <p className="hidden lg:block px-3 mb-1 text-[11px] text-clay-300 tracking-[0.1em] uppercase">
+          Navigation
+        </p>
 
         {/* Nav - compact on md, full on lg */}
         <div className="hidden lg:block">{navContent(false)}</div>
@@ -181,7 +187,7 @@ export function Sidebar() {
 
       {/* Mobile drawer */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-64 bg-white border-clay-800 p-4">
+        <SheetContent side="left" className="w-64 bg-clay-800 border-clay-600 p-4">
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
           <div className="mb-6 px-3 flex items-center gap-3">
@@ -193,10 +199,10 @@ export function Sidebar() {
               className="rounded-md"
             />
             <div>
-              <h1 className="text-lg font-bold text-clay-100 font-[family-name:var(--font-sans)]">
+              <h1 className="text-lg font-bold text-clay-100 font-[family-name:var(--font-sans)] tracking-tight">
                 Clay OS
               </h1>
-              <p className="text-[10px] text-clay-500 tracking-wider uppercase">
+              <p className="text-[10px] text-clay-300 tracking-[0.1em] uppercase font-mono">
                 Webhook Dashboard
               </p>
             </div>
@@ -206,7 +212,7 @@ export function Sidebar() {
       </Sheet>
 
       {/* Mobile bottom nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-clay-800 bg-white/95 backdrop-blur-sm">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-clay-600 bg-clay-800/95 backdrop-blur-sm">
         <nav className="flex items-center justify-around py-2">
           {NAV.map((item) => {
             const active = pathname === item.href;
@@ -215,12 +221,12 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-1 transition-colors",
-                  active ? "text-kiln-teal" : "text-clay-500"
+                  "flex flex-col items-center gap-0.5 px-3 py-1 transition-colors duration-150",
+                  active ? "text-kiln-teal" : "text-clay-300"
                 )}
               >
                 <item.icon className="h-5 w-5" />
-                {active && <span className="h-1 w-1 rounded-full bg-kiln-teal" />}
+                {active && <span className="h-1 w-1 rounded-full bg-kiln-teal shadow-[0_0_6px_rgba(74,158,173,0.5)]" />}
               </Link>
             );
           })}
