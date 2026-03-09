@@ -145,6 +145,7 @@ async def _run_single_step(
     cache: ResultCache | None = None,
     prefetcher=None,
     sumble_prefetcher=None,
+    company_cache=None,
 ) -> dict:
     """Execute a single skill step. Returns a result dict."""
     step_start = time.monotonic()
@@ -158,7 +159,26 @@ async def _run_single_step(
             "error": f"Skill '{skill_name}' not found",
         }
 
-    # Check cache
+    # Company-level dedup: check before row-level cache
+    config = load_skill_config(skill_name)
+    company_key = ""
+    is_company_scoped = config.get("scope") == "company"
+    if is_company_scoped and company_cache is not None:
+        company_key = (current_data.get("company_domain") or "").lower().strip()
+        if company_key:
+            cc_hit = company_cache.get(company_key, skill_name)
+            if cc_hit is not None:
+                return {
+                    "skill": skill_name,
+                    "success": True,
+                    "duration_ms": 0,
+                    "output": cc_hit,
+                    "prompt_chars": 0,
+                    "response_chars": 0,
+                    "company_cache_hit": True,
+                }
+
+    # Check row-level cache
     if cache is not None:
         cached = cache.get(skill_name, current_data, instructions)
         if cached is not None:
@@ -172,7 +192,6 @@ async def _run_single_step(
             }
 
     # Prefetch intelligence if configured
-    config = load_skill_config(skill_name)
     prefetched_context = await _run_prefetch(
         skill_name, config, current_data, prefetcher, sumble_prefetcher
     )
@@ -190,6 +209,10 @@ async def _run_single_step(
 
         if cache is not None:
             cache.put(skill_name, current_data, instructions, parsed)
+
+        # Store in company cache for dedup across contacts
+        if is_company_scoped and company_cache is not None and company_key:
+            company_cache.put(company_key, skill_name, parsed)
 
         return {
             "skill": skill_name,
@@ -221,6 +244,7 @@ async def _run_parallel_step(
     merge_strategy: str = "deep",
     prefetcher=None,
     sumble_prefetcher=None,
+    company_cache=None,
 ) -> tuple[list[dict], dict]:
     """Run multiple skill steps concurrently. Returns (results_list, merged_data)."""
     parallel_start = time.monotonic()
@@ -240,6 +264,7 @@ async def _run_parallel_step(
             cache=cache,
             prefetcher=prefetcher,
             sumble_prefetcher=sumble_prefetcher,
+            company_cache=company_cache,
         ))
 
     # Fan out — run all concurrently through the existing semaphore-controlled pool
@@ -279,6 +304,7 @@ async def run_skill_chain(
     cache: ResultCache | None = None,
     prefetcher=None,
     sumble_prefetcher=None,
+    company_cache=None,
 ) -> dict:
     results = []
     current_data = dict(data)
@@ -294,6 +320,7 @@ async def run_skill_chain(
             cache=cache,
             prefetcher=prefetcher,
             sumble_prefetcher=sumble_prefetcher,
+            company_cache=company_cache,
         )
         results.append(step_result)
         if step_result.get("success") and step_result.get("output"):
@@ -321,6 +348,7 @@ async def run_pipeline(
     cache: ResultCache,
     prefetcher=None,
     sumble_prefetcher=None,
+    company_cache=None,
 ) -> dict:
     pipeline = load_pipeline(name)
     if pipeline is None:
@@ -340,6 +368,7 @@ async def run_pipeline(
         confidence_threshold=confidence_threshold,
         prefetcher=prefetcher,
         sumble_prefetcher=sumble_prefetcher,
+        company_cache=company_cache,
     )
 
 
@@ -354,6 +383,7 @@ async def run_pipeline_from_plan(
     confidence_threshold: float = 0.8,
     prefetcher=None,
     sumble_prefetcher=None,
+    company_cache=None,
 ) -> dict:
     """Execute a dynamically generated pipeline plan (from coordinator)."""
     return await _execute_steps(
@@ -367,6 +397,7 @@ async def run_pipeline_from_plan(
         confidence_threshold=confidence_threshold,
         prefetcher=prefetcher,
         sumble_prefetcher=sumble_prefetcher,
+        company_cache=company_cache,
     )
 
 
@@ -381,6 +412,7 @@ async def _execute_steps(
     confidence_threshold: float = 0.8,
     prefetcher=None,
     sumble_prefetcher=None,
+    company_cache=None,
 ) -> dict:
     """Core step execution engine — handles sequential, parallel, and conditional steps."""
     results = []
@@ -408,6 +440,7 @@ async def _execute_steps(
                 merge_strategy=merge_strategy,
                 prefetcher=prefetcher,
                 sumble_prefetcher=sumble_prefetcher,
+                company_cache=company_cache,
             )
             # Track confidence from parallel results
             for pr in parallel_results:
@@ -457,7 +490,31 @@ async def _execute_steps(
             })
             continue
 
-        # Check cache
+        # Company-level dedup: check before row-level cache
+        config = load_skill_config(skill_name)
+        company_key = ""
+        is_company_scoped = config.get("scope") == "company"
+        if is_company_scoped and company_cache is not None:
+            company_key = (current_data.get("company_domain") or "").lower().strip()
+            if company_key:
+                cc_hit = company_cache.get(company_key, skill_name)
+                if cc_hit is not None:
+                    confidence = extract_confidence(cc_hit, step_confidence_field)
+                    min_confidence = min(min_confidence, confidence)
+                    results.append({
+                        "skill": skill_name,
+                        "success": True,
+                        "duration_ms": 0,
+                        "output": cc_hit,
+                        "confidence": confidence,
+                        "prompt_chars": 0,
+                        "response_chars": 0,
+                        "company_cache_hit": True,
+                    })
+                    current_data.update(cc_hit)
+                    continue
+
+        # Check row-level cache
         cached = cache.get(skill_name, current_data, effective_instructions)
         if cached is not None:
             confidence = extract_confidence(cached, step_confidence_field)
@@ -475,7 +532,6 @@ async def _execute_steps(
             continue
 
         # Prefetch intelligence if configured
-        config = load_skill_config(skill_name)
         prefetched_context = await _run_prefetch(
             skill_name, config, current_data, prefetcher, sumble_prefetcher
         )
@@ -493,6 +549,8 @@ async def _execute_steps(
             duration_ms = result["duration_ms"]
 
             cache.put(skill_name, current_data, effective_instructions, parsed)
+            if is_company_scoped and company_cache is not None and company_key:
+                company_cache.put(company_key, skill_name, parsed)
             current_data.update(parsed)
 
             confidence = extract_confidence(parsed, step_confidence_field)
