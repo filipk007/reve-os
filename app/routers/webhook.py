@@ -111,6 +111,10 @@ async def webhook(body: WebhookRequest, request: Request):
                 model=model,
                 pool=pool,
                 cache=cache,
+                prefetcher=getattr(request.app.state, "prefetcher", None),
+                sumble_prefetcher=getattr(request.app.state, "sumble_prefetcher", None),
+                memory_store=getattr(request.app.state, "memory_store", None),
+                context_index=getattr(request.app.state, "context_index", None),
                 company_cache=company_cache,
             )
             return result

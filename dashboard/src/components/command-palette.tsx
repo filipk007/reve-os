@@ -63,10 +63,10 @@ function addRecent(name: string, href: string) {
 }
 
 const GROUP_HEADING_CLASSES =
-  "[&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-clay-500 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5";
+  "[&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:text-clay-300 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.1em] [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5";
 
 const ITEM_CLASSES =
-  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-clay-300 cursor-pointer data-[selected=true]:bg-kiln-teal/10 data-[selected=true]:text-kiln-teal";
+  "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-clay-200 cursor-pointer transition-colors duration-150 data-[selected=true]:bg-kiln-teal/10 data-[selected=true]:text-kiln-teal";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -183,16 +183,16 @@ export function CommandPalette() {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
         <DialogPrimitive.Content className="fixed left-1/2 top-[20%] z-50 w-full max-w-lg -translate-x-1/2 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95">
-          <Command className="rounded-xl border border-clay-700 bg-clay-900 shadow-2xl overflow-hidden">
-            <div className="flex items-center border-b border-clay-800 px-3">
-              <Search className="h-4 w-4 text-clay-500 mr-2 shrink-0" />
+          <Command className="rounded-lg border border-clay-500 bg-clay-850 shadow-[0_24px_64px_rgba(0,0,0,0.6)] overflow-hidden">
+            <div className="flex items-center border-b border-clay-600 bg-clay-800 retro-stripes px-3">
+              <Search className="h-4 w-4 text-clay-300 mr-2 shrink-0" />
               <Command.Input
                 placeholder="Search pages, skills, jobs, clients..."
                 value={query}
                 onValueChange={setQuery}
-                className="h-12 w-full bg-transparent text-clay-100 placeholder:text-clay-600 text-sm outline-none"
+                className="h-12 w-full bg-transparent text-clay-100 placeholder:text-clay-300 text-sm outline-none"
               />
             </div>
             <Command.List className="max-h-80 overflow-y-auto p-2">
@@ -333,10 +333,10 @@ export function CommandPalette() {
               </Command.Group>
             </Command.List>
 
-            <div className="border-t border-clay-800 px-3 py-2 flex items-center gap-4 text-xs text-clay-600">
-              <span>Navigate <kbd className="ml-1 rounded border border-clay-700 bg-clay-800 px-1.5 py-0.5 font-mono text-clay-400">Enter</kbd></span>
-              <span>Close <kbd className="ml-1 rounded border border-clay-700 bg-clay-800 px-1.5 py-0.5 font-mono text-clay-400">Esc</kbd></span>
-              <span>Shortcuts <kbd className="ml-1 rounded border border-clay-700 bg-clay-800 px-1.5 py-0.5 font-mono text-clay-400">?</kbd></span>
+            <div className="border-t border-clay-600 px-3 py-2 flex items-center gap-4 text-xs text-clay-300">
+              <span>Navigate <kbd className="retro-keycap ml-1">Enter</kbd></span>
+              <span>Close <kbd className="retro-keycap ml-1">Esc</kbd></span>
+              <span>Shortcuts <kbd className="retro-keycap ml-1">?</kbd></span>
             </div>
           </Command>
           <DialogPrimitive.Title className="sr-only">Command Palette</DialogPrimitive.Title>

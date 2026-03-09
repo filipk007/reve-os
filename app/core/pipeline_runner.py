@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import operator
 import re
 import time
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 
@@ -13,6 +17,13 @@ from app.core.context_assembler import build_prompt
 from app.core.prefetch import parse_prefetch_config
 from app.core.skill_loader import load_context_files, load_skill, load_skill_config
 from app.core.worker_pool import WorkerPool
+
+if TYPE_CHECKING:
+    from app.core.company_cache import CompanyCache
+    from app.core.context_index import ContextIndex
+    from app.core.memory_store import MemoryStore
+    from app.core.prefetch import ExaPrefetcher
+    from app.core.sumble_prefetcher import SumblePrefetcher
 
 logger = logging.getLogger("clay-webhook-os")
 
@@ -103,8 +114,8 @@ async def _run_prefetch(
     skill_name: str,
     config: dict,
     data: dict,
-    prefetcher=None,
-    sumble_prefetcher=None,
+    prefetcher: ExaPrefetcher | None = None,
+    sumble_prefetcher: SumblePrefetcher | None = None,
 ) -> str | None:
     """Run prefetch for a skill step. Returns combined prefetched text or None."""
     prefetch_sources = parse_prefetch_config(config)
@@ -143,9 +154,11 @@ async def _run_single_step(
     model: str,
     pool: WorkerPool,
     cache: ResultCache | None = None,
-    prefetcher=None,
-    sumble_prefetcher=None,
-    company_cache=None,
+    prefetcher: ExaPrefetcher | None = None,
+    sumble_prefetcher: SumblePrefetcher | None = None,
+    memory_store: MemoryStore | None = None,
+    context_index: ContextIndex | None = None,
+    company_cache: CompanyCache | None = None,
 ) -> dict:
     """Execute a single skill step. Returns a result dict."""
     step_start = time.monotonic()
@@ -160,9 +173,9 @@ async def _run_single_step(
         }
 
     # Company-level dedup: check before row-level cache
-    config = load_skill_config(skill_name)
+    skill_cfg = load_skill_config(skill_name)
     company_key = ""
-    is_company_scoped = config.get("scope") == "company"
+    is_company_scoped = skill_cfg.get("scope") == "company"
     if is_company_scoped and company_cache is not None:
         company_key = (current_data.get("company_domain") or "").lower().strip()
         if company_key:
@@ -191,15 +204,17 @@ async def _run_single_step(
                 "response_chars": 0,
             }
 
-    # Prefetch intelligence if configured
+    # Load skill config for prefetch and semantic context settings
     prefetched_context = await _run_prefetch(
-        skill_name, config, current_data, prefetcher, sumble_prefetcher
+        skill_name, skill_cfg, current_data, prefetcher, sumble_prefetcher
     )
+    skip_semantic = not skill_cfg.get("semantic_context", True)
 
     context_files = load_context_files(skill_content, current_data, skill_name=skill_name)
     prompt = build_prompt(
         skill_content, context_files, current_data, instructions,
-        prefetched_context=prefetched_context,
+        memory_store=memory_store, context_index=context_index,
+        prefetched_context=prefetched_context, skip_semantic=skip_semantic,
     )
 
     try:
@@ -242,9 +257,11 @@ async def _run_parallel_step(
     pool: WorkerPool,
     cache: ResultCache | None,
     merge_strategy: str = "deep",
-    prefetcher=None,
-    sumble_prefetcher=None,
-    company_cache=None,
+    prefetcher: ExaPrefetcher | None = None,
+    sumble_prefetcher: SumblePrefetcher | None = None,
+    memory_store: MemoryStore | None = None,
+    context_index: ContextIndex | None = None,
+    company_cache: CompanyCache | None = None,
 ) -> tuple[list[dict], dict]:
     """Run multiple skill steps concurrently. Returns (results_list, merged_data)."""
     parallel_start = time.monotonic()
@@ -264,6 +281,8 @@ async def _run_parallel_step(
             cache=cache,
             prefetcher=prefetcher,
             sumble_prefetcher=sumble_prefetcher,
+            memory_store=memory_store,
+            context_index=context_index,
             company_cache=company_cache,
         ))
 
@@ -302,9 +321,11 @@ async def run_skill_chain(
     model: str,
     pool: WorkerPool,
     cache: ResultCache | None = None,
-    prefetcher=None,
-    sumble_prefetcher=None,
-    company_cache=None,
+    prefetcher: ExaPrefetcher | None = None,
+    sumble_prefetcher: SumblePrefetcher | None = None,
+    memory_store: MemoryStore | None = None,
+    context_index: ContextIndex | None = None,
+    company_cache: CompanyCache | None = None,
 ) -> dict:
     results = []
     current_data = dict(data)
@@ -320,6 +341,8 @@ async def run_skill_chain(
             cache=cache,
             prefetcher=prefetcher,
             sumble_prefetcher=sumble_prefetcher,
+            memory_store=memory_store,
+            context_index=context_index,
             company_cache=company_cache,
         )
         results.append(step_result)
@@ -346,9 +369,11 @@ async def run_pipeline(
     model: str,
     pool: WorkerPool,
     cache: ResultCache,
-    prefetcher=None,
-    sumble_prefetcher=None,
-    company_cache=None,
+    prefetcher: ExaPrefetcher | None = None,
+    sumble_prefetcher: SumblePrefetcher | None = None,
+    memory_store: MemoryStore | None = None,
+    context_index: ContextIndex | None = None,
+    company_cache: CompanyCache | None = None,
 ) -> dict:
     pipeline = load_pipeline(name)
     if pipeline is None:
@@ -368,6 +393,8 @@ async def run_pipeline(
         confidence_threshold=confidence_threshold,
         prefetcher=prefetcher,
         sumble_prefetcher=sumble_prefetcher,
+        memory_store=memory_store,
+        context_index=context_index,
         company_cache=company_cache,
     )
 
@@ -381,9 +408,11 @@ async def run_pipeline_from_plan(
     pool: WorkerPool,
     cache: ResultCache,
     confidence_threshold: float = 0.8,
-    prefetcher=None,
-    sumble_prefetcher=None,
-    company_cache=None,
+    prefetcher: ExaPrefetcher | None = None,
+    sumble_prefetcher: SumblePrefetcher | None = None,
+    memory_store: MemoryStore | None = None,
+    context_index: ContextIndex | None = None,
+    company_cache: CompanyCache | None = None,
 ) -> dict:
     """Execute a dynamically generated pipeline plan (from coordinator)."""
     return await _execute_steps(
@@ -397,6 +426,8 @@ async def run_pipeline_from_plan(
         confidence_threshold=confidence_threshold,
         prefetcher=prefetcher,
         sumble_prefetcher=sumble_prefetcher,
+        memory_store=memory_store,
+        context_index=context_index,
         company_cache=company_cache,
     )
 
@@ -410,9 +441,11 @@ async def _execute_steps(
     pool: WorkerPool,
     cache: ResultCache,
     confidence_threshold: float = 0.8,
-    prefetcher=None,
-    sumble_prefetcher=None,
-    company_cache=None,
+    prefetcher: ExaPrefetcher | None = None,
+    sumble_prefetcher: SumblePrefetcher | None = None,
+    memory_store: MemoryStore | None = None,
+    context_index: ContextIndex | None = None,
+    company_cache: CompanyCache | None = None,
 ) -> dict:
     """Core step execution engine — handles sequential, parallel, and conditional steps."""
     results = []
@@ -440,6 +473,8 @@ async def _execute_steps(
                 merge_strategy=merge_strategy,
                 prefetcher=prefetcher,
                 sumble_prefetcher=sumble_prefetcher,
+                memory_store=memory_store,
+                context_index=context_index,
                 company_cache=company_cache,
             )
             # Track confidence from parallel results
@@ -491,9 +526,9 @@ async def _execute_steps(
             continue
 
         # Company-level dedup: check before row-level cache
-        config = load_skill_config(skill_name)
+        skill_cfg = load_skill_config(skill_name)
         company_key = ""
-        is_company_scoped = config.get("scope") == "company"
+        is_company_scoped = skill_cfg.get("scope") == "company"
         if is_company_scoped and company_cache is not None:
             company_key = (current_data.get("company_domain") or "").lower().strip()
             if company_key:
@@ -531,16 +566,18 @@ async def _execute_steps(
             current_data.update(cached)
             continue
 
-        # Prefetch intelligence if configured
+        # Pre-fetch intelligence if configured
         prefetched_context = await _run_prefetch(
-            skill_name, config, current_data, prefetcher, sumble_prefetcher
+            skill_name, skill_cfg, current_data, prefetcher, sumble_prefetcher
         )
+        skip_semantic = not skill_cfg.get("semantic_context", True)
 
         # Build prompt and execute
         context_files = load_context_files(skill_content, current_data, skill_name=skill_name)
         prompt = build_prompt(
             skill_content, context_files, current_data, effective_instructions,
-            prefetched_context=prefetched_context,
+            memory_store=memory_store, context_index=context_index,
+            prefetched_context=prefetched_context, skip_semantic=skip_semantic,
         )
 
         try:

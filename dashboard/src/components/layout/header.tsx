@@ -43,14 +43,14 @@ function LiveRelativeTime({ date }: { date: Date }) {
         : diffSec < 3600
           ? `${Math.floor(diffSec / 60)}m ago`
           : `${Math.floor(diffSec / 3600)}h ago`;
-  return <span className="text-xs text-clay-600">{label}</span>;
+  return <span className="text-xs text-clay-300 font-mono tabular-nums">{label}</span>;
 }
 
 const HEALTH_COLORS: Record<string, { dot: string; bg: string; text: string }> = {
-  healthy: { dot: "bg-kiln-teal", bg: "bg-kiln-teal/10", text: "text-kiln-teal" },
-  warning: { dot: "bg-kiln-mustard", bg: "bg-kiln-mustard/10", text: "text-kiln-mustard" },
-  critical: { dot: "bg-kiln-coral", bg: "bg-kiln-coral/10", text: "text-kiln-coral" },
-  exhausted: { dot: "bg-kiln-coral", bg: "bg-kiln-coral/10", text: "text-kiln-coral" },
+  healthy: { dot: "bg-status-success shadow-[0_0_6px_rgba(90,154,106,0.5)]", bg: "bg-status-success/10", text: "text-status-success" },
+  warning: { dot: "bg-kiln-mustard shadow-[0_0_6px_rgba(212,168,67,0.5)]", bg: "bg-kiln-mustard/10", text: "text-kiln-mustard" },
+  critical: { dot: "bg-kiln-coral shadow-[0_0_6px_rgba(196,90,74,0.5)]", bg: "bg-kiln-coral/10", text: "text-kiln-coral" },
+  exhausted: { dot: "bg-kiln-coral shadow-[0_0_6px_rgba(196,90,74,0.5)]", bg: "bg-kiln-coral/10", text: "text-kiln-coral" },
 };
 
 export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderProps) {
@@ -134,13 +134,13 @@ export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderPro
           </span>
         </div>
       )}
-      <header className="flex items-center justify-between border-b border-clay-800 bg-white/80 backdrop-blur-sm px-4 md:px-6 py-4">
+      <header className="flex items-center justify-between border-b border-clay-600 bg-clay-850/80 backdrop-blur-sm px-4 md:px-6 py-4">
         <div className="flex items-center gap-3">
           {/* Hamburger menu for mobile */}
           <Button
             variant="ghost"
             size="icon-sm"
-            className="md:hidden text-clay-400 hover:text-clay-200"
+            className="md:hidden text-clay-200 hover:text-clay-100"
             onClick={() =>
               document.dispatchEvent(new CustomEvent("toggle-mobile-sidebar"))
             }
@@ -153,16 +153,16 @@ export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderPro
               {title}
             </h2>
             {breadcrumbs && breadcrumbs.length > 0 && (
-              <div className="hidden sm:flex items-center gap-1.5 text-sm">
+              <div className="hidden sm:flex items-center gap-1.5 text-sm font-mono">
                 {breadcrumbs.map((crumb, i) => (
                   <span key={i} className="flex items-center gap-1.5">
-                    <span className="text-clay-600">/</span>
+                    <span className="text-clay-400">/</span>
                     {crumb.href ? (
-                      <Link href={crumb.href} className="text-clay-500 hover:text-clay-300 transition-colors">
+                      <Link href={crumb.href} className="text-clay-300 hover:text-kiln-teal transition-colors duration-150">
                         {crumb.label}
                       </Link>
                     ) : (
-                      <span className="text-clay-300">{crumb.label}</span>
+                      <span className="text-clay-200">{crumb.label}</span>
                     )}
                   </span>
                 ))}
@@ -175,7 +175,7 @@ export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderPro
               {onRefresh && (
                 <button
                   onClick={onRefresh}
-                  className="text-clay-600 hover:text-clay-400 transition-colors"
+                  className="text-clay-300 hover:text-clay-100 transition-colors duration-150"
                   aria-label="Refresh"
                 >
                   <RefreshCw className="h-3 w-3" />
@@ -186,7 +186,7 @@ export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderPro
         </div>
         <div className="flex items-center gap-3">
           <button
-            className="hidden md:flex items-center gap-2 rounded-lg border border-clay-700 bg-clay-900 px-3 py-1.5 text-xs text-clay-500 hover:border-clay-600 hover:text-clay-400 transition-colors"
+            className="hidden md:flex items-center gap-2 rounded-md border border-clay-500 bg-clay-900 px-3 py-1.5 text-xs text-clay-300 shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)] hover:border-clay-400 hover:text-clay-200 transition-colors duration-150"
             onClick={() => {
               document.dispatchEvent(
                 new KeyboardEvent("keydown", { key: "k", metaKey: true })
@@ -195,7 +195,7 @@ export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderPro
           >
             <Search className="h-3.5 w-3.5" />
             <span>Search...</span>
-            <kbd className="rounded border border-clay-700 bg-clay-800 px-1.5 py-0.5 font-mono text-[10px] text-clay-400">
+            <kbd className="retro-keycap">
               {"\u2318"}K
             </kbd>
           </button>
@@ -204,24 +204,21 @@ export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderPro
           {usageHealth && usageColors && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className={`hidden sm:flex items-center gap-1.5 rounded-md px-2 py-1 text-xs ${usageColors.bg} ${usageColors.text} transition-colors`}>
+                <button className={`hidden sm:flex items-center gap-1.5 rounded-md px-2 py-1 text-xs ${usageColors.bg} ${usageColors.text} transition-colors duration-150`}>
                   <span className={`h-2 w-2 rounded-full ${usageColors.dot}`} />
-                  <span className="hidden md:inline">
+                  <span className="hidden md:inline font-mono tabular-nums">
                     {formatTokens(usageHealth.today_tokens)}
                   </span>
                 </button>
               </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                className="max-w-xs bg-clay-900 border-clay-700 text-clay-300 text-xs"
-              >
+              <TooltipContent side="bottom">
                 <p className="font-medium mb-1">Subscription: {usageHealth.status}</p>
-                <p>{formatTokens(usageHealth.today_tokens)} tokens today</p>
-                <p>{formatNumber(usageHealth.today_requests)} requests today</p>
+                <p className="font-mono tabular-nums">{formatTokens(usageHealth.today_tokens)} tokens today</p>
+                <p className="font-mono tabular-nums">{formatNumber(usageHealth.today_requests)} requests today</p>
                 {usageHealth.today_errors > 0 && (
                   <p className="text-kiln-coral">{usageHealth.today_errors} errors today</p>
                 )}
-                <p className="text-clay-500 mt-1">Press <kbd className="rounded border border-clay-700 bg-clay-800 px-1 py-0.5 font-mono">?</kbd> for shortcuts</p>
+                <p className="text-clay-300 mt-1">Press <kbd className="retro-keycap">?</kbd> for shortcuts</p>
               </TooltipContent>
             </Tooltip>
           )}
@@ -235,9 +232,9 @@ export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderPro
               }
               className={
                 healthy === true
-                  ? "bg-kiln-teal/15 text-kiln-teal border-kiln-teal/30 hover:bg-kiln-teal/20"
+                  ? "bg-status-success/15 text-status-success border-status-success/25 hover:bg-status-success/20"
                   : healthy === false
-                    ? "bg-kiln-coral/15 text-kiln-coral border-kiln-coral/30"
+                    ? "bg-kiln-coral/15 text-kiln-coral border-kiln-coral/25"
                     : ""
               }
             >
@@ -246,7 +243,7 @@ export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderPro
               ) : healthy === false ? (
                 <WifiOff className="h-3 w-3 mr-1" />
               ) : (
-                <span className="mr-1.5 h-2 w-2 rounded-full bg-clay-500" />
+                <span className="mr-1.5 h-2 w-2 rounded-full bg-clay-400 animate-pulse" />
               )}
               {healthy === null ? "Checking..." : healthy ? "Connected" : "Offline"}
             </Badge>
