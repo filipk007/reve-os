@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle, Loader2, Send, Sparkles, XCircle, Code, Copy, Check, Mail, Target, Linkedin } from "lucide-react";
+import { CheckCircle, Loader2, Send, Sparkles, XCircle, Code, Copy, Check, Mail, Search, Linkedin } from "lucide-react";
 import { toast } from "sonner";
 import { FeedbackButtons } from "@/components/feedback/feedback-buttons";
 import { FormattedResult } from "@/components/playground/formatted-results";
@@ -28,7 +28,7 @@ const STEPS = [
 
 const FEATURED_SKILLS = [
   { name: "email-gen", label: "Email Gen", description: "Generate personalized outbound emails from prospect signals", icon: Mail },
-  { name: "icp-scorer", label: "ICP Scorer", description: "Score prospects against your ideal customer profile", icon: Target },
+  { name: "account-researcher", label: "Account Researcher", description: "Deep-dive research on target accounts and key stakeholders", icon: Search },
   { name: "linkedin-note", label: "LinkedIn Note", description: "Draft concise LinkedIn connection messages", icon: Linkedin },
 ];
 
@@ -49,7 +49,7 @@ function ProgressSteps({ elapsed }: { elapsed: number }) {
                 ? "text-kiln-teal"
                 : active
                   ? "text-kiln-teal"
-                  : "text-clay-700"
+                  : "text-clay-300"
             }`}
           >
             <Icon
@@ -106,7 +106,7 @@ export function ResultViewer({
 
   if (loading) {
     return (
-      <Card className="border-clay-800 bg-white shadow-sm h-full">
+      <Card className="border-clay-500  h-full">
         <CardContent className="flex h-full items-center justify-center">
           <ProgressSteps elapsed={elapsed} />
         </CardContent>
@@ -119,7 +119,7 @@ export function ResultViewer({
       <div className="h-full flex flex-col items-center justify-center gap-6 py-8">
         <div className="text-center">
           <h3 className="text-lg font-semibold text-clay-200 mb-1">Ready to test</h3>
-          <p className="text-sm text-clay-500">Pick a skill, tweak the data, and hit Run.</p>
+          <p className="text-sm text-clay-200">Pick a skill, tweak the data, and hit Run.</p>
         </div>
         {onLoadSkill && (
           <div className="grid gap-3 w-full max-w-sm">
@@ -129,20 +129,20 @@ export function ResultViewer({
                 <button
                   key={fs.name}
                   onClick={() => onLoadSkill(fs.name)}
-                  className="flex items-start gap-3 rounded-lg border border-clay-800 bg-clay-900/50 p-3 text-left hover:border-kiln-teal/30 hover:bg-clay-900 transition-colors"
+                  className="flex items-start gap-3 rounded-lg border border-clay-500 bg-clay-800/50 p-3 text-left hover:border-kiln-teal/30 hover:bg-clay-800 transition-colors"
                 >
                   <Icon className="h-4 w-4 text-kiln-teal mt-0.5 shrink-0" />
                   <div>
                     <span className="text-sm font-medium text-clay-200">{fs.label}</span>
-                    <p className="text-xs text-clay-500 mt-0.5">{fs.description}</p>
+                    <p className="text-xs text-clay-200 mt-0.5">{fs.description}</p>
                   </div>
                 </button>
               );
             })}
           </div>
         )}
-        <p className="text-xs text-clay-600">
-          Pro tip: <kbd className="border border-clay-700 rounded px-1 py-0.5 text-clay-500">{"\u2318"}Enter</kbd> to run
+        <p className="text-xs text-clay-300">
+          Pro tip: <kbd className="border border-clay-700 rounded px-1 py-0.5 text-clay-200">{"\u2318"}Enter</kbd> to run
         </p>
       </div>
     );
@@ -156,16 +156,16 @@ export function ResultViewer({
   const [showRaw, setShowRaw] = useState(false);
 
   return (
-    <Card className="border-clay-800 bg-white shadow-sm flex flex-col h-full overflow-hidden">
+    <Card className="border-clay-500  flex flex-col h-full overflow-hidden">
       {meta && (
-        <CardHeader className="flex-row items-center gap-3 border-b border-clay-800 px-4 py-2.5 space-y-0">
+        <CardHeader className="flex-row items-center gap-3 border-b border-clay-500 px-4 py-2.5 space-y-0">
           <Badge
             variant="outline"
             className="bg-kiln-teal/10 text-kiln-teal border-kiln-teal/30"
           >
             {meta.model}
           </Badge>
-          <span className="text-xs text-clay-500">
+          <span className="text-xs text-clay-200">
             {formatSmartDuration(meta.duration_ms)}
           </span>
           {meta.cached && (
@@ -177,19 +177,19 @@ export function ResultViewer({
             </Badge>
           )}
           {meta.input_tokens_est != null && meta.output_tokens_est != null && (
-            <span className="text-xs text-clay-500">
+            <span className="text-xs text-clay-200">
               {formatTokens(meta.input_tokens_est + meta.output_tokens_est)} tok
             </span>
           )}
           {meta.cost_est_usd != null && (
-            <span className="text-xs text-clay-500">
+            <span className="text-xs text-clay-200">
               ~{formatCost(meta.cost_est_usd)}
             </span>
           )}
           <div className="flex items-center gap-1 ml-auto">
             <button
               onClick={() => handleCopy(display)}
-              className="p-1 rounded transition-colors text-clay-500 hover:text-clay-300"
+              className="p-1 rounded transition-colors text-clay-200 hover:text-clay-300"
               title="Copy result JSON"
             >
               {copied ? (
@@ -202,7 +202,7 @@ export function ResultViewer({
               <button
                 onClick={() => setShowRaw(!showRaw)}
                 className={`p-1 rounded transition-colors ${
-                  showRaw ? "text-kiln-teal bg-kiln-teal/10" : "text-clay-500 hover:text-clay-300"
+                  showRaw ? "text-kiln-teal bg-kiln-teal/10" : "text-clay-200 hover:text-clay-300"
                 }`}
                 title={showRaw ? "Show formatted" : "Show raw JSON"}
               >
@@ -232,7 +232,7 @@ export function ResultViewer({
         )}
       </CardContent>
       {!isError && skill && (
-        <div className="border-t border-clay-800 px-4 py-3">
+        <div className="border-t border-clay-500 px-4 py-3">
           <FeedbackButtons
             jobId={jobId || "playground"}
             skill={skill}
@@ -241,12 +241,12 @@ export function ResultViewer({
         </div>
       )}
       {!isError && destinations.length > 0 && (
-        <CardFooter className="border-t border-clay-800 px-4 py-3 gap-2">
+        <CardFooter className="border-t border-clay-500 px-4 py-3 gap-2">
           <Select value={pushDestId} onValueChange={setPushDestId}>
-            <SelectTrigger className="flex-1 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm">
+            <SelectTrigger className="flex-1 border-clay-700 bg-clay-800 text-clay-200 h-9 text-sm">
               <SelectValue placeholder="Push to..." />
             </SelectTrigger>
-            <SelectContent className="border-clay-700 bg-clay-900">
+            <SelectContent className="border-clay-700 bg-clay-800">
               {destinations.map((d) => (
                 <SelectItem key={d.id} value={d.id}>
                   {d.name} ({d.type === "clay_webhook" ? "Clay" : "Webhook"})

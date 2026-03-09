@@ -17,6 +17,7 @@ from app.core.prefetch import ExaPrefetcher
 from app.core.context_store import ContextStore
 from app.core.destination_store import DestinationStore
 from app.core.feedback_store import FeedbackStore
+from app.core.learning_engine import LearningEngine
 from app.core.memory_store import MemoryStore
 from app.core.pipeline_store import PipelineStore
 from app.core.play_store import PlayStore
@@ -109,6 +110,10 @@ async def startup():
     app.state.memory_store.load()
     app.state.job_queue._memory_store = app.state.memory_store
 
+    # Feedback-to-Knowledge: Learning engine (persistent corrections from feedback)
+    app.state.learning_engine = LearningEngine(knowledge_dir=settings.knowledge_dir)
+    app.state.job_queue._learning_engine = app.state.learning_engine
+
     # Phase 4: Semantic context index (build before wiring to queue)
     app.state.context_index = ContextIndex(
         dirs=[settings.knowledge_dir, settings.clients_dir],
@@ -131,6 +136,21 @@ async def startup():
         app.state.prefetcher = None
         logger.info("  Exa pre-fetch: disabled (no EXA_API_KEY)")
     app.state.job_queue._prefetcher = app.state.prefetcher
+
+    # Sumble pre-fetch (optional — structured company intelligence)
+    if settings.sumble_api_key:
+        from app.core.sumble_prefetcher import SumblePrefetcher
+        app.state.sumble_prefetcher = SumblePrefetcher(
+            api_key=settings.sumble_api_key,
+            base_url=settings.sumble_base_url,
+            cache_ttl=settings.sumble_cache_ttl,
+            timeout=settings.sumble_timeout,
+        )
+        logger.info("  Sumble pre-fetch: enabled")
+    else:
+        app.state.sumble_prefetcher = None
+        logger.info("  Sumble pre-fetch: disabled (no SUMBLE_API_KEY)")
+    app.state.job_queue._sumble_prefetcher = app.state.sumble_prefetcher
 
     # Retry worker
     app.state.retry_worker = RetryWorker(
@@ -200,4 +220,4 @@ async def startup():
     logger.info("  Cache TTL: %ds", settings.cache_ttl)
     logger.info("  Smart routing: %s", "enabled" if settings.enable_smart_routing else "disabled")
     logger.info("  Context index: %d documents", app.state.context_index.doc_count)
-    logger.info("  Features: campaigns, review-queue, smart-pipelines, feedback-loops, retry, SSE, model-router, sub-monitor, cleanup, memory, semantic-context, parallel-pipelines, auto-coordinator")
+    logger.info("  Features: campaigns, review-queue, smart-pipelines, feedback-loops, retry, SSE, model-router, sub-monitor, cleanup, memory, semantic-context, parallel-pipelines, learning-engine")

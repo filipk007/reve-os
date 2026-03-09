@@ -49,10 +49,10 @@ export function FileGrid({
 
   if (viewMode === "list") {
     return (
-      <div className="rounded-lg border border-clay-800 overflow-hidden">
+      <div className="rounded-lg border border-clay-500 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-clay-800 text-left text-xs text-clay-500">
+            <tr className="border-b border-clay-500 text-left text-xs text-clay-200">
               <th className="px-3 py-2 font-medium">Name</th>
               <th className="px-3 py-2 font-medium hidden sm:table-cell">Type</th>
               <th className="px-3 py-2 font-medium hidden md:table-cell">Category</th>

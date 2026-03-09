@@ -20,7 +20,7 @@ export function FileTabs({
   onNewTab,
 }: FileTabsProps) {
   return (
-    <div className="flex items-center gap-0.5 overflow-x-auto border-b border-clay-800 px-1">
+    <div className="flex items-center gap-0.5 overflow-x-auto border-b border-clay-500 px-1">
       {tabs.map((tab) => {
         const isActive = tab.id === activeTabId;
         return (
@@ -29,8 +29,8 @@ export function FileTabs({
             className={cn(
               "group flex items-center gap-1 rounded-t-md px-3 py-1.5 text-xs cursor-pointer transition-colors",
               isActive
-                ? "bg-clay-900 text-clay-200 border-b-2 border-kiln-teal"
-                : "text-clay-500 hover:text-clay-300 hover:bg-clay-900/50"
+                ? "bg-clay-800 text-clay-200 border-b-2 border-kiln-teal"
+                : "text-clay-200 hover:text-clay-300 hover:bg-clay-800/50"
             )}
             onClick={() => onSelectTab(tab.id)}
             onMouseDown={(e) => {
@@ -50,8 +50,8 @@ export function FileTabs({
               className={cn(
                 "rounded p-0.5 transition-colors",
                 isActive
-                  ? "hover:bg-clay-800 text-clay-500"
-                  : "opacity-0 group-hover:opacity-100 hover:bg-clay-800 text-clay-600"
+                  ? "hover:bg-clay-800 text-clay-200"
+                  : "opacity-0 group-hover:opacity-100 hover:bg-clay-800 text-clay-300"
               )}
             >
               <X className="h-3 w-3" />
@@ -61,7 +61,7 @@ export function FileTabs({
       })}
       <button
         onClick={onNewTab}
-        className="flex items-center justify-center rounded-md p-1.5 text-clay-600 hover:text-clay-400 hover:bg-clay-800/50 transition-colors"
+        className="flex items-center justify-center rounded-md p-1.5 text-clay-300 hover:text-clay-200 hover:bg-clay-800/50 transition-colors"
       >
         <Plus className="h-3 w-3" />
       </button>

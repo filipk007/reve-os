@@ -30,73 +30,73 @@ export function ValueMetrics({
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total jobs */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-1">
               <Zap className="h-4 w-4 text-kiln-teal" />
-              <span className="text-xs text-clay-500 uppercase tracking-wider">
+              <span className="text-xs text-clay-200 uppercase tracking-wider">
                 Total Jobs
               </span>
             </div>
             <p className="text-2xl font-bold text-clay-100 font-[family-name:var(--font-mono)]">
               {formatNumber(totalJobs)}
             </p>
-            <p className="text-xs text-clay-500 mt-0.5">
+            <p className="text-xs text-clay-200 mt-0.5">
               {formatTokens(totalTokens)} tokens processed
             </p>
           </CardContent>
         </Card>
 
         {/* API equivalent cost */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-1">
               <DollarSign className="h-4 w-4 text-kiln-mustard" />
-              <span className="text-xs text-clay-500 uppercase tracking-wider">
+              <span className="text-xs text-clay-200 uppercase tracking-wider">
                 API Equivalent
               </span>
             </div>
             <p className="text-2xl font-bold text-clay-100 font-[family-name:var(--font-mono)]">
               {formatCost(apiEquivalent)}
             </p>
-            <p className="text-xs text-clay-500 mt-0.5">
+            <p className="text-xs text-clay-200 mt-0.5">
               What this would cost on Anthropic API
             </p>
           </CardContent>
         </Card>
 
         {/* Subscription cost */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-1">
               <PiggyBank className="h-4 w-4 text-kiln-teal" />
-              <span className="text-xs text-clay-500 uppercase tracking-wider">
+              <span className="text-xs text-clay-200 uppercase tracking-wider">
                 Your Cost
               </span>
             </div>
             <p className="text-2xl font-bold text-clay-100 font-[family-name:var(--font-mono)]">
               {formatCost(subscriptionCost)}
-              <span className="text-sm text-clay-500 font-normal">/mo</span>
+              <span className="text-sm text-clay-200 font-normal">/mo</span>
             </p>
-            <p className="text-xs text-clay-500 mt-0.5">
+            <p className="text-xs text-clay-200 mt-0.5">
               Flat-rate subscription
             </p>
           </CardContent>
         </Card>
 
         {/* Net savings */}
-        <Card className="border-clay-800 bg-white shadow-sm border-kiln-teal/20">
+        <Card className="border-clay-500  border-kiln-teal/20">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="h-4 w-4 text-kiln-teal" />
-              <span className="text-xs text-clay-500 uppercase tracking-wider">
+              <span className="text-xs text-clay-200 uppercase tracking-wider">
                 Total Savings
               </span>
             </div>
             <p className="text-2xl font-bold text-kiln-teal font-[family-name:var(--font-mono)]">
               {formatCost(savings)}
             </p>
-            <p className="text-xs text-clay-500 mt-0.5">
+            <p className="text-xs text-clay-200 mt-0.5">
               {apiEquivalent > 0
                 ? `${Math.round((savings / apiEquivalent) * 100)}% less than API pricing`
                 : "Includes cache savings"}
@@ -107,7 +107,7 @@ export function ValueMetrics({
 
       {/* Per-skill job counts */}
       {skillCounts.length > 0 && (
-        <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-4">
+        <div className="rounded-xl border border-clay-500  p-4">
           <h4 className="text-sm font-medium text-clay-300 mb-3">
             Output by Skill
           </h4>
@@ -117,7 +117,7 @@ export function ValueMetrics({
               .map((s) => (
                 <div
                   key={s.skill}
-                  className="flex items-center justify-between rounded-lg bg-clay-900/50 border border-clay-800 px-3 py-2"
+                  className="flex items-center justify-between rounded-lg bg-clay-800/50 border border-clay-500 px-3 py-2"
                 >
                   <span className="text-sm text-clay-300 truncate mr-2">
                     {s.skill}

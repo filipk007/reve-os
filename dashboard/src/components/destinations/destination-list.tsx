@@ -30,8 +30,8 @@ export function DestinationList({
 }: DestinationListProps) {
   if (destinations.length === 0) {
     return (
-      <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-8 text-center">
-        <p className="text-clay-500 text-sm">
+      <div className="rounded-xl border border-clay-500  p-8 text-center">
+        <p className="text-clay-200 text-sm">
           No destinations configured yet. Add one to start pushing results.
         </p>
       </div>
@@ -39,21 +39,21 @@ export function DestinationList({
   }
 
   return (
-    <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-clay-500  overflow-hidden">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="border-clay-800 hover:bg-transparent">
-              <TableHead className="text-clay-500 text-xs">Name</TableHead>
-              <TableHead className="text-clay-500 text-xs">Type</TableHead>
-              <TableHead className="text-clay-500 text-xs">URL</TableHead>
-              <TableHead className="text-clay-500 text-xs">Client</TableHead>
-              <TableHead className="text-clay-500 text-xs text-right">Actions</TableHead>
+            <TableRow className="border-clay-500 hover:bg-transparent">
+              <TableHead className="text-clay-200 text-xs">Name</TableHead>
+              <TableHead className="text-clay-200 text-xs">Type</TableHead>
+              <TableHead className="text-clay-200 text-xs">URL</TableHead>
+              <TableHead className="text-clay-200 text-xs">Client</TableHead>
+              <TableHead className="text-clay-200 text-xs text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {destinations.map((dest) => (
-              <TableRow key={dest.id} className="border-clay-800 hover:bg-muted/50">
+              <TableRow key={dest.id} className="border-clay-500 hover:bg-muted/50">
                 <TableCell className="text-clay-200 text-sm font-medium">
                   {dest.name}
                 </TableCell>
@@ -69,10 +69,10 @@ export function DestinationList({
                     {dest.type === "clay_webhook" ? "Clay" : "Webhook"}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-clay-400 text-xs font-[family-name:var(--font-mono)] max-w-[200px] truncate">
+                <TableCell className="text-clay-200 text-xs font-[family-name:var(--font-mono)] max-w-[200px] truncate">
                   {dest.url}
                 </TableCell>
-                <TableCell className="text-clay-500 text-xs">
+                <TableCell className="text-clay-200 text-xs">
                   {dest.client_slug || "\u2014"}
                 </TableCell>
                 <TableCell className="text-right">
@@ -82,7 +82,7 @@ export function DestinationList({
                       size="icon-sm"
                       onClick={() => onTest(dest)}
                       disabled={testingId === dest.id}
-                      className="text-clay-500 hover:text-kiln-teal"
+                      className="text-clay-200 hover:text-kiln-teal"
                       title="Test connectivity"
                     >
                       <Zap className="h-3.5 w-3.5" />
@@ -91,7 +91,7 @@ export function DestinationList({
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => onEdit(dest)}
-                      className="text-clay-500 hover:text-clay-200"
+                      className="text-clay-200 hover:text-clay-200"
                       title="Edit"
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -100,7 +100,7 @@ export function DestinationList({
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => onDelete(dest)}
-                      className="text-clay-500 hover:text-kiln-coral"
+                      className="text-clay-200 hover:text-kiln-coral"
                       title="Delete"
                     >
                       <Trash2 className="h-3.5 w-3.5" />

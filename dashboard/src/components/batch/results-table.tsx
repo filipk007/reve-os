@@ -59,9 +59,9 @@ export function ResultsTable({
   };
 
   return (
-    <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between border-b border-clay-800 px-4 py-2">
-        <span className="text-xs text-clay-500 uppercase tracking-wider font-[family-name:var(--font-sans)]">
+    <div className="rounded-xl border border-clay-500  overflow-hidden">
+      <div className="flex items-center justify-between border-b border-clay-500 px-4 py-2">
+        <span className="text-xs text-clay-200 uppercase tracking-wider font-[family-name:var(--font-sans)]">
           Results ({jobs.length} rows)
         </span>
         <div className="flex items-center gap-2">
@@ -101,24 +101,24 @@ export function ResultsTable({
       <div className="overflow-x-auto max-h-96">
         <Table>
           <TableHeader>
-            <TableRow className="border-clay-800 hover:bg-transparent">
-              <TableHead className="text-clay-500 text-xs">#</TableHead>
-              <TableHead className="text-clay-500 text-xs">Row ID</TableHead>
-              <TableHead className="text-clay-500 text-xs">Status</TableHead>
-              <TableHead className="text-clay-500 text-xs">Duration</TableHead>
-              <TableHead className="text-clay-500 text-xs">Output</TableHead>
+            <TableRow className="border-clay-500 hover:bg-transparent">
+              <TableHead className="text-clay-200 text-xs">#</TableHead>
+              <TableHead className="text-clay-200 text-xs">Row ID</TableHead>
+              <TableHead className="text-clay-200 text-xs">Status</TableHead>
+              <TableHead className="text-clay-200 text-xs">Duration</TableHead>
+              <TableHead className="text-clay-200 text-xs">Output</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {jobs.map((job, i) => (
               <TableRow
                 key={job.id}
-                className="border-clay-800 hover:bg-muted/50"
+                className="border-clay-500 hover:bg-muted/50"
               >
-                <TableCell className="text-clay-500 font-[family-name:var(--font-mono)] text-xs">
+                <TableCell className="text-clay-200 font-[family-name:var(--font-mono)] text-xs">
                   {i + 1}
                 </TableCell>
-                <TableCell className="text-clay-400 font-[family-name:var(--font-mono)] text-xs">
+                <TableCell className="text-clay-200 font-[family-name:var(--font-mono)] text-xs">
                   {job.row_id || "\u2014"}
                 </TableCell>
                 <TableCell>

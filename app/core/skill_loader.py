@@ -120,8 +120,14 @@ def load_context_files(
     seen = set()
 
     # --- Defaults layer: auto-load knowledge_base/_defaults/*.md ---
+    # Skills can opt out with `skip_defaults: true` in frontmatter
+    skip_defaults = False
+    if skill_name:
+        config = load_skill_config(skill_name)
+        skip_defaults = config.get("skip_defaults", False)
+
     defaults_dir = settings.knowledge_dir / "_defaults"
-    if defaults_dir.exists():
+    if not skip_defaults and defaults_dir.exists():
         for f in sorted(defaults_dir.iterdir()):
             if f.suffix == ".md":
                 rel = f"knowledge_base/_defaults/{f.name}"
@@ -130,9 +136,11 @@ def load_context_files(
                 files.append({"path": rel, "content": content})
 
     # --- Context refs: from frontmatter (preferred) or regex fallback ---
+    context_max_chars = None
     if skill_name:
-        config = load_skill_config(skill_name)
+        # config already loaded above for skip_defaults check
         refs = config.get("context", []) or []
+        context_max_chars = config.get("context_max_chars")
         if not refs:
             refs = parse_context_refs(skill_content)
     else:
@@ -162,6 +170,12 @@ def load_context_files(
                     content = industry_file.read_text()
                     seen.add(rel)
                     files.append({"path": rel, "content": content})
+
+    # --- Truncate context files if context_max_chars is set ---
+    if context_max_chars and isinstance(context_max_chars, int):
+        for ctx in files:
+            if len(ctx["content"]) > context_max_chars:
+                ctx["content"] = ctx["content"][:context_max_chars] + "\n\n[...truncated]"
 
     return files
 

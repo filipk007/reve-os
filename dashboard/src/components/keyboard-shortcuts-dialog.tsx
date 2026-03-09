@@ -60,17 +60,17 @@ export function KeyboardShortcutsDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="border-clay-700 bg-clay-900 max-w-md">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-clay-100">Keyboard Shortcuts</DialogTitle>
-          <DialogDescription className="text-clay-500">
+          <DialogTitle>Keyboard Shortcuts</DialogTitle>
+          <DialogDescription>
             Quick access to common actions
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-5">
+        <div className="space-y-5 px-5 py-4">
           {SHORTCUT_GROUPS.map((group) => (
             <div key={group.title}>
-              <h3 className="text-xs font-medium text-clay-500 uppercase tracking-wider mb-2">
+              <h3 className="text-[11px] font-medium text-clay-300 uppercase tracking-[0.1em] mb-2">
                 {group.title}
               </h3>
               <div className="space-y-1.5">
@@ -79,12 +79,12 @@ export function KeyboardShortcutsDialog() {
                     key={shortcut.label}
                     className="flex items-center justify-between py-1"
                   >
-                    <span className="text-sm text-clay-300">{shortcut.label}</span>
+                    <span className="text-sm text-clay-200">{shortcut.label}</span>
                     <div className="flex items-center gap-1">
                       {shortcut.keys.map((key, i) => (
                         <kbd
                           key={i}
-                          className="min-w-[24px] text-center rounded border border-clay-700 bg-clay-800 px-1.5 py-0.5 font-mono text-xs text-clay-400"
+                          className="retro-keycap min-w-[24px] text-center"
                         >
                           {key}
                         </kbd>

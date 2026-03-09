@@ -165,10 +165,10 @@ export default function PlaysPage() {
           open={deleteConfirm !== null}
           onOpenChange={(open) => !open && setDeleteConfirm(null)}
         >
-          <DialogContent className="border-clay-800 bg-clay-950">
+          <DialogContent className="border-clay-500 bg-clay-950">
             <DialogHeader>
               <DialogTitle className="text-clay-100">Delete Play</DialogTitle>
-              <DialogDescription className="text-clay-500">
+              <DialogDescription className="text-clay-200">
                 Are you sure you want to delete &quot;{deleteConfirm?.display_name}&quot;?
                 This cannot be undone.
               </DialogDescription>

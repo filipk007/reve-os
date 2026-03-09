@@ -96,7 +96,7 @@ export function NotificationPanel() {
           setOpen(true);
           markAllRead();
         }}
-        className="relative p-1.5 rounded-md text-clay-400 hover:text-clay-200 hover:bg-clay-800 transition-colors"
+        className="relative p-1.5 rounded-md text-clay-200 hover:text-clay-100 hover:bg-clay-700 transition-colors duration-150"
         aria-label="Notifications"
       >
         <Bell className="h-4.5 w-4.5" />
@@ -110,7 +110,7 @@ export function NotificationPanel() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-sm bg-clay-900 border-clay-800"
+          className="w-full sm:max-w-sm"
         >
           <SheetHeader>
             <div className="flex items-center justify-between">

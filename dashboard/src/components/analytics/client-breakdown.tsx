@@ -22,11 +22,11 @@ export function ClientBreakdown({
   const entries = Object.entries(byClient);
   if (entries.length === 0) {
     return (
-      <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-4">
+      <div className="rounded-xl border border-clay-500  p-4">
         <h4 className="text-sm font-medium text-clay-300 mb-4">
           By Client
         </h4>
-        <p className="text-sm text-clay-500 text-center py-4">
+        <p className="text-sm text-clay-200 text-center py-4">
           No client-specific feedback yet.
         </p>
       </div>
@@ -42,7 +42,7 @@ export function ClientBreakdown({
     .sort((a, b) => b.rate - a.rate);
 
   return (
-    <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-4">
+    <div className="rounded-xl border border-clay-500  p-4">
       <h4 className="text-sm font-medium text-clay-300 mb-4">
         Approval by Client
       </h4>

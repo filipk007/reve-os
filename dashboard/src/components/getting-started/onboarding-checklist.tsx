@@ -40,7 +40,7 @@ function StepCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="border-clay-800 bg-white shadow-sm overflow-hidden">
+    <Card className="border-clay-500  overflow-hidden">
       <CardContent className="p-0">
         <div className="flex items-start gap-4 p-5">
           <div className="shrink-0 pt-0.5">
@@ -48,8 +48,8 @@ function StepCard({
               <CheckCircle className="h-6 w-6 text-kiln-teal" />
             ) : (
               <div className="relative">
-                <Circle className="h-6 w-6 text-clay-600" />
-                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-clay-500">
+                <Circle className="h-6 w-6 text-clay-300" />
+                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-clay-200">
                   {step}
                 </span>
               </div>
@@ -72,10 +72,10 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
     return (
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i} className="border-clay-800 bg-white shadow-sm">
+          <Card key={i} className="border-clay-500 ">
             <CardContent className="p-5">
-              <Skeleton className="h-5 w-48 bg-clay-900 rounded mb-3" />
-              <Skeleton className="h-4 w-full bg-clay-900 rounded" />
+              <Skeleton className="h-5 w-48 bg-clay-800 rounded mb-3" />
+              <Skeleton className="h-4 w-full bg-clay-800 rounded" />
             </CardContent>
           </Card>
         ))}
@@ -91,7 +91,7 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
     <div className="space-y-4">
       {/* Step 1: Platform connected */}
       <StepCard step={1} title="Platform is connected" done={isConnected}>
-        <p className="text-sm text-clay-400 mb-3">
+        <p className="text-sm text-clay-200 mb-3">
           {isConnected
             ? `The Kiln engine is online with ${health?.workers_max ?? 0} workers available and ${health?.skills_loaded?.length ?? 0} skills loaded.`
             : "Waiting for the engine to come online..."}
@@ -108,7 +108,7 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
 
       {/* Step 2: Skills ready */}
       <StepCard step={2} title="Your skills are ready" done={hasSkills}>
-        <p className="text-sm text-clay-400 mb-3">
+        <p className="text-sm text-clay-200 mb-3">
           {hasSkills
             ? `${skills.length} skills are configured and ready to use:`
             : "No skills loaded yet. Contact The Kiln team to configure your skills."}
@@ -119,7 +119,7 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
               <Badge
                 key={s}
                 variant="outline"
-                className="bg-clay-900/50 text-clay-300 border-clay-700"
+                className="bg-clay-800/50 text-clay-300 border-clay-700"
               >
                 <Sparkles className="h-3 w-3 mr-1 text-kiln-teal" />
                 {s}
@@ -131,7 +131,7 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
 
       {/* Step 3: Try first skill */}
       <StepCard step={3} title="Try your first skill" done={false}>
-        <p className="text-sm text-clay-400 mb-3">
+        <p className="text-sm text-clay-200 mb-3">
           Head to the Playground to test a skill with sample data. See the AI output in real-time.
         </p>
         <div className="flex flex-wrap gap-2">
@@ -154,12 +154,12 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
 
       {/* Step 4: Clay integration */}
       <StepCard step={4} title="Set up Clay integration" done={false}>
-        <p className="text-sm text-clay-400 mb-3">
+        <p className="text-sm text-clay-200 mb-3">
           Connect Clay to The Kiln using an HTTP Action. Copy the settings below into your Clay table.
         </p>
-        <div className="space-y-3 rounded-lg bg-clay-900/50 border border-clay-800 p-4">
+        <div className="space-y-3 rounded-lg bg-clay-800/50 border border-clay-500 p-4">
           <div>
-            <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
               Webhook URL
             </p>
             <div className="flex items-center gap-2">
@@ -171,14 +171,14 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
                   navigator.clipboard.writeText(`${API_URL}/webhook`);
                   toast.success("Copied webhook URL");
                 }}
-                className="shrink-0 text-clay-500 hover:text-clay-300"
+                className="shrink-0 text-clay-200 hover:text-clay-300"
               >
                 <Copy className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
           <div>
-            <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
               Method
             </p>
             <code className="text-sm text-clay-300 font-[family-name:var(--font-mono)]">
@@ -186,7 +186,7 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
             </code>
           </div>
           <div>
-            <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
               Headers
             </p>
             <code className="text-sm text-clay-300 font-[family-name:var(--font-mono)] block">
@@ -197,7 +197,7 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
             </code>
           </div>
           <div>
-            <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
               Body Template
             </p>
             <pre className="text-xs text-clay-300 font-[family-name:var(--font-mono)] bg-clay-950 rounded p-2 overflow-x-auto">
@@ -213,7 +213,7 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
             </pre>
           </div>
           <div>
-            <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
               Timeout
             </p>
             <code className="text-sm text-clay-300 font-[family-name:var(--font-mono)]">
@@ -225,7 +225,7 @@ export function OnboardingChecklist({ skills, clients, health, loading }: Props)
 
       {/* Step 5: Explore dashboard */}
       <StepCard step={5} title="Explore your dashboard" done={false}>
-        <p className="text-sm text-clay-400 mb-3">
+        <p className="text-sm text-clay-200 mb-3">
           Your dashboard tracks every job, shows analytics, and lets you rate outputs to improve quality over time.
         </p>
         <div className="flex flex-wrap gap-2">

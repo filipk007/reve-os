@@ -92,7 +92,7 @@ export function FeedbackButtons({
             "h-8 px-3 border-clay-700",
             currentRating === "thumbs_up"
               ? "bg-kiln-teal/15 text-kiln-teal border-kiln-teal/30 hover:bg-kiln-teal/20 hover:text-kiln-teal"
-              : "text-clay-400 hover:text-kiln-teal hover:border-kiln-teal/30"
+              : "text-clay-200 hover:text-kiln-teal hover:border-kiln-teal/30"
           )}
         >
           <ThumbsUp className="h-3.5 w-3.5 mr-1.5" />
@@ -113,7 +113,7 @@ export function FeedbackButtons({
             "h-8 px-3 border-clay-700",
             currentRating === "thumbs_down"
               ? "bg-kiln-coral/15 text-kiln-coral border-kiln-coral/30 hover:bg-kiln-coral/20 hover:text-kiln-coral"
-              : "text-clay-400 hover:text-kiln-coral hover:border-kiln-coral/30"
+              : "text-clay-200 hover:text-kiln-coral hover:border-kiln-coral/30"
           )}
         >
           <ThumbsDown className="h-3.5 w-3.5 mr-1.5" />
@@ -126,13 +126,13 @@ export function FeedbackButtons({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="What could be better? (optional)"
-            className="h-16 border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-600 text-sm resize-none"
+            className="h-16 border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-300 text-sm resize-none"
           />
           <div className="flex gap-2">
             <Button
               size="sm"
               variant="outline"
-              className="h-7 text-xs border-clay-700 text-clay-400"
+              className="h-7 text-xs border-clay-700 text-clay-200"
               onClick={() => {
                 setNoteOpen(false);
                 setNote("");

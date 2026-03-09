@@ -52,7 +52,7 @@ function statusConfig(status: string) {
       return {
         label: status,
         icon: Clock,
-        className: "bg-clay-800 text-clay-400 border-clay-700",
+        className: "bg-clay-800 text-clay-200 border-clay-700",
       };
   }
 }
@@ -157,10 +157,10 @@ export function ReviewDetail({
   const isActing = acting !== null;
 
   return (
-    <Card className="border-clay-800 bg-white shadow-sm">
+    <Card className="border-clay-500 ">
       <CardContent className="p-0">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-clay-800 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-clay-500 px-4 py-3">
           <div className="flex items-center gap-3">
             <h3 className="text-sm font-semibold font-[family-name:var(--font-sans)] text-clay-100">
               Review Item
@@ -174,7 +174,7 @@ export function ReviewDetail({
             variant="ghost"
             size="icon-sm"
             onClick={onClose}
-            className="text-clay-400 hover:text-clay-200"
+            className="text-clay-200 hover:text-clay-200"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -184,19 +184,19 @@ export function ReviewDetail({
           {/* Meta info */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wider">
+              <p className="text-xs text-clay-200 uppercase tracking-wider">
                 Skill
               </p>
               <p className="text-sm text-clay-200 mt-0.5">{item.skill}</p>
             </div>
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wider">
+              <p className="text-xs text-clay-200 uppercase tracking-wider">
                 Model
               </p>
               <p className="text-sm text-clay-200 mt-0.5">{item.model}</p>
             </div>
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wider">
+              <p className="text-xs text-clay-200 uppercase tracking-wider">
                 Created
               </p>
               <p className="text-sm text-clay-200 mt-0.5">
@@ -205,7 +205,7 @@ export function ReviewDetail({
             </div>
             {campaignName && (
               <div>
-                <p className="text-xs text-clay-500 uppercase tracking-wider">
+                <p className="text-xs text-clay-200 uppercase tracking-wider">
                   Campaign
                 </p>
                 <p className="text-sm text-clay-200 mt-0.5">{campaignName}</p>
@@ -213,7 +213,7 @@ export function ReviewDetail({
             )}
             {item.client_slug && (
               <div>
-                <p className="text-xs text-clay-500 uppercase tracking-wider">
+                <p className="text-xs text-clay-200 uppercase tracking-wider">
                   Client
                 </p>
                 <p className="text-sm text-clay-200 mt-0.5">
@@ -226,7 +226,7 @@ export function ReviewDetail({
           {/* Confidence bar */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-xs text-clay-500 uppercase tracking-wider">
+              <p className="text-xs text-clay-200 uppercase tracking-wider">
                 Confidence Score
               </p>
               <span
@@ -252,7 +252,7 @@ export function ReviewDetail({
           {/* Input data — collapsible */}
           <div>
             <button
-              className="flex items-center gap-1.5 text-xs text-clay-500 uppercase tracking-wider mb-1 hover:text-clay-400 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-clay-200 uppercase tracking-wider mb-1 hover:text-clay-200 transition-colors"
               onClick={() => setShowInput(!showInput)}
             >
               {showInput ? (
@@ -263,7 +263,7 @@ export function ReviewDetail({
               Input Data
             </button>
             {showInput && (
-              <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-800 rounded-md p-3 overflow-x-auto max-h-40">
+              <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-500 rounded-md p-3 overflow-x-auto max-h-40">
                 {JSON.stringify(item.input_data, null, 2)}
               </pre>
             )}
@@ -271,24 +271,24 @@ export function ReviewDetail({
 
           {/* Output */}
           <div>
-            <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
               Output
             </p>
-            <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-800 rounded-md p-3 overflow-x-auto max-h-72">
+            <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-500 rounded-md p-3 overflow-x-auto max-h-72">
               {JSON.stringify(item.output, null, 2)}
             </pre>
           </div>
 
           {/* Note textarea */}
           <div>
-            <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+            <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
               Reviewer Note
             </p>
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Add notes about this output (optional)"
-              className="h-20 border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-600 text-sm resize-none"
+              className="h-20 border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-300 text-sm resize-none"
               disabled={isActing}
             />
           </div>
@@ -303,7 +303,7 @@ export function ReviewDetail({
                 value={revisedInstructions}
                 onChange={(e) => setRevisedInstructions(e.target.value)}
                 placeholder="Describe what should change (e.g., 'Make the tone more casual' or 'Focus on the ROI angle')"
-                className="h-24 border-kiln-mustard/20 bg-clay-950 text-clay-200 placeholder:text-clay-600 text-sm resize-none"
+                className="h-24 border-kiln-mustard/20 bg-clay-950 text-clay-200 placeholder:text-clay-300 text-sm resize-none"
                 disabled={isActing}
               />
               <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export function ReviewDetail({
                     setShowReviseForm(false);
                     setRevisedInstructions("");
                   }}
-                  className="border-clay-700 text-clay-400 text-xs"
+                  className="border-clay-700 text-clay-200 text-xs"
                 >
                   Cancel
                 </Button>
@@ -342,7 +342,7 @@ export function ReviewDetail({
           )}
 
           {/* Action buttons */}
-          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-clay-800">
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-clay-500">
             <Button
               size="sm"
               disabled={isActing}
@@ -397,7 +397,7 @@ export function ReviewDetail({
               variant="outline"
               disabled={isActing}
               onClick={handleRerun}
-              className="border-clay-700 text-clay-400 hover:text-clay-200 text-xs"
+              className="border-clay-700 text-clay-200 hover:text-clay-200 text-xs"
             >
               {acting === "rerun" ? (
                 <>

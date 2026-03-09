@@ -13,7 +13,7 @@ import { CsvUploader } from "@/components/batch/csv-uploader";
 import { CsvPreview } from "@/components/batch/csv-preview";
 import { ColumnMapper, autoMap } from "@/components/batch/column-mapper";
 import { BatchProgress } from "@/components/batch/batch-progress";
-import { ResultsTable } from "@/components/batch/results-table";
+import { SpreadsheetView } from "@/components/batch/spreadsheet/spreadsheet-view";
 import { PushDialog } from "@/components/batch/push-dialog";
 import { SKILL_SAMPLES, type Model } from "@/lib/constants";
 import {
@@ -428,16 +428,16 @@ function RunInner() {
     <div className="flex-1 overflow-auto p-4 md:p-6 space-y-6 pb-20 md:pb-6">
       <div className="flex items-center gap-3">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-clay-900 border border-clay-800">
+          <TabsList className="bg-clay-800 border border-clay-500">
             <TabsTrigger
               value="single"
-              className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+              className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
             >
               Single
             </TabsTrigger>
             <TabsTrigger
               value="batch"
-              className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+              className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
             >
               Batch
             </TabsTrigger>
@@ -495,7 +495,7 @@ function RunInner() {
 
       {/* ─── Sticky Run button on mobile ─── */}
       {activeTab === "single" && (
-        <div className="fixed bottom-0 left-0 right-0 md:hidden p-3 bg-clay-950/80 backdrop-blur-sm border-t border-clay-800 z-40">
+        <div className="fixed bottom-0 left-0 right-0 md:hidden p-3 bg-clay-950/80 backdrop-blur-sm border-t border-clay-500 z-40">
           <Button
             onClick={handleRun}
             disabled={!skill || loading}
@@ -522,14 +522,14 @@ function RunInner() {
                     <SkillSelector value={batchSkill} onChange={handleBatchSkillChange} />
                     <ModelSelector value={batchModel} onChange={setBatchModel} />
                     <div>
-                      <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+                      <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
                         Destination (optional)
                       </label>
                       <Select value={selectedDestId} onValueChange={(v) => setSelectedDestId(v === "none" ? "" : v)}>
-                        <SelectTrigger className="w-full border-clay-700 bg-clay-900 text-clay-200">
+                        <SelectTrigger className="w-full border-clay-700 bg-clay-800 text-clay-200">
                           <SelectValue placeholder="None — manual push" />
                         </SelectTrigger>
-                        <SelectContent className="border-clay-700 bg-clay-900">
+                        <SelectContent className="border-clay-700 bg-clay-800">
                           <SelectItem value="none">None — manual push</SelectItem>
                           {destinations.map((d) => (
                             <SelectItem key={d.id} value={d.id}>
@@ -552,14 +552,14 @@ function RunInner() {
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
                     <div className="flex-1">
-                      <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+                      <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
                         Schedule (optional)
                       </label>
                       <input
                         type="datetime-local"
                         value={scheduledAt}
                         onChange={(e) => setScheduledAt(e.target.value)}
-                        className="w-full rounded-lg border border-clay-800 bg-clay-900 text-clay-200 px-3 py-2 text-sm focus:border-kiln-teal focus:outline-none"
+                        className="w-full rounded-lg border border-clay-500 bg-clay-800 text-clay-200 px-3 py-2 text-sm focus:border-kiln-teal focus:outline-none"
                       />
                     </div>
                     <Button
@@ -620,7 +620,7 @@ function RunInner() {
                     }
                     if (batchPhase === "done" && !autoPushResult) {
                       return (
-                        <Badge variant="outline" className="border-clay-700 bg-clay-900/50 text-clay-400 w-fit">
+                        <Badge variant="outline" className="border-clay-700 bg-clay-800/50 text-clay-200 w-fit">
                           <Send className="h-3 w-3 mr-1.5" />
                           Auto-pushing to {destName}...
                         </Badge>
@@ -629,18 +629,30 @@ function RunInner() {
                     return null;
                   })()}
                   {jobs.some((j) => j !== null) && (
-                    <ResultsTable
+                    <SpreadsheetView
                       jobs={jobs.filter((j): j is Job => j !== null)}
                       originalRows={rows}
-                      onRetryFailed={batchPhase === "done" && failed > 0 ? handleRetryFailed : undefined}
-                      onPushToDestination={batchPhase === "done" && completed > 0 ? () => setPushOpen(true) : undefined}
+                      csvHeaders={headers}
+                      onRetrySelected={
+                        batchPhase === "done"
+                          ? (jobIds) => {
+                              // Retry the selected failed jobs
+                              handleRetryFailed();
+                            }
+                          : undefined
+                      }
+                      onPushSelected={
+                        batchPhase === "done" && completed > 0
+                          ? () => setPushOpen(true)
+                          : undefined
+                      }
                     />
                   )}
                   {batchPhase === "done" && (
                     <Button
                       variant="outline"
                       onClick={handleBatchReset}
-                      className="border-clay-700 bg-clay-900 text-clay-300 hover:bg-clay-800 hover:text-clay-100"
+                      className="border-clay-700 bg-clay-800 text-clay-300 hover:bg-clay-800 hover:text-clay-100"
                     >
                       <RotateCcw className="h-4 w-4 mr-2" />
                       Start New Batch
@@ -655,13 +667,13 @@ function RunInner() {
             <div className="rounded-xl border border-kiln-teal/30 bg-kiln-teal/5 p-6 text-center space-y-4">
               <CheckCircle className="h-12 w-12 text-kiln-teal mx-auto" />
               <h3 className="text-lg font-semibold text-clay-100">Batch Scheduled</h3>
-              <p className="text-clay-400 text-sm">
+              <p className="text-clay-200 text-sm">
                 Your batch of {rows.length} rows will be processed at the scheduled time.
               </p>
               <Button
                 variant="outline"
                 onClick={handleBatchReset}
-                className="border-clay-700 bg-clay-900 text-clay-300 hover:bg-clay-800 hover:text-clay-100"
+                className="border-clay-700 bg-clay-800 text-clay-300 hover:bg-clay-800 hover:text-clay-100"
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Start New Batch
@@ -677,7 +689,7 @@ function RunInner() {
           />
 
           {scheduledBatches.length > 0 && (
-            <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-clay-500  overflow-hidden">
               <button
                 onClick={() => setScheduledCollapsed((c) => !c)}
                 className="w-full flex items-center justify-between p-4 text-left hover:bg-clay-800/50 transition-colors"
@@ -689,9 +701,9 @@ function RunInner() {
                   </span>
                 </h3>
                 {scheduledCollapsed ? (
-                  <ChevronDown className="h-4 w-4 text-clay-500" />
+                  <ChevronDown className="h-4 w-4 text-clay-200" />
                 ) : (
-                  <ChevronUp className="h-4 w-4 text-clay-500" />
+                  <ChevronUp className="h-4 w-4 text-clay-200" />
                 )}
               </button>
               {!scheduledCollapsed && (
@@ -699,14 +711,14 @@ function RunInner() {
                   {scheduledBatches.map((b) => (
                     <div
                       key={b.id}
-                      className="flex items-center justify-between text-sm border-b border-clay-800 pb-2 last:border-0"
+                      className="flex items-center justify-between text-sm border-b border-clay-500 pb-2 last:border-0"
                     >
                       <div>
                         <span className="text-kiln-teal font-medium">{b.skill}</span>
-                        <span className="text-clay-500 ml-2">({b.total_rows} rows)</span>
+                        <span className="text-clay-200 ml-2">({b.total_rows} rows)</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-clay-400 text-xs">
+                        <span className="text-clay-200 text-xs">
                           {new Date(b.scheduled_at * 1000).toLocaleString()}
                         </span>
                         <span
@@ -715,7 +727,7 @@ function RunInner() {
                               ? "bg-kiln-mustard/15 text-kiln-mustard"
                               : b.status === "enqueued"
                                 ? "bg-kiln-teal/15 text-kiln-teal"
-                                : "bg-clay-700 text-clay-400"
+                                : "bg-clay-700 text-clay-200"
                           }`}
                         >
                           {b.status}

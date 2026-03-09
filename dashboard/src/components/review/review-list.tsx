@@ -61,7 +61,7 @@ function statusConfig(status: string) {
       return {
         label: status,
         icon: Clock,
-        className: "bg-clay-800 text-clay-400 border-clay-700",
+        className: "bg-clay-800 text-clay-200 border-clay-700",
       };
   }
 }
@@ -78,7 +78,7 @@ function ReviewItemRow({
   const StatusIcon = status.icon;
 
   return (
-    <Card className="border-clay-800 bg-white shadow-sm hover:border-clay-700 transition-colors">
+    <Card className="border-clay-500  hover:border-clay-700 transition-colors">
       <CardContent className="p-0">
         {/* Main row — clickable header */}
         <button
@@ -86,9 +86,9 @@ function ReviewItemRow({
           onClick={() => setExpanded(!expanded)}
         >
           {expanded ? (
-            <ChevronDown className="h-4 w-4 text-clay-500 shrink-0" />
+            <ChevronDown className="h-4 w-4 text-clay-200 shrink-0" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-clay-500 shrink-0" />
+            <ChevronRight className="h-4 w-4 text-clay-200 shrink-0" />
           )}
 
           {/* Skill */}
@@ -112,7 +112,7 @@ function ReviewItemRow({
 
           {/* Row ID */}
           {item.row_id && (
-            <span className="text-xs text-clay-500 hidden md:inline">
+            <span className="text-xs text-clay-200 hidden md:inline">
               Row: {item.row_id}
             </span>
           )}
@@ -121,30 +121,30 @@ function ReviewItemRow({
           <span className="flex-1" />
 
           {/* Timestamp */}
-          <span className="text-xs text-clay-500">
+          <span className="text-xs text-clay-200">
             {formatRelativeTime(item.created_at)}
           </span>
         </button>
 
         {/* Expanded content */}
         {expanded && (
-          <div className="border-t border-clay-800 px-4 py-3 space-y-3">
+          <div className="border-t border-clay-500 px-4 py-3 space-y-3">
             {/* Input data */}
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+              <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
                 Input Data
               </p>
-              <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-800 rounded-md p-3 overflow-x-auto max-h-40">
+              <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-500 rounded-md p-3 overflow-x-auto max-h-40">
                 {JSON.stringify(item.input_data, null, 2)}
               </pre>
             </div>
 
             {/* Output */}
             <div>
-              <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+              <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
                 Output
               </p>
-              <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-800 rounded-md p-3 overflow-x-auto max-h-60">
+              <pre className="text-xs text-clay-300 bg-clay-950 border border-clay-500 rounded-md p-3 overflow-x-auto max-h-60">
                 {JSON.stringify(item.output, null, 2)}
               </pre>
             </div>
@@ -152,10 +152,10 @@ function ReviewItemRow({
             {/* Reviewer note */}
             {item.reviewer_note && (
               <div>
-                <p className="text-xs text-clay-500 uppercase tracking-wider mb-1">
+                <p className="text-xs text-clay-200 uppercase tracking-wider mb-1">
                   Reviewer Note
                 </p>
-                <p className="text-sm text-clay-300 bg-clay-950 border border-clay-800 rounded-md p-3">
+                <p className="text-sm text-clay-300 bg-clay-950 border border-clay-500 rounded-md p-3">
                   {item.reviewer_note}
                 </p>
               </div>
@@ -195,15 +195,15 @@ export function ReviewList({
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i} className="border-clay-800 bg-white shadow-sm">
+          <Card key={i} className="border-clay-500 ">
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
-                <Skeleton className="h-4 w-4 bg-clay-900 rounded" />
-                <Skeleton className="h-4 w-24 bg-clay-900 rounded" />
-                <Skeleton className="h-5 w-12 bg-clay-900 rounded-full" />
-                <Skeleton className="h-5 w-16 bg-clay-900 rounded-full" />
+                <Skeleton className="h-4 w-4 bg-clay-800 rounded" />
+                <Skeleton className="h-4 w-24 bg-clay-800 rounded" />
+                <Skeleton className="h-5 w-12 bg-clay-800 rounded-full" />
+                <Skeleton className="h-5 w-16 bg-clay-800 rounded-full" />
                 <div className="flex-1" />
-                <Skeleton className="h-4 w-16 bg-clay-900 rounded" />
+                <Skeleton className="h-4 w-16 bg-clay-800 rounded" />
               </div>
             </CardContent>
           </Card>

@@ -60,13 +60,13 @@ export function PromptPreview({ clients }: PromptPreviewProps) {
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="text-xs font-medium text-clay-400 mb-1 block">
+          <label className="text-xs font-medium text-clay-200 mb-1 block">
             Skill
           </label>
           <select
             value={selectedSkill}
             onChange={(e) => setSelectedSkill(e.target.value)}
-            className="w-full rounded-md bg-clay-900 border border-clay-700 text-clay-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-kiln-teal/50"
+            className="w-full rounded-md bg-clay-800 border border-clay-700 text-clay-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-kiln-teal/50"
           >
             <option value="">Select a skill...</option>
             {skills.map((s) => (
@@ -77,13 +77,13 @@ export function PromptPreview({ clients }: PromptPreviewProps) {
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium text-clay-400 mb-1 block">
+          <label className="text-xs font-medium text-clay-200 mb-1 block">
             Client
           </label>
           <select
             value={selectedClient}
             onChange={(e) => setSelectedClient(e.target.value)}
-            className="w-full rounded-md bg-clay-900 border border-clay-700 text-clay-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-kiln-teal/50"
+            className="w-full rounded-md bg-clay-800 border border-clay-700 text-clay-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-kiln-teal/50"
           >
             <option value="">Select a client...</option>
             {clients.map((c) => (
@@ -96,14 +96,14 @@ export function PromptPreview({ clients }: PromptPreviewProps) {
       </div>
 
       <div>
-        <label className="text-xs font-medium text-clay-400 mb-1 block">
+        <label className="text-xs font-medium text-clay-200 mb-1 block">
           Sample Data (optional JSON)
         </label>
         <textarea
           value={sampleData}
           onChange={(e) => setSampleData(e.target.value)}
           rows={3}
-          className="w-full rounded-md bg-clay-900 border border-clay-700 text-clay-100 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-kiln-teal/50 resize-y"
+          className="w-full rounded-md bg-clay-800 border border-clay-700 text-clay-100 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-kiln-teal/50 resize-y"
           placeholder='{"first_name": "Sarah", "company_name": "Acme"}'
         />
       </div>
@@ -124,11 +124,11 @@ export function PromptPreview({ clients }: PromptPreviewProps) {
       {result && (
         <div className="space-y-4 mt-4">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 text-sm text-clay-400">
+            <div className="flex items-center gap-1.5 text-sm text-clay-200">
               <Hash className="h-3.5 w-3.5" />
               <span>~{result.estimated_tokens.toLocaleString()} tokens</span>
             </div>
-            <div className="flex items-center gap-1.5 text-sm text-clay-400">
+            <div className="flex items-center gap-1.5 text-sm text-clay-200">
               <FileText className="h-3.5 w-3.5" />
               <span>{result.context_files_loaded.length} context files</span>
             </div>
@@ -148,7 +148,7 @@ export function PromptPreview({ clients }: PromptPreviewProps) {
             </div>
           )}
 
-          <Card className="bg-clay-900 border-clay-800 p-0">
+          <Card className="bg-clay-800 border-clay-500 p-0">
             <pre className="p-4 text-xs text-clay-300 font-mono whitespace-pre-wrap break-words max-h-[500px] overflow-auto">
               {result.assembled_prompt}
             </pre>

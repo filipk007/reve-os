@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { VariantDef } from "@/lib/types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export function VariantList({
   onDelete: (v: VariantDef) => void;
   onFork: () => void;
 }) {
+  const router = useRouter();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -28,7 +30,7 @@ export function VariantList({
           <h4 className="text-sm font-medium text-clay-300">
             Variants for <span className="text-kiln-teal">{skill}</span>
           </h4>
-          <p className="text-xs text-clay-500 mt-0.5">
+          <p className="text-xs text-clay-200 mt-0.5">
             {variants.length} variant{variants.length !== 1 ? "s" : ""} + default
           </p>
         </div>
@@ -51,7 +53,7 @@ export function VariantList({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Default card */}
-          <Card className="border-clay-800 bg-white shadow-sm border-kiln-teal/20">
+          <Card className="border-clay-500  border-kiln-teal/20">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -66,14 +68,14 @@ export function VariantList({
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xs text-clay-500">
+              <p className="text-xs text-clay-200">
                 Current production skill.md
               </p>
             </CardContent>
           </Card>
 
           {variants.map((v) => (
-            <Card key={v.id} className="border-clay-800 bg-white shadow-sm">
+            <Card key={v.id} className="border-clay-500 ">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <h5 className="font-medium text-clay-100 text-sm truncate">
@@ -83,15 +85,19 @@ export function VariantList({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 text-clay-500 hover:text-clay-200"
-                      onClick={() => onEdit(v)}
+                      className="h-6 w-6 text-clay-200 hover:text-clay-200"
+                      onClick={() =>
+                        router.push(
+                          `/skills/editor?skill=${encodeURIComponent(skill)}&variant=${encodeURIComponent(v.id)}`
+                        )
+                      }
                     >
                       <Edit2 className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 text-clay-500 hover:text-kiln-coral"
+                      className="h-6 w-6 text-clay-200 hover:text-kiln-coral"
                       onClick={() => onDelete(v)}
                     >
                       <Trash2 className="h-3 w-3" />
@@ -100,10 +106,10 @@ export function VariantList({
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-xs text-clay-500 font-[family-name:var(--font-mono)]">
+                <p className="text-xs text-clay-200 font-[family-name:var(--font-mono)]">
                   {v.id}
                 </p>
-                <p className="text-xs text-clay-600 mt-1">
+                <p className="text-xs text-clay-300 mt-1">
                   {formatRelativeTime(v.created_at)}
                 </p>
               </CardContent>

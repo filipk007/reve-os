@@ -35,23 +35,23 @@ function Section({
       );
     }
     return (
-      <pre className="text-xs text-clay-400 font-[family-name:var(--font-mono)] overflow-x-auto">
+      <pre className="text-xs text-clay-200 font-[family-name:var(--font-mono)] overflow-x-auto">
         {JSON.stringify(content, null, 2)}
       </pre>
     );
   };
 
   return (
-    <div className="border border-clay-800 rounded-lg overflow-hidden">
+    <div className="border border-clay-500 rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-3 hover:bg-clay-900/50 transition-colors"
+        className="w-full flex items-center justify-between p-3 hover:bg-clay-800/50 transition-colors"
       >
         <span className="text-sm font-medium text-clay-200 capitalize">
           {title.replace(/_/g, " ")}
         </span>
         <ChevronDown
-          className={`h-4 w-4 text-clay-500 transition-transform ${
+          className={`h-4 w-4 text-clay-200 transition-transform ${
             open ? "rotate-180" : ""
           }`}
         />
@@ -95,7 +95,7 @@ export function BriefResult({ data }: { data: Record<string, unknown> }) {
 
   return (
     <div className="p-4 space-y-3">
-      <div className="flex items-center gap-2 text-clay-500">
+      <div className="flex items-center gap-2 text-clay-200">
         <FileText className="h-4 w-4" />
         <span className="text-xs uppercase tracking-wider">Meeting Brief</span>
       </div>

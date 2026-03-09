@@ -147,13 +147,13 @@ export function PlayForm({
   ) => (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-xs text-clay-500">{label}</label>
+        <label className="text-xs text-clay-200">{label}</label>
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => addField(schema, setSchema)}
-          className="h-6 px-2 text-clay-500 hover:text-clay-200"
+          className="h-6 px-2 text-clay-200 hover:text-clay-200"
         >
           <Plus className="h-3 w-3 mr-1" />
           Add
@@ -165,16 +165,16 @@ export function PlayForm({
             placeholder="field_name"
             value={field.name}
             onChange={(e) => updateField(schema, setSchema, i, "name", e.target.value)}
-            className="border-clay-700 bg-clay-900 text-clay-200 text-xs flex-1"
+            className="border-clay-700 bg-clay-800 text-clay-200 text-xs flex-1"
           />
           <Select
             value={field.type}
             onValueChange={(v) => updateField(schema, setSchema, i, "type", v)}
           >
-            <SelectTrigger className="border-clay-700 bg-clay-900 text-clay-200 text-xs w-24">
+            <SelectTrigger className="border-clay-700 bg-clay-800 text-clay-200 text-xs w-24">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="border-clay-700 bg-clay-900">
+            <SelectContent className="border-clay-700 bg-clay-800">
               <SelectItem value="string">string</SelectItem>
               <SelectItem value="number">number</SelectItem>
               <SelectItem value="boolean">boolean</SelectItem>
@@ -184,14 +184,14 @@ export function PlayForm({
             placeholder="description"
             value={field.description}
             onChange={(e) => updateField(schema, setSchema, i, "description", e.target.value)}
-            className="border-clay-700 bg-clay-900 text-clay-200 text-xs flex-1"
+            className="border-clay-700 bg-clay-800 text-clay-200 text-xs flex-1"
           />
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => removeField(schema, setSchema, i)}
-            className="h-8 w-8 p-0 text-clay-600 hover:text-kiln-coral shrink-0"
+            className="h-8 w-8 p-0 text-clay-300 hover:text-kiln-coral shrink-0"
           >
             <X className="h-3.5 w-3.5" />
           </Button>
@@ -202,10 +202,10 @@ export function PlayForm({
 
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
-      <DialogContent className="border-clay-800 bg-clay-950 max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="border-clay-500 bg-clay-950 max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-clay-100">New Play</DialogTitle>
-          <DialogDescription className="text-clay-500">
+          <DialogDescription className="text-clay-200">
             Create a new GTM play with input/output schemas
           </DialogDescription>
         </DialogHeader>
@@ -213,49 +213,49 @@ export function PlayForm({
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-clay-500 mb-1 block">Slug</label>
+              <label className="text-xs text-clay-200 mb-1 block">Slug</label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="cold-outbound"
-                className="border-clay-700 bg-clay-900 text-clay-200"
+                className="border-clay-700 bg-clay-800 text-clay-200"
               />
             </div>
             <div>
-              <label className="text-xs text-clay-500 mb-1 block">
+              <label className="text-xs text-clay-200 mb-1 block">
                 Display Name
               </label>
               <Input
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Cold Outbound"
-                className="border-clay-700 bg-clay-900 text-clay-200"
+                className="border-clay-700 bg-clay-800 text-clay-200"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs text-clay-500 mb-1 block">
+            <label className="text-xs text-clay-200 mb-1 block">
               Description
             </label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What this play does..."
-              className="border-clay-700 bg-clay-900 text-clay-200 min-h-[60px]"
+              className="border-clay-700 bg-clay-800 text-clay-200 min-h-[60px]"
             />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-clay-500 mb-1 block">
+              <label className="text-xs text-clay-200 mb-1 block">
                 Category
               </label>
               <Select value={category} onValueChange={(v) => setCategory(v as PlayCategory)}>
-                <SelectTrigger className="border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   {CATEGORIES.map((c) => (
                     <SelectItem key={c.value} value={c.value}>
                       {c.label}
@@ -265,14 +265,14 @@ export function PlayForm({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-clay-500 mb-1 block">
+              <label className="text-xs text-clay-200 mb-1 block">
                 Pipeline
               </label>
               <Select value={pipeline} onValueChange={setPipeline}>
-                <SelectTrigger className="border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   {pipelines.map((p) => (
                     <SelectItem key={p.name} value={p.name}>
                       {p.name}
@@ -282,12 +282,12 @@ export function PlayForm({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-clay-500 mb-1 block">Model</label>
+              <label className="text-xs text-clay-200 mb-1 block">Model</label>
               <Select value={model} onValueChange={setModel}>
-                <SelectTrigger className="border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   <SelectItem value="opus">Opus</SelectItem>
                   <SelectItem value="sonnet">Sonnet</SelectItem>
                   <SelectItem value="haiku">Haiku</SelectItem>
@@ -297,38 +297,38 @@ export function PlayForm({
           </div>
 
           <div>
-            <label className="text-xs text-clay-500 mb-1 block">
+            <label className="text-xs text-clay-200 mb-1 block">
               When to Use
             </label>
             <Textarea
               value={whenToUse}
               onChange={(e) => setWhenToUse(e.target.value)}
               placeholder="When should someone use this play?"
-              className="border-clay-700 bg-clay-900 text-clay-200 min-h-[48px]"
+              className="border-clay-700 bg-clay-800 text-clay-200 min-h-[48px]"
             />
           </div>
 
           <div>
-            <label className="text-xs text-clay-500 mb-1 block">
+            <label className="text-xs text-clay-200 mb-1 block">
               Who It&apos;s For
             </label>
             <Textarea
               value={whoItsFor}
               onChange={(e) => setWhoItsFor(e.target.value)}
               placeholder="Who is the target user?"
-              className="border-clay-700 bg-clay-900 text-clay-200 min-h-[48px]"
+              className="border-clay-700 bg-clay-800 text-clay-200 min-h-[48px]"
             />
           </div>
 
           <div>
-            <label className="text-xs text-clay-500 mb-1 block">
+            <label className="text-xs text-clay-200 mb-1 block">
               Tags (comma-separated)
             </label>
             <Input
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="outbound, email, high-volume"
-              className="border-clay-700 bg-clay-900 text-clay-200"
+              className="border-clay-700 bg-clay-800 text-clay-200"
             />
           </div>
 

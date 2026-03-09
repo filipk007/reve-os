@@ -34,10 +34,10 @@ import {
 import { toast } from "sonner";
 
 const STATUS_STYLES: Record<CampaignStatus, string> = {
-  draft: "bg-clay-500/15 text-clay-500 border-clay-500/30",
+  draft: "bg-clay-500/15 text-clay-200 border-clay-500/30",
   active: "bg-kiln-teal/15 text-kiln-teal border-kiln-teal/30",
   paused: "bg-kiln-mustard/15 text-kiln-mustard border-kiln-mustard/30",
-  completed: "bg-clay-400/15 text-clay-400 border-clay-400/30",
+  completed: "bg-clay-400/15 text-clay-200 border-clay-400/30",
 };
 
 interface CampaignDetailProps {
@@ -156,7 +156,7 @@ export function CampaignDetail({
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="h-8 w-8 text-clay-400 hover:text-clay-200"
+            className="h-8 w-8 text-clay-200 hover:text-clay-200"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -170,7 +170,7 @@ export function CampaignDetail({
               </Badge>
             </div>
             {campaign.description && (
-              <p className="text-sm text-clay-500 mt-0.5">
+              <p className="text-sm text-clay-200 mt-0.5">
                 {campaign.description}
               </p>
             )}
@@ -182,7 +182,7 @@ export function CampaignDetail({
             variant="ghost"
             size="icon"
             onClick={handleRefresh}
-            className="h-8 w-8 text-clay-400 hover:text-clay-200"
+            className="h-8 w-8 text-clay-200 hover:text-clay-200"
             disabled={refreshing}
           >
             <RefreshCw
@@ -240,15 +240,15 @@ export function CampaignDetail({
       </div>
 
       {/* Progress Section */}
-      <Card className="border-clay-800 bg-white shadow-sm">
+      <Card className="border-clay-500 ">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider">
               Goal Progress
             </h4>
-            <span className="text-sm text-clay-400">
+            <span className="text-sm text-clay-200">
               {progress.total_sent} / {goalTarget}{" "}
-              <span className="text-clay-500">{campaign.goal.metric}</span>
+              <span className="text-clay-200">{campaign.goal.metric}</span>
             </span>
           </div>
 
@@ -264,7 +264,7 @@ export function CampaignDetail({
               <div className="text-2xl font-bold text-clay-100">
                 {progress.total_processed}
               </div>
-              <div className="text-xs text-clay-500 flex items-center justify-center gap-1 mt-1">
+              <div className="text-xs text-clay-200 flex items-center justify-center gap-1 mt-1">
                 <Clock className="h-3 w-3" />
                 Processed
               </div>
@@ -273,7 +273,7 @@ export function CampaignDetail({
               <div className="text-2xl font-bold text-kiln-teal">
                 {progress.total_approved}
               </div>
-              <div className="text-xs text-clay-500 flex items-center justify-center gap-1 mt-1">
+              <div className="text-xs text-clay-200 flex items-center justify-center gap-1 mt-1">
                 <CheckCircle className="h-3 w-3" />
                 Approved
               </div>
@@ -282,7 +282,7 @@ export function CampaignDetail({
               <div className="text-2xl font-bold text-clay-100">
                 {progress.total_sent}
               </div>
-              <div className="text-xs text-clay-500 flex items-center justify-center gap-1 mt-1">
+              <div className="text-xs text-clay-200 flex items-center justify-center gap-1 mt-1">
                 <Send className="h-3 w-3" />
                 Sent
               </div>
@@ -291,7 +291,7 @@ export function CampaignDetail({
               <div className="text-2xl font-bold text-kiln-coral">
                 {progress.total_rejected}
               </div>
-              <div className="text-xs text-clay-500 flex items-center justify-center gap-1 mt-1">
+              <div className="text-xs text-clay-200 flex items-center justify-center gap-1 mt-1">
                 <XCircle className="h-3 w-3" />
                 Rejected
               </div>
@@ -300,7 +300,7 @@ export function CampaignDetail({
               <div className="text-2xl font-bold text-kiln-mustard">
                 {progress.total_pending_review}
               </div>
-              <div className="text-xs text-clay-500 flex items-center justify-center gap-1 mt-1">
+              <div className="text-xs text-clay-200 flex items-center justify-center gap-1 mt-1">
                 <Eye className="h-3 w-3" />
                 Pending Review
               </div>
@@ -325,7 +325,7 @@ export function CampaignDetail({
       {/* Audience + Schedule row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Audience */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardContent className="p-5 space-y-3">
             <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider flex items-center gap-1.5">
               <Users className="h-4 w-4" />
@@ -336,13 +336,13 @@ export function CampaignDetail({
                 <div className="text-xl font-bold text-clay-100">
                   {audienceTotal}
                 </div>
-                <div className="text-[10px] text-clay-500 uppercase">Total</div>
+                <div className="text-[10px] text-clay-200 uppercase">Total</div>
               </div>
               <div>
                 <div className="text-xl font-bold text-kiln-teal">
                   {audienceCursor}
                 </div>
-                <div className="text-[10px] text-clay-500 uppercase">
+                <div className="text-[10px] text-clay-200 uppercase">
                   Cursor
                 </div>
               </div>
@@ -350,7 +350,7 @@ export function CampaignDetail({
                 <div className="text-xl font-bold text-clay-300">
                   {audienceRemaining}
                 </div>
-                <div className="text-[10px] text-clay-500 uppercase">
+                <div className="text-[10px] text-clay-200 uppercase">
                   Remaining
                 </div>
               </div>
@@ -373,7 +373,7 @@ export function CampaignDetail({
         </Card>
 
         {/* Schedule + Config */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardContent className="p-5 space-y-3">
             <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider flex items-center gap-1.5">
               <CalendarClock className="h-4 w-4" />
@@ -381,7 +381,7 @@ export function CampaignDetail({
             </h4>
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-clay-500">Pipeline</span>
+                <span className="text-clay-200">Pipeline</span>
                 <Badge
                   variant="outline"
                   className="bg-kiln-teal/10 text-kiln-teal border-kiln-teal/30 text-xs"
@@ -390,30 +390,30 @@ export function CampaignDetail({
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-clay-500">Frequency</span>
+                <span className="text-clay-200">Frequency</span>
                 <span className="text-clay-200">
                   {campaign.schedule.frequency}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-clay-500">Batch Size</span>
+                <span className="text-clay-200">Batch Size</span>
                 <span className="text-clay-200">
                   {campaign.schedule.batch_size}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-clay-500">Confidence Threshold</span>
+                <span className="text-clay-200">Confidence Threshold</span>
                 <span className="text-clay-200">
                   {(campaign.confidence_threshold * 100).toFixed(0)}%
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-clay-500">Model</span>
+                <span className="text-clay-200">Model</span>
                 <span className="text-clay-200">{campaign.model}</span>
               </div>
               {campaign.client_slug && (
                 <div className="flex items-center justify-between">
-                  <span className="text-clay-500">Client</span>
+                  <span className="text-clay-200">Client</span>
                   <span className="text-clay-200">{campaign.client_slug}</span>
                 </div>
               )}
@@ -424,7 +424,7 @@ export function CampaignDetail({
 
       {/* Review Stats */}
       {reviewStats && reviewStats.total > 0 && (
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardContent className="p-5 space-y-3">
             <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider flex items-center gap-1.5">
               <Eye className="h-4 w-4" />
@@ -435,13 +435,13 @@ export function CampaignDetail({
                 <div className="text-lg font-bold text-clay-100">
                   {reviewStats.total}
                 </div>
-                <div className="text-[10px] text-clay-500 uppercase">Total</div>
+                <div className="text-[10px] text-clay-200 uppercase">Total</div>
               </div>
               <div>
                 <div className="text-lg font-bold text-kiln-mustard">
                   {reviewStats.pending}
                 </div>
-                <div className="text-[10px] text-clay-500 uppercase">
+                <div className="text-[10px] text-clay-200 uppercase">
                   Pending
                 </div>
               </div>
@@ -449,7 +449,7 @@ export function CampaignDetail({
                 <div className="text-lg font-bold text-kiln-teal">
                   {reviewStats.approved}
                 </div>
-                <div className="text-[10px] text-clay-500 uppercase">
+                <div className="text-[10px] text-clay-200 uppercase">
                   Approved
                 </div>
               </div>
@@ -457,7 +457,7 @@ export function CampaignDetail({
                 <div className="text-lg font-bold text-kiln-coral">
                   {reviewStats.rejected}
                 </div>
-                <div className="text-[10px] text-clay-500 uppercase">
+                <div className="text-[10px] text-clay-200 uppercase">
                   Rejected
                 </div>
               </div>
@@ -465,7 +465,7 @@ export function CampaignDetail({
                 <div className="text-lg font-bold text-clay-300">
                   {reviewStats.revised}
                 </div>
-                <div className="text-[10px] text-clay-500 uppercase">
+                <div className="text-[10px] text-clay-200 uppercase">
                   Revised
                 </div>
               </div>
@@ -476,7 +476,7 @@ export function CampaignDetail({
 
       {/* Last Batch Result */}
       {lastBatchResult && (
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardContent className="p-5 space-y-3">
             <h4 className="text-sm font-medium text-clay-300 uppercase tracking-wider flex items-center gap-1.5">
               <Rocket className="h-4 w-4" />
@@ -487,19 +487,19 @@ export function CampaignDetail({
                 <div className="text-xl font-bold text-clay-100">
                   {lastBatchResult.batch_size}
                 </div>
-                <div className="text-xs text-clay-500">Batch Size</div>
+                <div className="text-xs text-clay-200">Batch Size</div>
               </div>
               <div className="rounded-lg bg-clay-800/50 p-3">
                 <div className="text-xl font-bold text-kiln-teal">
                   {lastBatchResult.auto_sent}
                 </div>
-                <div className="text-xs text-clay-500">Auto-Sent</div>
+                <div className="text-xs text-clay-200">Auto-Sent</div>
               </div>
               <div className="rounded-lg bg-clay-800/50 p-3">
                 <div className="text-xl font-bold text-kiln-mustard">
                   {lastBatchResult.queued_for_review}
                 </div>
-                <div className="text-xs text-clay-500">Queued for Review</div>
+                <div className="text-xs text-clay-200">Queued for Review</div>
               </div>
             </div>
 
@@ -511,10 +511,10 @@ export function CampaignDetail({
                     key={idx}
                     className="flex items-center justify-between text-xs px-2 py-1.5 rounded bg-clay-800/30"
                   >
-                    <span className="text-clay-400">Row {r.row_index}</span>
+                    <span className="text-clay-200">Row {r.row_index}</span>
                     <div className="flex items-center gap-2">
                       {r.confidence !== undefined && (
-                        <span className="text-clay-500">
+                        <span className="text-clay-200">
                           {(r.confidence * 100).toFixed(0)}% conf
                         </span>
                       )}
@@ -540,7 +540,7 @@ export function CampaignDetail({
       )}
 
       {/* Campaign metadata */}
-      <div className="flex items-center justify-between text-xs text-clay-600">
+      <div className="flex items-center justify-between text-xs text-clay-300">
         <span>
           Created{" "}
           {new Date(campaign.created_at * 1000).toLocaleDateString(undefined, {

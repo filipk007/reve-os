@@ -22,7 +22,7 @@ function ApprovalBar({ rate }: { rate: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-xs text-clay-400 font-[family-name:var(--font-mono)] w-10 text-right">
+      <span className="text-xs text-clay-200 font-[family-name:var(--font-mono)] w-10 text-right">
         {pct}%
       </span>
     </div>
@@ -36,7 +36,7 @@ export function SkillPerformanceTable({
 }) {
   if (skills.length === 0) {
     return (
-      <p className="text-sm text-clay-500 py-8 text-center">
+      <p className="text-sm text-clay-200 py-8 text-center">
         No feedback data yet. Rate some outputs to see skill performance.
       </p>
     );
@@ -45,23 +45,23 @@ export function SkillPerformanceTable({
   const sorted = [...skills].sort((a, b) => b.total - a.total);
 
   return (
-    <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-clay-500  overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="border-clay-800 hover:bg-transparent">
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wider">
+          <TableRow className="border-clay-500 hover:bg-transparent">
+            <TableHead className="text-clay-200 text-xs uppercase tracking-wider">
               Skill
             </TableHead>
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wider text-right">
+            <TableHead className="text-clay-200 text-xs uppercase tracking-wider text-right">
               Ratings
             </TableHead>
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wider text-right">
+            <TableHead className="text-clay-200 text-xs uppercase tracking-wider text-right">
               Up
             </TableHead>
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wider text-right">
+            <TableHead className="text-clay-200 text-xs uppercase tracking-wider text-right">
               Down
             </TableHead>
-            <TableHead className="text-clay-500 text-xs uppercase tracking-wider w-48">
+            <TableHead className="text-clay-200 text-xs uppercase tracking-wider w-48">
               Approval
             </TableHead>
           </TableRow>
@@ -70,7 +70,7 @@ export function SkillPerformanceTable({
           {sorted.map((s) => (
             <TableRow
               key={s.skill}
-              className="border-clay-800 hover:bg-muted/50"
+              className="border-clay-500 hover:bg-muted/50"
             >
               <TableCell className="text-kiln-teal font-medium">
                 {s.skill}

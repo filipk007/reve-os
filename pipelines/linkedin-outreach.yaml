@@ -1,6 +1,0 @@
-name: linkedin-outreach
-description: Score → Select angle → LinkedIn connection note
-steps:
-  - skill: icp-scorer
-  - skill: angle-selector
-  - skill: linkedin-note

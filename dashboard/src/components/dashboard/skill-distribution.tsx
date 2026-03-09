@@ -73,9 +73,9 @@ export function SkillDistribution() {
   if (data.length === 0) return null;
 
   return (
-    <Card className="border-clay-800 bg-white shadow-sm">
+    <Card className="border-clay-500 ">
       <CardContent className="p-4">
-        <h3 className="text-xs text-clay-500 uppercase tracking-wider mb-3 font-[family-name:var(--font-sans)]">
+        <h3 className="text-xs text-clay-200 uppercase tracking-wider mb-3 font-[family-name:var(--font-sans)]">
           Skill Distribution
         </h3>
         <div className="flex items-center gap-4">
@@ -114,7 +114,7 @@ export function SkillDistribution() {
                   style={{ backgroundColor: COLORS[i % COLORS.length] }}
                 />
                 <span className="text-clay-300 truncate flex-1">{d.name}</span>
-                <span className="text-clay-500 font-[family-name:var(--font-mono)]">
+                <span className="text-clay-200 font-[family-name:var(--font-mono)]">
                   {d.value}
                 </span>
               </div>

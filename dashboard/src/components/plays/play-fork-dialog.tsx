@@ -77,51 +77,51 @@ export function PlayForkDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
-      <DialogContent className="border-clay-800 bg-clay-950">
+      <DialogContent className="border-clay-500 bg-clay-950">
         <DialogHeader>
           <DialogTitle className="text-clay-100 flex items-center gap-2">
             <GitFork className="h-5 w-5 text-kiln-teal" />
             Fork Play
           </DialogTitle>
-          <DialogDescription className="text-clay-500">
+          <DialogDescription className="text-clay-200">
             Create a custom version of &quot;{play.display_name}&quot;
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs text-clay-500 mb-1 block">
+            <label className="text-xs text-clay-200 mb-1 block">
               Slug (URL-safe name)
             </label>
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. twelve-labs-outbound"
-              className="border-clay-700 bg-clay-900 text-clay-200"
+              className="border-clay-700 bg-clay-800 text-clay-200"
             />
           </div>
 
           <div>
-            <label className="text-xs text-clay-500 mb-1 block">
+            <label className="text-xs text-clay-200 mb-1 block">
               Display Name
             </label>
             <Input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g. Twelve Labs Outbound"
-              className="border-clay-700 bg-clay-900 text-clay-200"
+              className="border-clay-700 bg-clay-800 text-clay-200"
             />
           </div>
 
           <div>
-            <label className="text-xs text-clay-500 mb-1 block">
+            <label className="text-xs text-clay-200 mb-1 block">
               Client (optional)
             </label>
             <Select value={clientSlug} onValueChange={setClientSlug}>
-              <SelectTrigger className="border-clay-700 bg-clay-900 text-clay-200">
+              <SelectTrigger className="border-clay-700 bg-clay-800 text-clay-200">
                 <SelectValue placeholder="No client" />
               </SelectTrigger>
-              <SelectContent className="border-clay-700 bg-clay-900">
+              <SelectContent className="border-clay-700 bg-clay-800">
                 <SelectItem value="none">No client</SelectItem>
                 {clients.map((c) => (
                   <SelectItem key={c.slug} value={c.slug}>
@@ -133,14 +133,14 @@ export function PlayForkDialog({
           </div>
 
           <div>
-            <label className="text-xs text-clay-500 mb-1 block">
+            <label className="text-xs text-clay-200 mb-1 block">
               Model Override
             </label>
             <Select value={model} onValueChange={setModel}>
-              <SelectTrigger className="border-clay-700 bg-clay-900 text-clay-200">
+              <SelectTrigger className="border-clay-700 bg-clay-800 text-clay-200">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="border-clay-700 bg-clay-900">
+              <SelectContent className="border-clay-700 bg-clay-800">
                 <SelectItem value="default">
                   Default ({play.default_model})
                 </SelectItem>

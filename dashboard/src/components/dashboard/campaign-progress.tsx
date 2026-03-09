@@ -17,7 +17,7 @@ const STATUS_STYLES: Record<CampaignStatus, string> = {
   draft: "bg-clay-700 text-clay-300 border-clay-600",
   active: "bg-kiln-teal/15 text-kiln-teal border-kiln-teal/30",
   paused: "bg-kiln-mustard/15 text-kiln-mustard border-kiln-mustard/30",
-  completed: "bg-clay-700 text-clay-400 border-clay-600",
+  completed: "bg-clay-700 text-clay-200 border-clay-600",
 };
 
 export function CampaignProgress({ campaigns }: CampaignProgressProps) {
@@ -63,7 +63,7 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <Card className="border-clay-800 bg-white shadow-sm hover:border-clay-600 transition-all duration-200">
+              <Card className="border-clay-500  hover:border-clay-600 transition-all duration-200">
                 <CardContent className="p-5">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
@@ -71,7 +71,7 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
                       <h4 className="text-sm font-medium text-clay-100 truncate font-[family-name:var(--font-sans)]">
                         {campaign.name}
                       </h4>
-                      <p className="text-xs text-clay-500 mt-0.5 truncate">
+                      <p className="text-xs text-clay-200 mt-0.5 truncate">
                         {campaign.pipeline}
                       </p>
                     </div>
@@ -89,12 +89,12 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
                   {/* Progress bar */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs text-clay-400">
+                      <span className="text-xs text-clay-200">
                         {formatNumber(campaign.progress.total_sent)} /{" "}
                         {formatNumber(targetCount)}{" "}
                         {campaign.goal.metric || "sent"}
                       </span>
-                      <span className="text-xs text-clay-400 font-[family-name:var(--font-mono)]">
+                      <span className="text-xs text-clay-200 font-[family-name:var(--font-mono)]">
                         {progressPercent.toFixed(1)}%
                       </span>
                     </div>
@@ -111,7 +111,7 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
                   {/* Stats row */}
                   <div className="grid grid-cols-4 gap-3">
                     <div>
-                      <p className="text-[10px] text-clay-500 uppercase tracking-wider">
+                      <p className="text-[10px] text-clay-200 uppercase tracking-wider">
                         Processed
                       </p>
                       <p className="text-sm font-medium text-clay-200 font-[family-name:var(--font-mono)]">
@@ -119,7 +119,7 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-clay-500 uppercase tracking-wider">
+                      <p className="text-[10px] text-clay-200 uppercase tracking-wider">
                         Sent
                       </p>
                       <p className="text-sm font-medium text-kiln-teal font-[family-name:var(--font-mono)]">
@@ -127,7 +127,7 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-clay-500 uppercase tracking-wider">
+                      <p className="text-[10px] text-clay-200 uppercase tracking-wider">
                         Approval
                       </p>
                       <p
@@ -144,7 +144,7 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-clay-500 uppercase tracking-wider">
+                      <p className="text-[10px] text-clay-200 uppercase tracking-wider">
                         Review
                       </p>
                       <p
@@ -152,7 +152,7 @@ export function CampaignProgress({ campaigns }: CampaignProgressProps) {
                           "text-sm font-medium font-[family-name:var(--font-mono)]",
                           campaign.progress.total_pending_review > 0
                             ? "text-kiln-mustard"
-                            : "text-clay-400"
+                            : "text-clay-200"
                         )}
                       >
                         {formatNumber(campaign.progress.total_pending_review)}

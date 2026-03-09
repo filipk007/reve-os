@@ -48,18 +48,18 @@ export function PlayGallery({
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Tabs value={category} onValueChange={setCategory}>
-          <TabsList className="bg-clay-900 border border-clay-800 flex-wrap h-auto">
+          <TabsList className="bg-clay-800 border border-clay-500 flex-wrap h-auto">
             {CATEGORIES.map((cat) => {
               const count = countByCategory(cat.value);
               return (
                 <TabsTrigger
                   key={cat.value}
                   value={cat.value}
-                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
                 >
                   {cat.label}
                   {count > 0 && (
-                    <span className="ml-1.5 text-xs text-clay-600">
+                    <span className="ml-1.5 text-xs text-clay-300">
                       {count}
                     </span>
                   )}
@@ -80,10 +80,10 @@ export function PlayGallery({
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 text-clay-500 animate-spin" />
+          <Loader2 className="h-8 w-8 text-clay-200 animate-spin" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-clay-500">
+        <div className="text-center py-20 text-clay-200">
           <p className="text-lg font-medium">No plays found</p>
           <p className="text-sm mt-1">
             {category === "all"

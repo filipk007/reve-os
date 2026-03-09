@@ -33,7 +33,7 @@ function FormFields({
         const strVal = val !== undefined && val !== null ? String(val) : "";
         return (
           <div key={f.name}>
-            <label className="block text-xs text-clay-400 mb-1 font-[family-name:var(--font-sans)]">
+            <label className="block text-xs text-clay-200 mb-1 font-[family-name:var(--font-sans)]">
               {f.name.replace(/_/g, " ")}
               {f.required && <span className="text-kiln-coral ml-0.5">*</span>}
             </label>
@@ -43,7 +43,7 @@ function FormFields({
                 onChange={(e) => handleFieldChange(f.name, e.target.value)}
                 placeholder={f.placeholder}
                 rows={3}
-                className="w-full rounded-md border border-clay-700 bg-clay-900 px-3 py-2 text-sm text-clay-100 placeholder:text-clay-600 focus:border-kiln-teal focus:outline-none resize-y"
+                className="w-full rounded-md border border-clay-700 bg-clay-800 px-3 py-2 text-sm text-clay-100 placeholder:text-clay-300 focus:border-kiln-teal focus:outline-none resize-y"
               />
             ) : (
               <input
@@ -56,7 +56,7 @@ function FormFields({
                   )
                 }
                 placeholder={f.placeholder}
-                className="w-full rounded-md border border-clay-700 bg-clay-900 px-3 py-2 text-sm text-clay-100 placeholder:text-clay-600 focus:border-kiln-teal focus:outline-none"
+                className="w-full rounded-md border border-clay-700 bg-clay-800 px-3 py-2 text-sm text-clay-100 placeholder:text-clay-300 focus:border-kiln-teal focus:outline-none"
               />
             )}
           </div>
@@ -114,7 +114,7 @@ export function FormEditor({
   return (
     <div className="flex-1 flex flex-col">
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-xs text-clay-500 uppercase tracking-wider font-[family-name:var(--font-sans)]">
+        <label className="text-xs text-clay-200 uppercase tracking-wider font-[family-name:var(--font-sans)]">
           Data {mode === "json" ? "(JSON)" : "(Form)"}
         </label>
         <div className="flex items-center gap-1">
@@ -128,7 +128,7 @@ export function FormEditor({
               <button
                 onClick={() => setMode("form")}
                 className={`p-1 rounded transition-colors ${
-                  mode === "form" ? "text-kiln-teal bg-kiln-teal/10" : "text-clay-500 hover:text-clay-300"
+                  mode === "form" ? "text-kiln-teal bg-kiln-teal/10" : "text-clay-200 hover:text-clay-300"
                 }`}
                 title="Form mode"
               >
@@ -137,7 +137,7 @@ export function FormEditor({
               <button
                 onClick={() => setMode("json")}
                 className={`p-1 rounded transition-colors ${
-                  mode === "json" ? "text-kiln-teal bg-kiln-teal/10" : "text-clay-500 hover:text-clay-300"
+                  mode === "json" ? "text-kiln-teal bg-kiln-teal/10" : "text-clay-200 hover:text-clay-300"
                 }`}
                 title="JSON mode"
               >
@@ -148,7 +148,7 @@ export function FormEditor({
         </div>
       </div>
       <Card
-        className={`flex-1 border-clay-700 bg-clay-900 ${
+        className={`flex-1 border-clay-700 bg-clay-800 ${
           error && mode === "json" ? "border-kiln-coral/50" : ""
         }`}
       >
@@ -166,7 +166,7 @@ export function FormEditor({
               value={value}
               onChange={(e) => onChange(e.target.value)}
               spellCheck={false}
-              className="w-full h-full min-h-[200px] max-h-[400px] rounded-lg bg-transparent px-4 py-3 font-[family-name:var(--font-mono)] text-sm text-clay-100 focus:outline-none resize-y placeholder:text-clay-600"
+              className="w-full h-full min-h-[200px] max-h-[400px] rounded-lg bg-transparent px-4 py-3 font-[family-name:var(--font-mono)] text-sm text-clay-100 focus:outline-none resize-y placeholder:text-clay-300"
               placeholder='{ "key": "value" }'
             />
           )}

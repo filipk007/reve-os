@@ -13,7 +13,7 @@ const CATEGORY_COLORS: Record<PlayCategory, string> = {
   "meeting-prep": "bg-purple-500/10 text-purple-400 border-purple-500/30",
   nurture: "bg-green-500/10 text-green-400 border-green-500/30",
   competitive: "bg-orange-500/10 text-orange-400 border-orange-500/30",
-  custom: "bg-clay-500/10 text-clay-400 border-clay-500/30",
+  custom: "bg-clay-500/10 text-clay-200 border-clay-500/30",
 };
 
 interface PlayCardProps {
@@ -28,7 +28,7 @@ export function PlayCard({ play, onView, onFork, onDelete }: PlayCardProps) {
 
   return (
     <Card
-      className="border-clay-800 bg-clay-950 hover:border-clay-700 transition-colors cursor-pointer group"
+      className="border-clay-500 bg-clay-950 hover:border-clay-700 transition-colors cursor-pointer group"
       onClick={() => onView(play)}
     >
       <CardContent className="p-5 space-y-3">
@@ -37,11 +37,11 @@ export function PlayCard({ play, onView, onFork, onDelete }: PlayCardProps) {
             <h3 className="font-semibold text-clay-100 truncate">
               {play.display_name}
             </h3>
-            <p className="text-sm text-clay-400 line-clamp-2">
+            <p className="text-sm text-clay-200 line-clamp-2">
               {play.description}
             </p>
           </div>
-          <ChevronRight className="h-4 w-4 text-clay-600 group-hover:text-clay-400 shrink-0 mt-1 transition-colors" />
+          <ChevronRight className="h-4 w-4 text-clay-300 group-hover:text-clay-200 shrink-0 mt-1 transition-colors" />
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -54,7 +54,7 @@ export function PlayCard({ play, onView, onFork, onDelete }: PlayCardProps) {
           {play.forked_from && (
             <Badge
               variant="outline"
-              className="text-xs bg-clay-800/50 text-clay-500 border-clay-700"
+              className="text-xs bg-clay-800/50 text-clay-200 border-clay-700"
             >
               <GitFork className="h-3 w-3 mr-1" />
               {play.forked_from}
@@ -64,14 +64,14 @@ export function PlayCard({ play, onView, onFork, onDelete }: PlayCardProps) {
             <Badge
               key={tag}
               variant="outline"
-              className="text-xs bg-clay-900 text-clay-500 border-clay-800"
+              className="text-xs bg-clay-800 text-clay-200 border-clay-500"
             >
               {tag}
             </Badge>
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-clay-500">
+        <div className="flex items-center gap-1.5 text-xs text-clay-200">
           <span className="font-mono">{play.pipeline}</span>
           <ArrowRight className="h-3 w-3" />
           <span>{play.input_schema.length} inputs</span>
@@ -80,7 +80,7 @@ export function PlayCard({ play, onView, onFork, onDelete }: PlayCardProps) {
         </div>
 
         <div className="flex items-center justify-between pt-1">
-          <span className="text-xs text-clay-600">
+          <span className="text-xs text-clay-300">
             model: {play.default_model}
           </span>
           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -88,7 +88,7 @@ export function PlayCard({ play, onView, onFork, onDelete }: PlayCardProps) {
               variant="ghost"
               size="sm"
               onClick={() => onFork(play)}
-              className="h-7 px-2 text-clay-500 hover:text-clay-200"
+              className="h-7 px-2 text-clay-200 hover:text-clay-200"
             >
               <GitFork className="h-3.5 w-3.5" />
             </Button>
@@ -97,7 +97,7 @@ export function PlayCard({ play, onView, onFork, onDelete }: PlayCardProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => onDelete(play)}
-                className="h-7 px-2 text-clay-500 hover:text-kiln-coral"
+                className="h-7 px-2 text-clay-200 hover:text-kiln-coral"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>

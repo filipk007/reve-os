@@ -65,8 +65,8 @@ const PRIORITY_ICONS: Record<string, typeof ArrowUp> = {
 
 const PRIORITY_COLORS: Record<string, string> = {
   high: "text-kiln-coral",
-  normal: "text-clay-500",
-  low: "text-clay-700",
+  normal: "text-clay-200",
+  low: "text-clay-300",
 };
 
 const PAGE_SIZE = 25;
@@ -217,31 +217,31 @@ export function JobList() {
       {/* Search & filter bar */}
       <div className="flex items-center gap-3 mb-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-clay-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-clay-200" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by skill, status, ID..."
-            className="pl-9 border-clay-700 bg-clay-900 text-clay-100 placeholder:text-clay-600 focus-visible:ring-kiln-teal/50 focus-visible:border-kiln-teal"
+            className="pl-9 border-clay-700 bg-clay-800 text-clay-100 placeholder:text-clay-300 focus-visible:ring-kiln-teal/50 focus-visible:border-kiln-teal"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-clay-500 hover:text-clay-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-clay-200 hover:text-clay-300"
             >
               <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
         {search && (
-          <span className="text-xs text-clay-500">
+          <span className="text-xs text-clay-200">
             {filtered.length} result{filtered.length !== 1 ? "s" : ""}
           </span>
         )}
         <Button
           variant="outline"
           size="sm"
-          className="border-clay-700 text-clay-400 hover:text-clay-200 ml-auto"
+          className="border-clay-700 text-clay-200 hover:text-clay-200 ml-auto"
           onClick={() => {
             const rows = sorted.map((j) => ({
               id: j.id,
@@ -267,13 +267,13 @@ export function JobList() {
         </Button>
       </div>
 
-      <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden" aria-live="polite" aria-atomic="false">
+      <div className="rounded-xl border border-clay-500  overflow-hidden" aria-live="polite" aria-atomic="false">
         {/* Desktop table */}
         <div className="hidden sm:block overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-clay-800 hover:bg-transparent">
-                <TableHead className="text-clay-500 text-xs uppercase tracking-wider w-10 px-3">
+              <TableRow className="border-clay-500 hover:bg-transparent">
+                <TableHead className="text-clay-200 text-xs uppercase tracking-wider w-10 px-3">
                   <Checkbox
                     checked={paged.length > 0 && paged.every((j) => selectedIds.has(j.id))}
                     onCheckedChange={(checked) => {
@@ -286,18 +286,18 @@ export function JobList() {
                     className="border-clay-600 data-[state=checked]:bg-kiln-teal data-[state=checked]:border-kiln-teal"
                   />
                 </TableHead>
-                <TableHead className="text-clay-500 text-xs uppercase tracking-wider">Job ID</TableHead>
+                <TableHead className="text-clay-200 text-xs uppercase tracking-wider">Job ID</TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-200 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("skill")}
                 >
                   <span className="inline-flex items-center">
                     Skill <SortIcon col="skill" />
                   </span>
                 </TableHead>
-                <TableHead className="text-clay-500 text-xs uppercase tracking-wider">Row ID</TableHead>
+                <TableHead className="text-clay-200 text-xs uppercase tracking-wider">Row ID</TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-200 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("priority")}
                 >
                   <span className="inline-flex items-center">
@@ -305,16 +305,16 @@ export function JobList() {
                   </span>
                 </TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-200 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("status")}
                 >
                   <span className="inline-flex items-center">
                     Status <SortIcon col="status" />
                   </span>
                 </TableHead>
-                <TableHead className="text-clay-500 text-xs uppercase tracking-wider">Retries</TableHead>
+                <TableHead className="text-clay-200 text-xs uppercase tracking-wider">Retries</TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-200 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("duration_ms")}
                 >
                   <span className="inline-flex items-center">
@@ -322,7 +322,7 @@ export function JobList() {
                   </span>
                 </TableHead>
                 <TableHead
-                  className="text-clay-500 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
+                  className="text-clay-200 text-xs uppercase tracking-wider cursor-pointer select-none hover:text-clay-300"
                   onClick={() => handleSort("created_at")}
                 >
                   <span className="inline-flex items-center">
@@ -339,7 +339,7 @@ export function JobList() {
                   <ContextMenu key={job.id}>
                     <ContextMenuTrigger asChild>
                       <TableRow
-                        className="border-clay-800 hover:bg-muted/50 transition-colors cursor-pointer"
+                        className="border-clay-500 hover:bg-muted/50 transition-colors cursor-pointer"
                         onClick={() => handleRowClick(job.id)}
                       >
                         <TableCell className="px-3" onClick={(e) => e.stopPropagation()}>
@@ -355,13 +355,13 @@ export function JobList() {
                             className="border-clay-600 data-[state=checked]:bg-kiln-teal data-[state=checked]:border-kiln-teal"
                           />
                         </TableCell>
-                        <TableCell className="font-[family-name:var(--font-mono)] text-xs text-clay-400">
+                        <TableCell className="font-[family-name:var(--font-mono)] text-xs text-clay-200">
                           {job.id.slice(0, 8)}...
                         </TableCell>
                         <TableCell className="text-kiln-teal font-medium">
                           {job.skill}
                         </TableCell>
-                        <TableCell className="text-clay-500 font-[family-name:var(--font-mono)] text-xs">
+                        <TableCell className="text-clay-200 font-[family-name:var(--font-mono)] text-xs">
                           {job.row_id || "\u2014"}
                         </TableCell>
                         <TableCell>
@@ -373,18 +373,18 @@ export function JobList() {
                         <TableCell>
                           <StatusBadge status={job.status} />
                         </TableCell>
-                        <TableCell className="font-[family-name:var(--font-mono)] text-xs text-clay-500">
+                        <TableCell className="font-[family-name:var(--font-mono)] text-xs text-clay-200">
                           {(job.retry_count ?? 0) > 0 ? `${job.retry_count}/3` : "\u2014"}
                         </TableCell>
                         <TableCell className="font-[family-name:var(--font-mono)] text-xs">
                           {job.duration_ms ? formatDuration(job.duration_ms) : "\u2014"}
                         </TableCell>
-                        <TableCell className="text-clay-500 text-xs" title={new Date(job.created_at * 1000).toLocaleString()}>
+                        <TableCell className="text-clay-200 text-xs" title={new Date(job.created_at * 1000).toLocaleString()}>
                           {formatRelativeTime(job.created_at)}
                         </TableCell>
                       </TableRow>
                     </ContextMenuTrigger>
-                    <ContextMenuContent className="border-clay-700 bg-clay-900 min-w-[160px]">
+                    <ContextMenuContent className="border-clay-700 bg-clay-800 min-w-[160px]">
                       <ContextMenuItem
                         onClick={() => handleRowClick(job.id)}
                         className="text-clay-300 focus:bg-kiln-teal/10 focus:text-kiln-teal"
@@ -451,7 +451,7 @@ export function JobList() {
                 <span className="text-kiln-teal font-medium text-sm">{job.skill}</span>
                 <StatusBadge status={job.status} />
               </div>
-              <div className="flex items-center gap-3 text-xs text-clay-500">
+              <div className="flex items-center gap-3 text-xs text-clay-200">
                 {job.duration_ms ? (
                   <span className="font-[family-name:var(--font-mono)]">{formatDuration(job.duration_ms)}</span>
                 ) : null}
@@ -463,8 +463,8 @@ export function JobList() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-clay-800 px-4 py-2.5">
-            <span className="text-xs text-clay-500">
+          <div className="flex items-center justify-between border-t border-clay-500 px-4 py-2.5">
+            <span className="text-xs text-clay-200">
               Showing {safePage * PAGE_SIZE + 1}-{Math.min((safePage + 1) * PAGE_SIZE, sorted.length)} of {sorted.length} jobs
             </span>
             <div className="flex items-center gap-2">
@@ -473,11 +473,11 @@ export function JobList() {
                 size="xs"
                 disabled={safePage === 0}
                 onClick={() => setPage((p) => p - 1)}
-                className="border-clay-700 bg-clay-900 text-clay-400 hover:text-clay-200 disabled:opacity-30"
+                className="border-clay-700 bg-clay-800 text-clay-200 hover:text-clay-200 disabled:opacity-30"
               >
                 Previous
               </Button>
-              <span className="text-xs text-clay-500 font-[family-name:var(--font-mono)]">
+              <span className="text-xs text-clay-200 font-[family-name:var(--font-mono)]">
                 {safePage + 1} / {totalPages}
               </span>
               <Button
@@ -485,7 +485,7 @@ export function JobList() {
                 size="xs"
                 disabled={safePage >= totalPages - 1}
                 onClick={() => setPage((p) => p + 1)}
-                className="border-clay-700 bg-clay-900 text-clay-400 hover:text-clay-200 disabled:opacity-30"
+                className="border-clay-700 bg-clay-800 text-clay-200 hover:text-clay-200 disabled:opacity-30"
               >
                 Next
               </Button>
@@ -496,14 +496,14 @@ export function JobList() {
 
       {/* Job Detail Panel */}
       <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg bg-clay-900 border-clay-800 overflow-y-auto">
+        <SheetContent side="right" className="w-full sm:max-w-lg bg-clay-800 border-clay-500 overflow-y-auto">
           {selectedJob && (
             <>
               <SheetHeader>
                 <SheetTitle className="text-clay-100 font-[family-name:var(--font-sans)]">
                   Job Detail
                 </SheetTitle>
-                <SheetDescription className="text-clay-500 font-[family-name:var(--font-mono)] text-xs">
+                <SheetDescription className="text-clay-200 font-[family-name:var(--font-mono)] text-xs">
                   {selectedJob.id}
                 </SheetDescription>
               </SheetHeader>
@@ -513,12 +513,12 @@ export function JobList() {
                   <StatusBadge status={selectedJob.status} />
                   <span className="text-kiln-teal font-medium">{selectedJob.skill}</span>
                   {selectedJob.duration_ms > 0 && (
-                    <Badge variant="outline" className="bg-clay-800 text-clay-400 border-clay-700 text-xs">
+                    <Badge variant="outline" className="bg-clay-800 text-clay-200 border-clay-700 text-xs">
                       {formatDuration(selectedJob.duration_ms)}
                     </Badge>
                   )}
                   {selectedJob.cost_est_usd != null && selectedJob.cost_est_usd > 0 && (
-                    <Badge variant="outline" className="bg-clay-800 text-clay-400 border-clay-700 text-xs">
+                    <Badge variant="outline" className="bg-clay-800 text-clay-200 border-clay-700 text-xs">
                       ${selectedJob.cost_est_usd.toFixed(4)}
                     </Badge>
                   )}
@@ -529,7 +529,7 @@ export function JobList() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-clay-700 text-clay-400 hover:text-clay-200"
+                    className="border-clay-700 text-clay-200 hover:text-clay-200"
                     onClick={() => {
                       window.location.href = `/run?skill=${selectedJob.skill}`;
                     }}
@@ -540,7 +540,7 @@ export function JobList() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-clay-700 text-clay-400 hover:text-clay-200"
+                    className="border-clay-700 text-clay-200 hover:text-clay-200"
                     onClick={() => {
                       navigator.clipboard.writeText(selectedJob.id);
                       toast.success("Job ID copied");
@@ -564,7 +564,7 @@ export function JobList() {
                 {selectedJob.result && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs text-clay-500 uppercase tracking-wider font-[family-name:var(--font-sans)]">
+                      <p className="text-xs text-clay-200 uppercase tracking-wider font-[family-name:var(--font-sans)]">
                         Output
                       </p>
                       <button
@@ -572,13 +572,13 @@ export function JobList() {
                           navigator.clipboard.writeText(JSON.stringify(selectedJob.result, null, 2));
                           toast.success("Output JSON copied");
                         }}
-                        className="text-xs text-clay-500 hover:text-clay-300 flex items-center gap-1 transition-colors"
+                        className="text-xs text-clay-200 hover:text-clay-300 flex items-center gap-1 transition-colors"
                       >
                         <Copy className="h-3 w-3" />
                         Copy JSON
                       </button>
                     </div>
-                    <div className="rounded-lg bg-clay-950 border border-clay-800 overflow-hidden max-h-96 overflow-y-auto">
+                    <div className="rounded-lg bg-clay-950 border border-clay-500 overflow-hidden max-h-96 overflow-y-auto">
                       <FormattedResult skill={selectedJob.skill} data={selectedJob.result} />
                     </div>
                   </div>
@@ -587,7 +587,7 @@ export function JobList() {
                 {/* Feedback */}
                 {selectedJob.status === "completed" && (
                   <div>
-                    <p className="text-xs text-clay-500 uppercase tracking-wider mb-2 font-[family-name:var(--font-sans)]">
+                    <p className="text-xs text-clay-200 uppercase tracking-wider mb-2 font-[family-name:var(--font-sans)]">
                       Rate Output
                     </p>
                     <FeedbackButtons
@@ -601,22 +601,22 @@ export function JobList() {
                 {/* Metadata grid */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-xs text-clay-500 mb-0.5">Priority</p>
+                    <p className="text-xs text-clay-200 mb-0.5">Priority</p>
                     <p className="text-clay-200 capitalize">{selectedJob.priority || "normal"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-clay-500 mb-0.5">Retries</p>
+                    <p className="text-xs text-clay-200 mb-0.5">Retries</p>
                     <p className="text-clay-200">{selectedJob.retry_count ?? 0} / 3</p>
                   </div>
                   <div>
-                    <p className="text-xs text-clay-500 mb-0.5">Created</p>
+                    <p className="text-xs text-clay-200 mb-0.5">Created</p>
                     <p className="text-clay-200 text-xs font-[family-name:var(--font-mono)]">
                       {new Date(selectedJob.created_at * 1000).toLocaleString()}
                     </p>
                   </div>
                   {selectedJob.completed_at && (
                     <div>
-                      <p className="text-xs text-clay-500 mb-0.5">Completed</p>
+                      <p className="text-xs text-clay-200 mb-0.5">Completed</p>
                       <p className="text-clay-200 text-xs font-[family-name:var(--font-mono)]">
                         {new Date(selectedJob.completed_at * 1000).toLocaleString()}
                       </p>
@@ -624,7 +624,7 @@ export function JobList() {
                   )}
                   {selectedJob.input_tokens_est != null && selectedJob.input_tokens_est > 0 && (
                     <div>
-                      <p className="text-xs text-clay-500 mb-0.5">Input Tokens</p>
+                      <p className="text-xs text-clay-200 mb-0.5">Input Tokens</p>
                       <p className="text-clay-200 text-xs font-[family-name:var(--font-mono)]">
                         {selectedJob.input_tokens_est.toLocaleString()}
                       </p>
@@ -632,7 +632,7 @@ export function JobList() {
                   )}
                   {selectedJob.output_tokens_est != null && selectedJob.output_tokens_est > 0 && (
                     <div>
-                      <p className="text-xs text-clay-500 mb-0.5">Output Tokens</p>
+                      <p className="text-xs text-clay-200 mb-0.5">Output Tokens</p>
                       <p className="text-clay-200 text-xs font-[family-name:var(--font-mono)]">
                         {selectedJob.output_tokens_est.toLocaleString()}
                       </p>
@@ -653,7 +653,7 @@ export function JobList() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-16 md:bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-clay-700 bg-clay-900 px-4 py-2.5 shadow-2xl"
+            className="fixed bottom-16 md:bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-clay-700 bg-clay-800 px-4 py-2.5 shadow-2xl"
           >
             <span className="text-sm text-clay-300 font-medium">
               {selectedIds.size} selected
@@ -662,7 +662,7 @@ export function JobList() {
             <Button
               size="sm"
               variant="outline"
-              className="border-clay-700 text-clay-400 hover:text-clay-200"
+              className="border-clay-700 text-clay-200 hover:text-clay-200"
               onClick={() => {
                 const selectedJobs = sorted.filter((j) => selectedIds.has(j.id));
                 const rows = selectedJobs.map((j) => ({
@@ -691,7 +691,7 @@ export function JobList() {
             <Button
               size="sm"
               variant="ghost"
-              className="text-clay-500 hover:text-clay-300"
+              className="text-clay-200 hover:text-clay-300"
               onClick={() => setSelectedIds(new Set())}
             >
               <X className="h-3.5 w-3.5 mr-1" />

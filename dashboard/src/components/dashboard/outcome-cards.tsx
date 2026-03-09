@@ -64,7 +64,7 @@ const cards = [
     getValue: (d: OutcomeDashboard) =>
       String(d.review_queue.pending),
     getAccent: (d: OutcomeDashboard) =>
-      d.review_queue.pending > 0 ? "text-kiln-mustard" : "text-clay-400",
+      d.review_queue.pending > 0 ? "text-kiln-mustard" : "text-clay-200",
     getBorder: (d: OutcomeDashboard) =>
       d.review_queue.pending > 0
         ? "border-kiln-mustard/30"
@@ -91,13 +91,13 @@ export function OutcomeCards({ data }: OutcomeCardsProps) {
           >
             <Card
               className={cn(
-                "border-clay-800 bg-white shadow-sm hover:border-clay-700 transition-all duration-200",
+                "border-clay-500  hover:border-clay-700 transition-all duration-200",
                 border
               )}
             >
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs text-clay-500 uppercase tracking-wider font-[family-name:var(--font-sans)]">
+                  <p className="text-xs text-clay-200 uppercase tracking-wider font-[family-name:var(--font-sans)]">
                     {card.label}
                   </p>
                   <Icon className={cn("h-4 w-4", accent)} />
@@ -110,7 +110,7 @@ export function OutcomeCards({ data }: OutcomeCardsProps) {
                 >
                   {card.getValue(data)}
                 </p>
-                <p className="text-xs text-clay-500 mt-1">
+                <p className="text-xs text-clay-200 mt-1">
                   {card.getSubtitle(data)}
                 </p>
               </CardContent>

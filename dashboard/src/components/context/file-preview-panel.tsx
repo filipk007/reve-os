@@ -64,10 +64,10 @@ export function FilePreviewPanel({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 380, opacity: 0 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="flex h-full w-[380px] shrink-0 flex-col border-l border-clay-800 bg-clay-950"
+      className="flex h-full w-[380px] shrink-0 flex-col border-l border-clay-500 bg-clay-950"
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-clay-800 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-clay-500 px-4 py-3">
         <div className="flex items-center gap-2 min-w-0">
           <DriveIcon className="h-4 w-4 shrink-0 text-kiln-teal" />
           <span className="text-sm font-medium text-clay-200 truncate">
@@ -76,37 +76,37 @@ export function FilePreviewPanel({
         </div>
         <button
           onClick={onClose}
-          className="rounded p-1 text-clay-500 hover:text-clay-300 hover:bg-clay-800 transition-colors"
+          className="rounded p-1 text-clay-200 hover:text-clay-300 hover:bg-clay-800 transition-colors"
         >
           <X className="h-4 w-4" />
         </button>
       </div>
 
       {/* Meta */}
-      <div className="flex items-center gap-2 flex-wrap px-4 py-2 border-b border-clay-800/50">
+      <div className="flex items-center gap-2 flex-wrap px-4 py-2 border-b border-clay-500/50">
         <Badge
           variant="outline"
-          className="text-[10px] border-clay-700 text-clay-500"
+          className="text-[10px] border-clay-700 text-clay-200"
         >
           {driveInfo?.label || file.driveId}
         </Badge>
         {file.category && (
           <Badge
             variant="outline"
-            className="text-[10px] border-clay-700 text-clay-500"
+            className="text-[10px] border-clay-700 text-clay-200"
           >
             {file.category}
           </Badge>
         )}
         {wordCount > 0 && (
-          <span className="text-[10px] text-clay-600">{wordCount} words</span>
+          <span className="text-[10px] text-clay-300">{wordCount} words</span>
         )}
       </div>
 
       {/* Skills usage */}
       {skills.length > 0 && (
-        <div className="px-4 py-2 border-b border-clay-800/50">
-          <span className="text-[10px] text-clay-600 uppercase tracking-wider">
+        <div className="px-4 py-2 border-b border-clay-500/50">
+          <span className="text-[10px] text-clay-300 uppercase tracking-wider">
             Used by
           </span>
           <div className="flex flex-wrap gap-1 mt-1">
@@ -124,12 +124,12 @@ export function FilePreviewPanel({
       )}
 
       {/* Action bar */}
-      <div className="flex items-center gap-1 px-4 py-2 border-b border-clay-800/50">
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-clay-500/50">
         <Button
           variant="ghost"
           size="sm"
           onClick={onEdit}
-          className="h-7 text-xs text-clay-400 hover:text-clay-200"
+          className="h-7 text-xs text-clay-200 hover:text-clay-200"
         >
           <Pencil className="h-3 w-3 mr-1" />
           {editMode ? "Preview" : "Edit"}
@@ -138,7 +138,7 @@ export function FilePreviewPanel({
           variant="ghost"
           size="sm"
           onClick={onToggleFavorite}
-          className="h-7 text-xs text-clay-400 hover:text-clay-200"
+          className="h-7 text-xs text-clay-200 hover:text-clay-200"
         >
           <Star
             className={cn(
@@ -152,7 +152,7 @@ export function FilePreviewPanel({
           variant="ghost"
           size="sm"
           onClick={copyPath}
-          className="h-7 text-xs text-clay-400 hover:text-clay-200"
+          className="h-7 text-xs text-clay-200 hover:text-clay-200"
         >
           <Copy className="h-3 w-3 mr-1" />
           Path

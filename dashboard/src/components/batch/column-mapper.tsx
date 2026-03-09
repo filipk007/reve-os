@@ -29,9 +29,9 @@ export function ColumnMapper({
   const fields = getFieldNames(skill);
 
   return (
-    <Card className="border-clay-800 bg-white shadow-sm">
+    <Card className="border-clay-500 ">
       <CardContent className="p-4">
-        <h3 className="text-xs text-clay-500 uppercase tracking-wider mb-3 font-[family-name:var(--font-sans)]">
+        <h3 className="text-xs text-clay-200 uppercase tracking-wider mb-3 font-[family-name:var(--font-sans)]">
           Column Mapping
         </h3>
         <div className="grid grid-cols-2 gap-3">
@@ -49,13 +49,13 @@ export function ColumnMapper({
                   })
                 }
               >
-                <SelectTrigger className="flex-1 border-clay-700 bg-clay-850 text-clay-100 text-sm h-8 focus:ring-kiln-teal">
+                <SelectTrigger className="flex-1 border-clay-700 bg-clay-700 text-clay-100 text-sm h-8 focus:ring-kiln-teal">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   <SelectItem
                     value="__skip__"
-                    className="text-clay-500 focus:bg-clay-800"
+                    className="text-clay-200 focus:bg-clay-800"
                   >
                     -- skip --
                   </SelectItem>

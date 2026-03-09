@@ -47,7 +47,7 @@ interface ClientEditorProps {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="text-xs font-medium text-clay-400 mb-1 block">
+    <label className="text-xs font-medium text-clay-200 mb-1 block">
       {children}
     </label>
   );
@@ -74,7 +74,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         placeholder={placeholder}
-        className="bg-clay-900 border-clay-700 text-clay-100 placeholder:text-clay-600"
+        className="bg-clay-800 border-clay-700 text-clay-100 placeholder:text-clay-300"
       />
     </div>
   );
@@ -98,7 +98,7 @@ function TextArea({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={rows || 4}
-        className="w-full rounded-md bg-clay-900 border border-clay-700 text-clay-100 placeholder:text-clay-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-kiln-teal/50 resize-y"
+        className="w-full rounded-md bg-clay-800 border border-clay-700 text-clay-100 placeholder:text-clay-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-kiln-teal/50 resize-y"
       />
     </div>
   );
@@ -220,13 +220,13 @@ export function ClientEditor({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-xl bg-clay-950 border-clay-800 overflow-y-auto"
+        className="w-full sm:max-w-xl bg-clay-950 border-clay-500 overflow-y-auto"
       >
         <SheetHeader className="px-6 pt-6 pb-2">
           <SheetTitle className="text-clay-100">
             {isEdit ? `Edit ${client.name}` : "New Client Profile"}
           </SheetTitle>
-          <SheetDescription className="text-clay-500">
+          <SheetDescription className="text-clay-200">
             {isEdit
               ? "Update the client context used in prompt generation."
               : "Create a new client profile for prompt personalization."}
@@ -235,7 +235,7 @@ export function ClientEditor({
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-6">
           {/* Identity */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-800 pb-1">
+            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-500 pb-1">
               Identity
             </h4>
             <Field
@@ -258,7 +258,7 @@ export function ClientEditor({
 
           {/* Company Info */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-800 pb-1">
+            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-500 pb-1">
               Company Info
             </h4>
             <div className="grid grid-cols-2 gap-3">
@@ -273,7 +273,7 @@ export function ClientEditor({
 
           {/* Content sections */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-800 pb-1">
+            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-500 pb-1">
               Client Context
             </h4>
             <TextArea label="What They Sell" value={whatTheySell} onChange={setWhatTheySell} />
@@ -285,7 +285,7 @@ export function ClientEditor({
 
           {/* Tone */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-800 pb-1">
+            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-500 pb-1">
               Tone Preferences
             </h4>
             <Field label="Formality" value={formality} onChange={setFormality} placeholder="Technical but approachable" />
@@ -295,7 +295,7 @@ export function ClientEditor({
 
           {/* Campaign */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-800 pb-1">
+            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-500 pb-1">
               Campaign
             </h4>
             <TextArea label="Campaign Angles" value={campaignAngles} onChange={setCampaignAngles} rows={6} />
@@ -304,7 +304,7 @@ export function ClientEditor({
 
           {/* GTM Context */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-800 pb-1">
+            <h4 className="text-sm font-semibold text-clay-300 border-b border-clay-500 pb-1">
               GTM Context
             </h4>
             <TextArea label="Personas" value={personas} onChange={setPersonas} rows={6} />

@@ -24,7 +24,7 @@ export function LinkedInResult({ data }: { data: Record<string, unknown> }) {
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex items-center gap-2 text-clay-500">
+      <div className="flex items-center gap-2 text-clay-200">
         <Linkedin className="h-4 w-4" />
         <span className="text-xs uppercase tracking-wider">
           LinkedIn Connection Note
@@ -32,9 +32,9 @@ export function LinkedInResult({ data }: { data: Record<string, unknown> }) {
       </div>
 
       {/* LinkedIn card mockup */}
-      <div className="rounded-xl border border-clay-800 bg-clay-900/50 overflow-hidden">
+      <div className="rounded-xl border border-clay-500 bg-clay-800/50 overflow-hidden">
         {/* Card header */}
-        <div className="flex items-center gap-3 p-4 border-b border-clay-800">
+        <div className="flex items-center gap-3 p-4 border-b border-clay-500">
           <div className="h-10 w-10 rounded-full bg-clay-700 flex items-center justify-center">
             <span className="text-sm font-medium text-clay-300">
               {(data.first_name as string)?.charAt(0) || "?"}
@@ -45,7 +45,7 @@ export function LinkedInResult({ data }: { data: Record<string, unknown> }) {
               {(data.first_name as string) || "Contact"}
               {data.last_name ? ` ${data.last_name}` : ""}
             </p>
-            <p className="text-xs text-clay-500">Connection request</p>
+            <p className="text-xs text-clay-200">Connection request</p>
           </div>
         </div>
 
@@ -60,7 +60,7 @@ export function LinkedInResult({ data }: { data: Record<string, unknown> }) {
         <div className="flex items-center justify-end px-4 pb-3">
           <span
             className={`text-xs font-[family-name:var(--font-mono)] ${
-              isOverLimit ? "text-kiln-coral" : "text-clay-500"
+              isOverLimit ? "text-kiln-coral" : "text-clay-200"
             }`}
           >
             {charCount}/{limit} characters
@@ -71,10 +71,10 @@ export function LinkedInResult({ data }: { data: Record<string, unknown> }) {
       {/* Full JSON fallback */}
       {Object.keys(data).length > 3 && (
         <details className="group">
-          <summary className="text-xs text-clay-500 cursor-pointer hover:text-clay-400">
+          <summary className="text-xs text-clay-200 cursor-pointer hover:text-clay-200">
             Show all fields
           </summary>
-          <pre className="mt-2 text-xs text-clay-400 font-[family-name:var(--font-mono)] overflow-x-auto">
+          <pre className="mt-2 text-xs text-clay-200 font-[family-name:var(--font-mono)] overflow-x-auto">
             {JSON.stringify(data, null, 2)}
           </pre>
         </details>

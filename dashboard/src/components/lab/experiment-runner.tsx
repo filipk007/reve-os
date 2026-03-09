@@ -60,16 +60,16 @@ export function ExperimentRunner({
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-xs text-clay-500 uppercase tracking-wider mb-2 block">
+        <label className="text-xs text-clay-200 uppercase tracking-wider mb-2 block">
           Paste CSV Data
         </label>
         <Textarea
           value={csvText}
           onChange={(e) => setCsvText(e.target.value)}
           placeholder={`first_name,company_name,industry\nSarah,Acme,SaaS\nMarcus,Snowflake,Data`}
-          className="h-40 font-[family-name:var(--font-mono)] text-sm border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-600 resize-none"
+          className="h-40 font-[family-name:var(--font-mono)] text-sm border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-300 resize-none"
         />
-        <p className="text-xs text-clay-600 mt-1">
+        <p className="text-xs text-clay-300 mt-1">
           Rows will be round-robin distributed across{" "}
           {experiment.variant_ids.length} variants.
         </p>
@@ -94,7 +94,7 @@ export function ExperimentRunner({
       </Button>
 
       {result && (
-        <div className="rounded-lg border border-clay-800 bg-clay-950 p-4 space-y-2">
+        <div className="rounded-lg border border-clay-500 bg-clay-950 p-4 space-y-2">
           <p className="text-sm text-clay-200">
             Distributed {result.total_rows} rows:
           </p>

@@ -87,8 +87,8 @@ export function FileListRow({
       onDoubleClick={handleDoubleClick}
       onContextMenu={(e) => onContextMenu(e, node)}
       className={cn(
-        "cursor-pointer border-b border-clay-800/50 transition-colors",
-        isSelected ? "bg-kiln-teal/5" : "hover:bg-clay-900/50",
+        "cursor-pointer border-b border-clay-500/50 transition-colors",
+        isSelected ? "bg-kiln-teal/5" : "hover:bg-clay-800/50",
         isMultiSelected && "ring-1 ring-inset ring-blue-500/50"
       )}
     >
@@ -97,7 +97,7 @@ export function FileListRow({
           <Icon
             className={cn(
               "h-4 w-4 shrink-0",
-              isFolder ? "text-amber-500" : "text-clay-400",
+              isFolder ? "text-amber-500" : "text-clay-200",
               node.type === "drive" && "text-kiln-teal"
             )}
           />
@@ -115,10 +115,10 @@ export function FileListRow({
           )}
         </div>
       </td>
-      <td className="px-3 py-2 text-xs text-clay-500 hidden sm:table-cell">
+      <td className="px-3 py-2 text-xs text-clay-200 hidden sm:table-cell">
         {typeLabel}
       </td>
-      <td className="px-3 py-2 text-xs text-clay-500 hidden md:table-cell">
+      <td className="px-3 py-2 text-xs text-clay-200 hidden md:table-cell">
         {node.category || "—"}
       </td>
       <td className="px-3 py-2" />

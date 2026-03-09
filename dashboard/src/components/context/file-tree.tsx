@@ -75,15 +75,15 @@ function TreeNode({
           "flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-sm transition-colors",
           isActive && "bg-kiln-teal/10 text-kiln-teal",
           isSelected && !isActive && "bg-clay-800 text-clay-200",
-          !isActive && !isSelected && "text-clay-400 hover:bg-clay-800/50 hover:text-clay-200"
+          !isActive && !isSelected && "text-clay-200 hover:bg-clay-800/50 hover:text-clay-200"
         )}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
       >
         {isFolder && hasChildren ? (
           isExpanded ? (
-            <ChevronDown className="h-3 w-3 shrink-0 text-clay-500" />
+            <ChevronDown className="h-3 w-3 shrink-0 text-clay-200" />
           ) : (
-            <ChevronRight className="h-3 w-3 shrink-0 text-clay-500" />
+            <ChevronRight className="h-3 w-3 shrink-0 text-clay-200" />
           )
         ) : (
           <span className="w-3 shrink-0" />
@@ -137,7 +137,7 @@ export function FileTree({
       {/* Favorites */}
       {favoriteNodes.length > 0 && (
         <div className="mb-2 px-2">
-          <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium uppercase tracking-wider text-clay-500">
+          <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium uppercase tracking-wider text-clay-200">
             <Star className="h-3 w-3" />
             Favorites
           </div>
@@ -150,7 +150,7 @@ export function FileTree({
                   : onNavigate(node.id)
               }
               className={cn(
-                "flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-xs text-clay-400 hover:bg-clay-800/50 hover:text-clay-200",
+                "flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-xs text-clay-200 hover:bg-clay-800/50 hover:text-clay-200",
                 node.id === selectedFileId && "bg-clay-800 text-clay-200"
               )}
             >
@@ -158,7 +158,7 @@ export function FileTree({
               <span className="truncate">{node.name}</span>
             </button>
           ))}
-          <div className="mx-2 my-2 border-t border-clay-800" />
+          <div className="mx-2 my-2 border-t border-clay-500" />
         </div>
       )}
 

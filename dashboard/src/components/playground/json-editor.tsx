@@ -38,7 +38,7 @@ export function JsonEditor({
   return (
     <div className="flex-1 flex flex-col">
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-xs text-clay-500 uppercase tracking-wider font-[family-name:var(--font-sans)]">
+        <label className="text-xs text-clay-200 uppercase tracking-wider font-[family-name:var(--font-sans)]">
           Data (JSON)
         </label>
         {error && (
@@ -48,7 +48,7 @@ export function JsonEditor({
         )}
       </div>
       <Card
-        className={`flex-1 border-clay-700 bg-clay-900 ${
+        className={`flex-1 border-clay-700 bg-clay-800 ${
           error ? "border-kiln-coral/50" : ""
         }`}
       >
@@ -58,7 +58,7 @@ export function JsonEditor({
             onChange={(e) => onChange(e.target.value)}
             rows={14}
             spellCheck={false}
-            className="w-full h-full rounded-lg bg-transparent px-4 py-3 font-[family-name:var(--font-mono)] text-sm text-clay-100 focus:outline-none resize-none placeholder:text-clay-600"
+            className="w-full h-full rounded-lg bg-transparent px-4 py-3 font-[family-name:var(--font-mono)] text-sm text-clay-100 focus:outline-none resize-none placeholder:text-clay-300"
             placeholder='{ "key": "value" }'
           />
         </CardContent>

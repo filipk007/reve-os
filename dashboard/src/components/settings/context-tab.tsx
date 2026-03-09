@@ -199,22 +199,22 @@ export function ContextTab() {
   return (
     <>
       <Tabs defaultValue="clients">
-        <TabsList className="bg-clay-900 border border-clay-800 mb-6">
+        <TabsList className="bg-clay-800 border border-clay-500 mb-6">
           <TabsTrigger
             value="clients"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Clients
           </TabsTrigger>
           <TabsTrigger
             value="knowledge"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Knowledge Base
           </TabsTrigger>
           <TabsTrigger
             value="preview"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Prompt Preview
           </TabsTrigger>
@@ -269,10 +269,10 @@ export function ContextTab() {
         open={kbDeleteConfirm !== null}
         onOpenChange={(open) => !open && setKbDeleteConfirm(null)}
       >
-        <DialogContent className="border-clay-800 bg-clay-950">
+        <DialogContent className="border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">Delete Knowledge Base File</DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Are you sure you want to delete &quot;{kbDeleteConfirm?.name}&quot; from{" "}
               {kbDeleteConfirm?.category}? This action cannot be undone.
             </DialogDescription>
@@ -300,10 +300,10 @@ export function ContextTab() {
         open={deleteConfirm !== null}
         onOpenChange={(open) => !open && setDeleteConfirm(null)}
       >
-        <DialogContent className="border-clay-800 bg-clay-950">
+        <DialogContent className="border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">Delete Client</DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Are you sure you want to delete &quot;{deleteConfirm?.name}
               &quot;? This will remove the client markdown file permanently.
             </DialogDescription>

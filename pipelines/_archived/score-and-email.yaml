@@ -1,0 +1,5 @@
+name: score-and-email
+description: Qualify prospect → Generate email (skip angle selection)
+steps:
+  - skill: qualifier
+  - skill: email-gen

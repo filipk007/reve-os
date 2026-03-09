@@ -33,7 +33,7 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
             variant="ghost"
             size="sm"
             onClick={onBack}
-            className="text-clay-500 hover:text-clay-200 -ml-2 mb-1"
+            className="text-clay-200 hover:text-clay-200 -ml-2 mb-1"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Plays
@@ -49,7 +49,7 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
               {play.category}
             </Badge>
           </div>
-          <p className="text-clay-400 max-w-2xl">{play.description}</p>
+          <p className="text-clay-200 max-w-2xl">{play.description}</p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
@@ -73,17 +73,17 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
 
       {/* Info cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-clay-800 bg-clay-950">
+        <Card className="border-clay-500 bg-clay-950">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-clay-400">When to Use</CardTitle>
+            <CardTitle className="text-sm text-clay-200">When to Use</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-clay-200">{play.when_to_use}</p>
           </CardContent>
         </Card>
-        <Card className="border-clay-800 bg-clay-950">
+        <Card className="border-clay-500 bg-clay-950">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-clay-400">Who It&apos;s For</CardTitle>
+            <CardTitle className="text-sm text-clay-200">Who It&apos;s For</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-clay-200">{play.who_its_for}</p>
@@ -92,17 +92,17 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
       </div>
 
       {/* Pipeline visualization */}
-      <Card className="border-clay-800 bg-clay-950">
+      <Card className="border-clay-500 bg-clay-950">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-clay-400">Pipeline</CardTitle>
+          <CardTitle className="text-sm text-clay-200">Pipeline</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="bg-clay-900 text-clay-200 border-clay-700 font-mono">
+            <Badge variant="outline" className="bg-clay-800 text-clay-200 border-clay-700 font-mono">
               {play.pipeline}
             </Badge>
-            <span className="text-xs text-clay-600">|</span>
-            <span className="text-xs text-clay-500">
+            <span className="text-xs text-clay-300">|</span>
+            <span className="text-xs text-clay-200">
               Model: {play.default_model} &middot; Confidence threshold: {play.default_confidence_threshold}
             </span>
           </div>
@@ -112,7 +112,7 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
                 <Badge
                   key={tag}
                   variant="outline"
-                  className="text-xs bg-clay-900 text-clay-500 border-clay-800"
+                  className="text-xs bg-clay-800 text-clay-200 border-clay-500"
                 >
                   {tag}
                 </Badge>
@@ -123,11 +123,11 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
       </Card>
 
       {/* Input schema */}
-      <Card className="border-clay-800 bg-clay-950">
+      <Card className="border-clay-500 bg-clay-950">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-clay-400">
+          <CardTitle className="text-sm text-clay-200">
             Input Schema
-            <span className="ml-2 text-clay-600 font-normal">
+            <span className="ml-2 text-clay-300 font-normal">
               ({play.input_schema.length} fields)
             </span>
           </CardTitle>
@@ -135,21 +135,21 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow className="border-clay-800 hover:bg-transparent">
-                <TableHead className="text-clay-500">Field</TableHead>
-                <TableHead className="text-clay-500">Type</TableHead>
-                <TableHead className="text-clay-500">Required</TableHead>
-                <TableHead className="text-clay-500">Description</TableHead>
-                <TableHead className="text-clay-500">Example</TableHead>
+              <TableRow className="border-clay-500 hover:bg-transparent">
+                <TableHead className="text-clay-200">Field</TableHead>
+                <TableHead className="text-clay-200">Type</TableHead>
+                <TableHead className="text-clay-200">Required</TableHead>
+                <TableHead className="text-clay-200">Description</TableHead>
+                <TableHead className="text-clay-200">Example</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {play.input_schema.map((field) => (
-                <TableRow key={field.name} className="border-clay-800">
+                <TableRow key={field.name} className="border-clay-500">
                   <TableCell className="font-mono text-sm text-clay-200">
                     {field.name}
                   </TableCell>
-                  <TableCell className="text-sm text-clay-400">
+                  <TableCell className="text-sm text-clay-200">
                     {field.type}
                   </TableCell>
                   <TableCell>
@@ -158,13 +158,13 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
                         required
                       </Badge>
                     ) : (
-                      <span className="text-xs text-clay-600">optional</span>
+                      <span className="text-xs text-clay-300">optional</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm text-clay-400">
+                  <TableCell className="text-sm text-clay-200">
                     {field.description}
                   </TableCell>
-                  <TableCell className="text-sm text-clay-500 font-mono">
+                  <TableCell className="text-sm text-clay-200 font-mono">
                     {field.example || "—"}
                   </TableCell>
                 </TableRow>
@@ -175,11 +175,11 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
       </Card>
 
       {/* Output schema */}
-      <Card className="border-clay-800 bg-clay-950">
+      <Card className="border-clay-500 bg-clay-950">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-clay-400">
+          <CardTitle className="text-sm text-clay-200">
             Output Schema
-            <span className="ml-2 text-clay-600 font-normal">
+            <span className="ml-2 text-clay-300 font-normal">
               ({play.output_schema.length} fields)
             </span>
           </CardTitle>
@@ -187,22 +187,22 @@ export function PlayDetail({ play, onBack, onClayConfig, onFork }: PlayDetailPro
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow className="border-clay-800 hover:bg-transparent">
-                <TableHead className="text-clay-500">Field</TableHead>
-                <TableHead className="text-clay-500">Type</TableHead>
-                <TableHead className="text-clay-500">Description</TableHead>
+              <TableRow className="border-clay-500 hover:bg-transparent">
+                <TableHead className="text-clay-200">Field</TableHead>
+                <TableHead className="text-clay-200">Type</TableHead>
+                <TableHead className="text-clay-200">Description</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {play.output_schema.map((field) => (
-                <TableRow key={field.name} className="border-clay-800">
+                <TableRow key={field.name} className="border-clay-500">
                   <TableCell className="font-mono text-sm text-clay-200">
                     {field.name}
                   </TableCell>
-                  <TableCell className="text-sm text-clay-400">
+                  <TableCell className="text-sm text-clay-200">
                     {field.type}
                   </TableCell>
-                  <TableCell className="text-sm text-clay-400">
+                  <TableCell className="text-sm text-clay-200">
                     {field.description}
                   </TableCell>
                 </TableRow>

@@ -41,7 +41,7 @@ export function FileContextMenu({
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-      <ContextMenuContent className="w-52 bg-clay-900 border-clay-700">
+      <ContextMenuContent className="w-52 bg-clay-800 border-clay-700">
         {isFolder ? (
           <>
             <ContextMenuItem

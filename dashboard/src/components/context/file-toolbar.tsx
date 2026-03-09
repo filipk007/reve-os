@@ -36,12 +36,12 @@ export function FileToolbar({
     <div className="flex items-center gap-2">
       {/* Search */}
       <div className="relative flex-1 max-w-xs">
-        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-clay-500" />
+        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-clay-200" />
         <Input
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Filter files..."
-          className="h-8 pl-8 text-xs bg-clay-900 border-clay-700 text-clay-200 placeholder:text-clay-600"
+          className="h-8 pl-8 text-xs bg-clay-800 border-clay-700 text-clay-200 placeholder:text-clay-300"
         />
       </div>
 
@@ -53,7 +53,7 @@ export function FileToolbar({
             "p-1.5 transition-colors",
             viewMode === "grid"
               ? "bg-kiln-teal/10 text-kiln-teal"
-              : "text-clay-500 hover:text-clay-300"
+              : "text-clay-200 hover:text-clay-300"
           )}
         >
           <LayoutGrid className="h-3.5 w-3.5" />
@@ -64,7 +64,7 @@ export function FileToolbar({
             "p-1.5 transition-colors border-l border-clay-700",
             viewMode === "list"
               ? "bg-kiln-teal/10 text-kiln-teal"
-              : "text-clay-500 hover:text-clay-300"
+              : "text-clay-200 hover:text-clay-300"
           )}
         >
           <List className="h-3.5 w-3.5" />

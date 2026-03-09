@@ -27,6 +27,7 @@ import {
   updateSkillContent,
   createSkillFile,
   deleteSkillFile,
+  NetworkError,
 } from "@/lib/api";
 import {
   Dialog,
@@ -38,6 +39,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+
+function showErrorToast(title: string, error: unknown, onRetry?: () => void) {
+  const isNetwork = error instanceof NetworkError;
+  toast.error(isNetwork ? "Backend unreachable" : title, {
+    description: (error as Error).message,
+    action: isNetwork && onRetry ? { label: "Retry", onClick: onRetry } : undefined,
+  });
+}
 
 export default function ContextPage() {
   const explorer = useFileExplorer();
@@ -109,12 +118,15 @@ export default function ContextPage() {
       const name = prompt("Skill name (lowercase, hyphens):");
       if (!name) return;
       const template = `---\nmodel_tier: sonnet\n---\n\n# ${name}\n\nYour skill instructions here.\n`;
-      createSkillFile(name.toLowerCase().replace(/\s+/g, "-"), template)
+      const slug = name.toLowerCase().replace(/\s+/g, "-");
+      createSkillFile(slug, template)
         .then(() => {
           toast.success("Skill created");
           explorer.loadAll();
         })
-        .catch((e) => toast.error("Failed to create skill", { description: (e as Error).message }));
+        .catch((e) => showErrorToast("Failed to create skill", e, () => {
+          createSkillFile(slug, template).then(() => { toast.success("Skill created"); explorer.loadAll(); });
+        }));
     }
   }, [currentDriveId, explorer]);
 
@@ -175,7 +187,7 @@ export default function ContextPage() {
       setEditingClient(null);
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to save client", { description: (e as Error).message });
+      showErrorToast("Failed to save client", e, () => handleSaveClient(data));
     } finally {
       setClientSaving(false);
     }
@@ -189,7 +201,7 @@ export default function ContextPage() {
       setKbEditorOpen(false);
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to save file", { description: (e as Error).message });
+      showErrorToast("Failed to save file", e, () => handleSaveKb(category, filename, content));
     } finally {
       setKbSaving(false);
     }
@@ -203,7 +215,7 @@ export default function ContextPage() {
       setKbEditorOpen(false);
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to create file", { description: (e as Error).message });
+      showErrorToast("Failed to create file", e, () => handleCreateKb(category, filename, content));
     } finally {
       setKbSaving(false);
     }
@@ -229,7 +241,7 @@ export default function ContextPage() {
       }
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to delete", { description: (e as Error).message });
+      showErrorToast("Failed to delete", e, handleDelete);
     }
   };
 
@@ -249,7 +261,7 @@ export default function ContextPage() {
       explorer.setEditMode(false);
       explorer.loadAll();
     } catch (e) {
-      toast.error("Failed to save", { description: (e as Error).message });
+      showErrorToast("Failed to save", e, () => handleInlineSave(content));
     }
   };
 
@@ -309,7 +321,7 @@ export default function ContextPage() {
     return (
       <div className="flex flex-col h-full">
         <Header title="Context Hub" />
-        <div className="flex-1 flex items-center justify-center text-clay-500 text-sm">
+        <div className="flex-1 flex items-center justify-center text-clay-200 text-sm">
           Loading file explorer...
         </div>
       </div>
@@ -322,7 +334,7 @@ export default function ContextPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Tree Sidebar */}
-        <div className="hidden md:flex w-60 shrink-0 border-r border-clay-800 bg-clay-950 flex-col">
+        <div className="hidden md:flex w-60 shrink-0 border-r border-clay-500 bg-clay-950 flex-col">
           <FileTree
             tree={explorer.fileTree}
             expandedFolders={explorer.expandedFolders}
@@ -357,7 +369,7 @@ export default function ContextPage() {
           />
 
           {/* Breadcrumbs + Toolbar */}
-          <div className="flex items-center justify-between gap-4 border-b border-clay-800/50 px-4 py-2">
+          <div className="flex items-center justify-between gap-4 border-b border-clay-500/50 px-4 py-2">
             <Breadcrumbs
               items={explorer.breadcrumbs}
               onNavigate={explorer.navigateTo}
@@ -460,10 +472,10 @@ export default function ContextPage() {
 
       {/* Prompt Preview Dialog */}
       <Dialog open={promptPreviewOpen} onOpenChange={setPromptPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto border-clay-800 bg-clay-950">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">Prompt Preview</DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Preview the assembled prompt with skill + context files.
             </DialogDescription>
           </DialogHeader>
@@ -476,10 +488,10 @@ export default function ContextPage() {
         open={deleteTarget !== null}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
       >
-        <DialogContent className="border-clay-800 bg-clay-950">
+        <DialogContent className="border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">Delete File</DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Are you sure you want to delete &quot;{deleteTarget?.name}&quot;?
               This action cannot be undone.
             </DialogDescription>

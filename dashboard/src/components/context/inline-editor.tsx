@@ -52,12 +52,12 @@ export function InlineEditor({ content, onSave, onCancel }: InlineEditorProps) {
         ref={textareaRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="flex-1 w-full resize-none bg-transparent p-4 text-xs text-clay-200 font-mono leading-relaxed outline-none placeholder:text-clay-600"
+        className="flex-1 w-full resize-none bg-transparent p-4 text-xs text-clay-200 font-mono leading-relaxed outline-none placeholder:text-clay-300"
         placeholder="Enter markdown content..."
         spellCheck={false}
       />
-      <div className="flex items-center justify-between border-t border-clay-800 px-4 py-2">
-        <div className="flex items-center gap-3 text-[10px] text-clay-600">
+      <div className="flex items-center justify-between border-t border-clay-500 px-4 py-2">
+        <div className="flex items-center gap-3 text-[10px] text-clay-300">
           <span>{wordCount} words</span>
           <span>{charCount} chars</span>
           {hasChanges && (
@@ -72,7 +72,7 @@ export function InlineEditor({ content, onSave, onCancel }: InlineEditorProps) {
             variant="ghost"
             size="sm"
             onClick={onCancel}
-            className="h-6 text-[10px] text-clay-500 hover:text-clay-300"
+            className="h-6 text-[10px] text-clay-200 hover:text-clay-300"
           >
             Cancel
           </Button>

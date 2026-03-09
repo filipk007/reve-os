@@ -65,7 +65,7 @@ export function ResultsComparison({
   if (Object.keys(experiment.results).length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-sm text-clay-500">
+        <p className="text-sm text-clay-200">
           No results yet. Run the experiment first.
         </p>
       </div>
@@ -83,7 +83,7 @@ export function ResultsComparison({
           return (
             <Card
               key={v.id}
-              className={`border-clay-800 bg-white shadow-sm ${
+              className={`border-clay-500  ${
                 isWinner ? "ring-1 ring-kiln-teal/30" : ""
               }`}
             >
@@ -99,7 +99,7 @@ export function ResultsComparison({
                   </div>
                   <Badge
                     variant="outline"
-                    className="text-[10px] border-clay-700 text-clay-400"
+                    className="text-[10px] border-clay-700 text-clay-200"
                   >
                     {v.runs} runs
                   </Badge>
@@ -108,26 +108,26 @@ export function ResultsComparison({
               <CardContent className="pt-0 space-y-3">
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="flex items-center gap-1.5">
-                    <Clock className="h-3 w-3 text-clay-500" />
-                    <span className="text-clay-400 text-xs">
+                    <Clock className="h-3 w-3 text-clay-200" />
+                    <span className="text-clay-200 text-xs">
                       {Math.round(v.avg_duration_ms)}ms avg
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Hash className="h-3 w-3 text-clay-500" />
-                    <span className="text-clay-400 text-xs">
+                    <Hash className="h-3 w-3 text-clay-200" />
+                    <span className="text-clay-200 text-xs">
                       {v.total_tokens} tokens
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <ThumbsUp className="h-3 w-3 text-kiln-teal" />
-                    <span className="text-clay-400 text-xs">
+                    <span className="text-clay-200 text-xs">
                       {v.thumbs_up}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <ThumbsDown className="h-3 w-3 text-kiln-coral" />
-                    <span className="text-clay-400 text-xs">
+                    <span className="text-clay-200 text-xs">
                       {v.thumbs_down}
                     </span>
                   </div>
@@ -136,7 +136,7 @@ export function ResultsComparison({
                 {v.total_feedback > 0 && (
                   <div>
                     <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-clay-500">Approval</span>
+                      <span className="text-clay-200">Approval</span>
                       <span
                         className={
                           v.approval_rate >= 0.7
