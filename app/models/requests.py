@@ -7,6 +7,7 @@ class WebhookRequest(BaseModel):
     data: dict = Field(..., description="Row data from Clay")
     instructions: str | None = Field(None, description="Optional campaign instructions")
     model: str | None = Field(None, description="Model override: opus, sonnet, haiku")
+    output_format: str | None = Field(None, description="Output format: json, text, markdown, html (default: json)")
     callback_url: str | None = Field(None, description="URL to POST results to (enables async mode)")
     row_id: str | None = Field(None, description="Row identifier for matching callback results")
     max_retries: int | None = Field(None, description="Max retry attempts (default 3)")

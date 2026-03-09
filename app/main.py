@@ -18,6 +18,7 @@ from app.core.prefetch import ExaPrefetcher
 from app.core.context_store import ContextStore
 from app.core.destination_store import DestinationStore
 from app.core.feedback_store import FeedbackStore
+from app.core.learning_engine import LearningEngine
 from app.core.memory_store import MemoryStore
 from app.core.pipeline_store import PipelineStore
 from app.core.play_store import PlayStore
@@ -113,6 +114,10 @@ async def startup():
     app.state.memory_store = MemoryStore(data_dir=settings.data_dir)
     app.state.memory_store.load()
     app.state.job_queue._memory_store = app.state.memory_store
+
+    # Feedback-to-Knowledge: Learning engine (persistent corrections from feedback)
+    app.state.learning_engine = LearningEngine(knowledge_dir=settings.knowledge_dir)
+    app.state.job_queue._learning_engine = app.state.learning_engine
 
     # Phase 4: Semantic context index (build before wiring to queue)
     app.state.context_index = ContextIndex(
@@ -221,4 +226,4 @@ async def startup():
     logger.info("  Smart routing: %s", "enabled" if settings.enable_smart_routing else "disabled")
     logger.info("  Context index: %d documents", app.state.context_index.doc_count)
     logger.info("  Company cache TTL: %ds", settings.company_cache_ttl)
-    logger.info("  Features: campaigns, review-queue, smart-pipelines, feedback-loops, retry, SSE, model-router, sub-monitor, cleanup, memory, semantic-context, parallel-pipelines, auto-coordinator, company-dedup")
+    logger.info("  Features: campaigns, review-queue, smart-pipelines, feedback-loops, retry, SSE, model-router, sub-monitor, cleanup, memory, semantic-context, parallel-pipelines, auto-coordinator, company-dedup, learning-engine, output-formats, nl-context-updates")
