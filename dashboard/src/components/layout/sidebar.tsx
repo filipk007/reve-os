@@ -26,6 +26,7 @@ import {
   Search,
   Target,
   MoreHorizontal,
+  Mail,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -66,6 +67,7 @@ const NAV_SECTIONS: NavSection[] = [
     accentColor: "kiln-teal",
     items: [
       { href: "/outbound", label: "Outbound", icon: PenLine, shortcut: "3" },
+      { href: "/email-lab", label: "Email Lab", icon: Mail, shortcut: "8" },
     ],
   },
   {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Mail,
   PenLine,
+  FlaskConical,
 } from "lucide-react";
 
 /* ── Placeholder data ── */
@@ -57,9 +58,9 @@ export default function OutboundPage() {
         {/* ── Quick actions ── */}
         <div className="flex flex-wrap gap-3">
           <Button asChild className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold">
-            <Link href="/run?skill=email-gen">
-              <Mail className="h-4 w-4 mr-1.5" />
-              Write an Email
+            <Link href="/email-lab">
+              <FlaskConical className="h-4 w-4 mr-1.5" />
+              Email Lab
             </Link>
           </Button>
           <Button asChild className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold">
