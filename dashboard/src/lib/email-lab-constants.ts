@@ -118,4 +118,28 @@ export const EMAIL_LAB_TEMPLATES: EmailLabTemplate[] = [
 ];
 
 export const STORAGE_KEY = "email-lab-history";
+export const CUSTOM_TEMPLATES_KEY = "email-lab-custom-templates";
 export const MAX_HISTORY = 25;
+
+// ─── Instruction Presets (Feature 2) ───
+
+export interface InstructionPreset {
+  label: string;
+  text: string;
+}
+
+export const INSTRUCTION_PRESETS: InstructionPreset[] = [
+  { label: "Shorter", text: "Keep under 80 words. Be concise and punchy." },
+  { label: "More Casual", text: "Use a casual, conversational tone. No corporate speak." },
+  { label: "Question Opener", text: "Open with a thought-provoking question related to their signal." },
+  { label: "Add Urgency", text: "Add a time-sensitive element or urgency to the CTA." },
+  { label: "Pain-Focused", text: "Lead with the pain point their signal reveals. Agitate before offering the solution." },
+  { label: "Social Proof", text: "Include a brief social proof reference (similar companies, results achieved)." },
+];
+
+// ─── Custom Templates (Feature 4) ───
+
+export interface CustomEmailLabTemplate extends EmailLabTemplate {
+  isCustom: true;
+  createdAt: number;
+}

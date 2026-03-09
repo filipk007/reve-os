@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { EditorPane } from "@/components/editor/editor-pane";
 import { Play, Loader2, Save, Cpu } from "lucide-react";
 import type { EditorTab } from "@/hooks/use-email-lab";
+import { INSTRUCTION_PRESETS } from "@/lib/email-lab-constants";
 
 const TABS: { id: EditorTab; label: string }[] = [
   { id: "data", label: "Data" },
@@ -120,13 +121,30 @@ export function DataEditorPanel({
         )}
 
         {activeTab === "instructions" && (
-          <textarea
-            value={instructions}
-            onChange={(e) => onInstructionsChange(e.target.value)}
-            spellCheck={false}
-            className="w-full h-full resize-none bg-clay-950 border border-clay-700 rounded-lg p-4 text-sm text-clay-200 leading-relaxed outline-none focus:border-kiln-teal/50"
-            placeholder="Optional campaign overrides... e.g. 'Keep under 80 words, focus on the funding signal, use a question-based opener'"
-          />
+          <div className="flex flex-col h-full gap-2">
+            {/* Feature 2: Instruction preset chips */}
+            <div className="flex flex-wrap gap-1.5 shrink-0">
+              {INSTRUCTION_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  onClick={() => {
+                    const sep = instructions.trim() ? "\n" : "";
+                    onInstructionsChange(instructions.trim() + sep + preset.text);
+                  }}
+                  className="text-[11px] px-2.5 py-1 rounded-full border border-clay-600 text-clay-300 hover:text-kiln-teal hover:border-kiln-teal/30 transition-colors"
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={instructions}
+              onChange={(e) => onInstructionsChange(e.target.value)}
+              spellCheck={false}
+              className="w-full flex-1 resize-none bg-clay-950 border border-clay-700 rounded-lg p-4 text-sm text-clay-200 leading-relaxed outline-none focus:border-kiln-teal/50"
+              placeholder="Optional campaign overrides... e.g. 'Keep under 80 words, focus on the funding signal, use a question-based opener'"
+            />
+          </div>
         )}
 
         {activeTab === "skill" && (

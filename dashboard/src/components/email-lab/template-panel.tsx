@@ -2,11 +2,12 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { GitFork, Cpu } from "lucide-react";
+import { GitFork, Cpu, X } from "lucide-react";
 import {
   EMAIL_LAB_TEMPLATES,
   EMAIL_LAB_SKILLS,
   type EmailLabSkill,
+  type CustomEmailLabTemplate,
 } from "@/lib/email-lab-constants";
 import type { VariantDef } from "@/lib/types";
 import type { Model } from "@/lib/constants";
@@ -31,6 +32,8 @@ export function TemplatePanel({
   selectedVariant,
   onSelectVariant,
   onFork,
+  customTemplates,
+  onDeleteCustomTemplate,
 }: {
   selectedTemplateId: string | null;
   onSelectTemplate: (id: string) => void;
@@ -42,6 +45,8 @@ export function TemplatePanel({
   selectedVariant: string | null;
   onSelectVariant: (id: string | null) => void;
   onFork: () => void;
+  customTemplates: CustomEmailLabTemplate[];
+  onDeleteCustomTemplate: (id: string) => void;
 }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto p-3 space-y-5">
@@ -86,6 +91,49 @@ export function TemplatePanel({
           })}
         </div>
       </div>
+
+      {/* ── Custom/Saved Templates (Feature 4) ── */}
+      {customTemplates.length > 0 && (
+        <div>
+          <h3 className="text-[11px] font-semibold text-clay-300 uppercase tracking-[0.1em] mb-2">
+            Saved
+          </h3>
+          <div className="space-y-1.5">
+            {customTemplates.map((tpl) => {
+              const active = tpl.id === selectedTemplateId;
+              return (
+                <div key={tpl.id} className="relative group">
+                  <button
+                    onClick={() => onSelectTemplate(tpl.id)}
+                    className={cn(
+                      "w-full text-left rounded-lg px-3 py-2.5 transition-all duration-150 border",
+                      active
+                        ? "border-kiln-teal/40 bg-kiln-teal/5"
+                        : "border-transparent hover:bg-clay-700/50"
+                    )}
+                  >
+                    <span className="text-sm font-medium text-clay-100 truncate block">
+                      {tpl.name}
+                    </span>
+                    <p className="text-xs text-clay-300 line-clamp-1">
+                      {tpl.description}
+                    </p>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteCustomTemplate(tpl.id);
+                    }}
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 h-5 w-5 flex items-center justify-center rounded text-clay-300 hover:text-red-400 transition-all"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ── Skill Selector ── */}
       <div>

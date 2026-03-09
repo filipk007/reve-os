@@ -13,10 +13,12 @@ import type { Model } from "@/lib/constants";
 import {
   EMAIL_LAB_TEMPLATES,
   STORAGE_KEY,
+  CUSTOM_TEMPLATES_KEY,
   MAX_HISTORY,
   type EmailLabSkill,
   type EmailLabRun,
   type EmailLabTemplate,
+  type CustomEmailLabTemplate,
 } from "@/lib/email-lab-constants";
 
 export type EditorTab = "data" | "instructions" | "skill";
@@ -57,11 +59,23 @@ export interface UseEmailLabReturn {
   loading: boolean;
   error: string | null;
   runEmail: () => Promise<void>;
+  currentRunId: string | null;
 
   // History
   history: EmailLabRun[];
   restoreRun: (run: EmailLabRun) => void;
   clearHistory: () => void;
+
+  // Custom templates (Feature 4)
+  customTemplates: CustomEmailLabTemplate[];
+  saveAsTemplate: (name: string) => void;
+  deleteCustomTemplate: (id: string) => void;
+
+  // Subject regen (Feature 6)
+  subjectAlts: string[];
+  regenLoading: boolean;
+  regenSubjectLines: () => Promise<void>;
+  selectSubjectAlt: (alt: string) => void;
 }
 
 function loadHistory(): EmailLabRun[] {
@@ -77,6 +91,24 @@ function loadHistory(): EmailLabRun[] {
 function saveHistory(runs: EmailLabRun[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(runs.slice(0, MAX_HISTORY)));
+  } catch {
+    // localStorage full — silently ignore
+  }
+}
+
+function loadCustomTemplates(): CustomEmailLabTemplate[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(CUSTOM_TEMPLATES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomTemplates(templates: CustomEmailLabTemplate[]) {
+  try {
+    localStorage.setItem(CUSTOM_TEMPLATES_KEY, JSON.stringify(templates));
   } catch {
     // localStorage full — silently ignore
   }
@@ -115,6 +147,16 @@ export function useEmailLab(): UseEmailLabReturn {
   // History
   const [history, setHistory] = useState<EmailLabRun[]>(loadHistory);
 
+  // Current run ID (Feature 3 — inline feedback)
+  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
+
+  // Custom templates (Feature 4)
+  const [customTemplates, setCustomTemplates] = useState<CustomEmailLabTemplate[]>(loadCustomTemplates);
+
+  // Subject regen (Feature 6)
+  const [subjectAlts, setSubjectAlts] = useState<string[]>([]);
+  const [regenLoading, setRegenLoading] = useState(false);
+
   // Load skill content when skill changes
   const loadSkillContent = useCallback(async (skill: string) => {
     setSkillLoading(true);
@@ -144,15 +186,17 @@ export function useEmailLab(): UseEmailLabReturn {
     setSelectedVariant(null);
   }, [selectedSkill, loadSkillContent, loadVariants]);
 
-  // Select template
+  // Select template (checks both built-in and custom)
   const selectTemplate = useCallback((id: string) => {
-    const tpl = EMAIL_LAB_TEMPLATES.find((t) => t.id === id);
+    const tpl =
+      EMAIL_LAB_TEMPLATES.find((t) => t.id === id) ??
+      customTemplates.find((t) => t.id === id);
     if (!tpl) return;
     setSelectedTemplate(tpl);
     setDataJson(JSON.stringify(tpl.data, null, 2));
     setResult(null);
     setError(null);
-  }, []);
+  }, [customTemplates]);
 
   // Change skill (also reset variant)
   const setSelectedSkill = useCallback((s: EmailLabSkill) => {
@@ -186,10 +230,13 @@ export function useEmailLab(): UseEmailLabReturn {
 
       const res = await runWebhook(body);
       setResult(res);
+      setSubjectAlts([]);
 
       // Save to history
+      const runId = crypto.randomUUID();
+      setCurrentRunId(runId);
       const run: EmailLabRun = {
-        id: crypto.randomUUID(),
+        id: runId,
         templateId: selectedTemplate?.id ?? null,
         skill: selectedSkill,
         model: selectedModel,
@@ -243,6 +290,8 @@ export function useEmailLab(): UseEmailLabReturn {
     setSelectedTemplate(
       EMAIL_LAB_TEMPLATES.find((t) => t.id === run.templateId) ?? null
     );
+    setCurrentRunId(run.id);
+    setSubjectAlts([]);
   }, []);
 
   // Clear history
@@ -250,6 +299,91 @@ export function useEmailLab(): UseEmailLabReturn {
     setHistory([]);
     saveHistory([]);
   }, []);
+
+  // Save as custom template (Feature 4)
+  const saveAsTemplate = useCallback(
+    (name: string) => {
+      let parsed: Record<string, unknown>;
+      try {
+        parsed = JSON.parse(dataJson);
+      } catch {
+        return;
+      }
+      const tpl: CustomEmailLabTemplate = {
+        id: `custom-${crypto.randomUUID()}`,
+        name,
+        description: `Saved from ${selectedSkill}`,
+        signalType: (parsed.signal_type as string) || "custom",
+        data: parsed,
+        isCustom: true,
+        createdAt: Date.now(),
+      };
+      setCustomTemplates((prev) => {
+        const next = [tpl, ...prev];
+        saveCustomTemplates(next);
+        return next;
+      });
+    },
+    [dataJson, selectedSkill]
+  );
+
+  // Delete custom template (Feature 4)
+  const deleteCustomTemplate = useCallback((id: string) => {
+    setCustomTemplates((prev) => {
+      const next = prev.filter((t) => t.id !== id);
+      saveCustomTemplates(next);
+      return next;
+    });
+  }, []);
+
+  // Regen subject lines (Feature 6)
+  const regenSubjectLines = useCallback(async () => {
+    if (!result) return;
+    setRegenLoading(true);
+    setSubjectAlts([]);
+
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(dataJson);
+    } catch {
+      setRegenLoading(false);
+      return;
+    }
+
+    try {
+      const res = await runWebhook({
+        skill: selectedSkill,
+        data: parsed,
+        model: selectedModel,
+        instructions:
+          "Generate exactly 3 alternative subject lines for this email. Return JSON with keys: subject_line_1, subject_line_2, subject_line_3. Each should be a different angle or style. Nothing else.",
+      });
+      const alts: string[] = [];
+      for (let i = 1; i <= 3; i++) {
+        const key = `subject_line_${i}`;
+        if (res[key]) alts.push(res[key] as string);
+      }
+      // Fallback: if the response has a subject, include it
+      if (alts.length === 0 && res.subject) alts.push(res.subject as string);
+      setSubjectAlts(alts);
+    } catch {
+      // silently fail
+    } finally {
+      setRegenLoading(false);
+    }
+  }, [result, dataJson, selectedSkill, selectedModel]);
+
+  // Select a subject alt (Feature 6)
+  const selectSubjectAlt = useCallback(
+    (alt: string) => {
+      if (!result) return;
+      // Update result with new subject
+      const updated = { ...result, subject: alt, subject_line: alt };
+      setResult(updated as WebhookResponse);
+      setSubjectAlts([]);
+    },
+    [result]
+  );
 
   return {
     selectedTemplate,
@@ -276,8 +410,16 @@ export function useEmailLab(): UseEmailLabReturn {
     loading,
     error,
     runEmail,
+    currentRunId,
     history,
     restoreRun,
     clearHistory,
+    customTemplates,
+    saveAsTemplate,
+    deleteCustomTemplate,
+    subjectAlts,
+    regenLoading,
+    regenSubjectLines,
+    selectSubjectAlt,
   };
 }

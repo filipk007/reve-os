@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useEmailLab } from "@/hooks/use-email-lab";
 import { TemplatePanel } from "./template-panel";
 import { DataEditorPanel } from "./data-editor-panel";
 import { EmailPreviewPanel } from "./email-preview-panel";
+import { CompareDialog } from "./compare-dialog";
 
 export function EmailLabContent() {
   const lab = useEmailLab();
+  const [compareOpen, setCompareOpen] = useState(false);
 
   // Global keyboard shortcuts
   const handleKeyDown = useCallback(
@@ -48,6 +50,8 @@ export function EmailLabContent() {
           selectedVariant={lab.selectedVariant}
           onSelectVariant={lab.setSelectedVariant}
           onFork={lab.forkCurrentSkill}
+          customTemplates={lab.customTemplates}
+          onDeleteCustomTemplate={lab.deleteCustomTemplate}
         />
       </div>
 
@@ -79,8 +83,22 @@ export function EmailLabContent() {
           history={lab.history}
           onRestore={lab.restoreRun}
           onClearHistory={lab.clearHistory}
+          currentRunId={lab.currentRunId}
+          onSaveAsTemplate={lab.saveAsTemplate}
+          onCompareOpen={() => setCompareOpen(true)}
+          subjectAlts={lab.subjectAlts}
+          regenLoading={lab.regenLoading}
+          onRegenSubjectLines={lab.regenSubjectLines}
+          onSelectSubjectAlt={lab.selectSubjectAlt}
         />
       </div>
+
+      {/* Feature 5: Compare dialog */}
+      <CompareDialog
+        open={compareOpen}
+        onOpenChange={setCompareOpen}
+        history={lab.history}
+      />
     </div>
   );
 }

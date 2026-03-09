@@ -9,8 +9,13 @@ import {
   Trash2,
   Copy,
   Check,
+  Bookmark,
+  RefreshCw,
+  GitCompareArrows,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FeedbackButtons } from "@/components/feedback/feedback-buttons";
 import type { WebhookResponse } from "@/lib/types";
 import type { EmailLabRun } from "@/lib/email-lab-constants";
 import { useState } from "react";
@@ -26,6 +31,18 @@ function formatTime(ts: number): string {
   });
 }
 
+// ─── Feature 1: Word Count + Read Time ───
+
+function computeEmailStats(body: string) {
+  const trimmed = body.trim();
+  if (!trimmed) return { words: 0, sentences: 0, readTimeSec: 0, inRange: true };
+  const words = trimmed.split(/\s+/).length;
+  const sentences = trimmed.split(/[.!?]+/).filter((s) => s.trim()).length;
+  const readTimeSec = Math.ceil((words / 200) * 60); // 200 WPM average
+  const inRange = words >= 50 && words <= 125;
+  return { words, sentences, readTimeSec, inRange };
+}
+
 export function EmailPreviewPanel({
   result,
   loading,
@@ -33,6 +50,13 @@ export function EmailPreviewPanel({
   history,
   onRestore,
   onClearHistory,
+  currentRunId,
+  onSaveAsTemplate,
+  onCompareOpen,
+  subjectAlts,
+  regenLoading,
+  onRegenSubjectLines,
+  onSelectSubjectAlt,
 }: {
   result: WebhookResponse | null;
   loading: boolean;
@@ -40,9 +64,18 @@ export function EmailPreviewPanel({
   history: EmailLabRun[];
   onRestore: (run: EmailLabRun) => void;
   onClearHistory: () => void;
+  currentRunId: string | null;
+  onSaveAsTemplate: (name: string) => void;
+  onCompareOpen: () => void;
+  subjectAlts: string[];
+  regenLoading: boolean;
+  onRegenSubjectLines: () => void;
+  onSelectSubjectAlt: (alt: string) => void;
 }) {
   const [metaOpen, setMetaOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState("");
 
   // Extract email fields
   const subject =
@@ -67,6 +100,9 @@ export function EmailPreviewPanel({
   const frameworkNotes = result?.framework_notes as string | undefined;
   const confidence = result?.confidence_score as number | undefined;
 
+  // Feature 1: Word count stats
+  const stats = computeEmailStats(body);
+
   const handleCopy = () => {
     const text = subject
       ? `Subject: ${subject}\n\n${body}${cta ? `\n\n${cta}` : ""}`
@@ -74,6 +110,13 @@ export function EmailPreviewPanel({
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSaveTemplate = () => {
+    if (!templateName.trim()) return;
+    onSaveAsTemplate(templateName.trim());
+    setTemplateName("");
+    setSavingTemplate(false);
   };
 
   return (
@@ -115,24 +158,96 @@ export function EmailPreviewPanel({
                     </div>
                     <span className="text-xs text-clay-300">New Email</span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopy}
-                    className="h-7 text-xs text-clay-300 hover:text-clay-100"
-                  >
-                    {copied ? (
-                      <Check className="h-3.5 w-3.5 mr-1 text-emerald-400" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5 mr-1" />
-                    )}
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {/* Feature 4: Save as template */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSavingTemplate(!savingTemplate)}
+                      className="h-7 text-xs text-clay-300 hover:text-kiln-teal"
+                      title="Save as template"
+                    >
+                      <Bookmark className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCopy}
+                      className="h-7 text-xs text-clay-300 hover:text-clay-100"
+                    >
+                      {copied ? (
+                        <Check className="h-3.5 w-3.5 mr-1 text-emerald-400" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5 mr-1" />
+                      )}
+                      {copied ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
                 </div>
+
+                {/* Feature 4: Save template inline input */}
+                {savingTemplate && (
+                  <div className="flex items-center gap-2 pl-9">
+                    <input
+                      type="text"
+                      value={templateName}
+                      onChange={(e) => setTemplateName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSaveTemplate()}
+                      placeholder="Template name..."
+                      className="flex-1 text-xs bg-clay-950 border border-clay-600 rounded px-2 py-1 text-clay-200 outline-none focus:border-kiln-teal"
+                      autoFocus
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSaveTemplate}
+                      disabled={!templateName.trim()}
+                      className="h-6 text-[10px] text-kiln-teal hover:text-kiln-teal-light px-2"
+                    >
+                      Save
+                    </Button>
+                  </div>
+                )}
+
+                {/* Subject + Feature 6: Regen button */}
                 {subject && (
-                  <p className="text-sm font-medium text-clay-100 pl-9">
-                    {subject}
-                  </p>
+                  <div className="flex items-start gap-1.5 pl-9">
+                    <p className="text-sm font-medium text-clay-100 flex-1">
+                      {subject}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onRegenSubjectLines}
+                      disabled={regenLoading}
+                      className="h-6 w-6 p-0 text-clay-300 hover:text-kiln-teal shrink-0"
+                      title="Generate alternative subject lines"
+                    >
+                      {regenLoading ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Feature 6: Subject alternatives */}
+                {subjectAlts.length > 0 && (
+                  <div className="pl-9 space-y-1">
+                    <p className="text-[10px] text-clay-300 uppercase tracking-wider">
+                      Alternatives
+                    </p>
+                    {subjectAlts.map((alt, i) => (
+                      <button
+                        key={i}
+                        onClick={() => onSelectSubjectAlt(alt)}
+                        className="block w-full text-left text-xs text-clay-200 hover:text-kiln-teal px-2 py-1 rounded hover:bg-kiln-teal/5 transition-colors"
+                      >
+                        {alt}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
 
@@ -159,6 +274,32 @@ export function EmailPreviewPanel({
                 </div>
               )}
             </div>
+
+            {/* Feature 1: Word count + read time stats bar */}
+            {body && (
+              <div
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-lg border text-[11px]",
+                  stats.inRange
+                    ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400"
+                    : "bg-amber-500/5 border-amber-500/20 text-amber-400"
+                )}
+              >
+                <span className="font-medium">{stats.words} words</span>
+                <span className="text-clay-500">&middot;</span>
+                <span>{stats.sentences} sentences</span>
+                <span className="text-clay-500">&middot;</span>
+                <span>~{stats.readTimeSec}s read</span>
+                {!stats.inRange && (
+                  <>
+                    <span className="text-clay-500">&middot;</span>
+                    <span className="font-medium">
+                      {stats.words < 50 ? "Too short" : "Too long"}
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Quick metadata chips */}
             <div className="flex flex-wrap gap-2">
@@ -194,6 +335,15 @@ export function EmailPreviewPanel({
                 </>
               )}
             </div>
+
+            {/* Feature 3: Inline feedback */}
+            {currentRunId && meta && (
+              <FeedbackButtons
+                jobId={currentRunId}
+                skill={meta.skill ?? "email-gen"}
+                model={meta.model}
+              />
+            )}
 
             {/* Collapsible metadata */}
             {(angleReasoning || frameworkNotes || meta) && (
@@ -255,14 +405,28 @@ export function EmailPreviewPanel({
             <h3 className="text-[11px] font-semibold text-clay-300 uppercase tracking-[0.1em]">
               History
             </h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClearHistory}
-              className="h-6 text-[10px] text-clay-300 hover:text-red-400 px-1.5"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {/* Feature 5: Compare button */}
+              {history.length >= 2 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onCompareOpen}
+                  className="h-6 text-[10px] text-clay-300 hover:text-kiln-teal px-1.5"
+                  title="Compare runs"
+                >
+                  <GitCompareArrows className="h-3 w-3" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClearHistory}
+                className="h-6 text-[10px] text-clay-300 hover:text-red-400 px-1.5"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           <div className="space-y-1 max-h-40 overflow-y-auto">
             {history.slice(0, 10).map((run) => (
