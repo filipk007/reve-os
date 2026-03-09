@@ -10,7 +10,7 @@ export default function EmailLabPage() {
     <div className="flex flex-col h-full">
       <Header
         title="Email Lab"
-        breadcrumbs={[{ label: "Outbound" }, { label: "Email Lab" }]}
+        breadcrumbs={[{ label: "Email Lab" }]}
       />
 
       <Suspense

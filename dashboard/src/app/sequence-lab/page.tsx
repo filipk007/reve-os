@@ -10,7 +10,7 @@ export default function SequenceLabPage() {
     <div className="flex flex-col h-full">
       <Header
         title="Sequence Lab"
-        breadcrumbs={[{ label: "Outbound" }, { label: "Sequence Lab" }]}
+        breadcrumbs={[{ label: "Sequence Lab" }]}
       />
 
       <Suspense

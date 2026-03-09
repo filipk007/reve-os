@@ -67,8 +67,7 @@ const NAV_SECTIONS: NavSection[] = [
     icon: PenLine,
     accentColor: "kiln-teal",
     items: [
-      { href: "/outbound", label: "Outbound", icon: PenLine, shortcut: "3" },
-      { href: "/email-lab", label: "Email Lab", icon: Mail, shortcut: "8" },
+      { href: "/email-lab", label: "Email Lab", icon: Mail, shortcut: "3" },
       { href: "/sequence-lab", label: "Sequence Lab", icon: ListOrdered },
     ],
   },
@@ -249,7 +248,7 @@ export function Sidebar() {
   // Mobile bottom nav — 5-item bar
   const mobileBottomItems: { href: string; label: string; icon: LucideIcon; matchPrefix?: string }[] = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/outbound", label: "Outbound", icon: PenLine, matchPrefix: "/outbound" },
+    { href: "/email-lab", label: "Email Lab", icon: Mail, matchPrefix: "/email-lab" },
     { href: "/run", label: "Run", icon: FlaskConical },
     { href: "/analyze", label: "Analyze", icon: Radar, matchPrefix: "/analyze" },
     { href: "/settings", label: "More", icon: MoreHorizontal, matchPrefix: "/settings" },
