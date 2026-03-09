@@ -64,13 +64,13 @@ export function PromptDrawer({
           variant="outline"
           size="sm"
           disabled={!skill}
-          className="border-clay-700 bg-clay-900 text-clay-300 hover:bg-clay-800 hover:text-clay-100"
+          className="border-clay-700 bg-clay-800 text-clay-300 hover:bg-clay-800 hover:text-clay-100"
         >
           <Eye className="h-3.5 w-3.5 mr-1.5" />
           View Prompt
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-2xl bg-clay-950 border-clay-800 overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-2xl bg-clay-950 border-clay-500 overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="text-clay-100">Assembled Prompt</SheetTitle>
         </SheetHeader>
@@ -93,14 +93,14 @@ export function PromptDrawer({
                   <Badge
                     key={f}
                     variant="outline"
-                    className="bg-clay-900 text-clay-400 border-clay-700"
+                    className="bg-clay-800 text-clay-200 border-clay-700"
                   >
                     <FileText className="h-3 w-3 mr-1" />
                     {f}
                   </Badge>
                 ))}
               </div>
-              <pre className="rounded-lg border border-clay-800 bg-clay-900 p-4 text-sm text-clay-200 font-[family-name:var(--font-mono)] whitespace-pre-wrap break-words overflow-auto max-h-[70vh]">
+              <pre className="rounded-lg border border-clay-500 bg-clay-800 p-4 text-sm text-clay-200 font-[family-name:var(--font-mono)] whitespace-pre-wrap break-words overflow-auto max-h-[70vh]">
                 {prompt}
               </pre>
             </>

@@ -21,7 +21,7 @@ export function StatusBar({
       : 0;
 
   return (
-    <div className="flex items-center justify-between border-t border-clay-800 bg-clay-950 px-4 py-1.5 text-[10px] text-clay-500">
+    <div className="flex items-center justify-between border-t border-clay-500 bg-clay-950 px-4 py-1.5 text-[10px] text-clay-200">
       <div className="flex items-center gap-3">
         <span>
           {itemCount} {itemCount === 1 ? "item" : "items"}
@@ -33,7 +33,7 @@ export function StatusBar({
           <span>{wordCount} words</span>
         )}
       </div>
-      <span className="text-clay-600 truncate max-w-[300px]">{currentPath}</span>
+      <span className="text-clay-300 truncate max-w-[300px]">{currentPath}</span>
     </div>
   );
 }

@@ -40,13 +40,13 @@ export function VariantEditor({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-2xl bg-clay-900 border-clay-800 overflow-y-auto"
+        className="w-full sm:max-w-2xl bg-clay-800 border-clay-500 overflow-y-auto"
       >
         <SheetHeader>
           <SheetTitle className="text-clay-100">
             {variant ? "Edit Variant" : "New Variant"}
           </SheetTitle>
-          <SheetDescription className="text-clay-500">
+          <SheetDescription className="text-clay-200">
             {variant
               ? `Editing ${variant.id}`
               : "Create a new skill prompt variant"}
@@ -54,18 +54,18 @@ export function VariantEditor({
         </SheetHeader>
         <div className="space-y-4 px-4 pb-4">
           <div>
-            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
+            <label className="text-xs text-clay-200 uppercase tracking-wider mb-1.5 block">
               Label
             </label>
             <Input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="e.g., Direct CTA variant"
-              className="border-clay-700 bg-clay-950 text-clay-100 placeholder:text-clay-600"
+              className="border-clay-700 bg-clay-950 text-clay-100 placeholder:text-clay-300"
             />
           </div>
           <div>
-            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
+            <label className="text-xs text-clay-200 uppercase tracking-wider mb-1.5 block">
               Skill Prompt (Markdown)
             </label>
             <Textarea

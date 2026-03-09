@@ -214,22 +214,22 @@ function SettingsInner() {
   return (
     <div className="flex-1 overflow-auto p-4 md:p-6 space-y-6 pb-20 md:pb-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-clay-900 border border-clay-800">
+        <TabsList className="bg-clay-800 border border-clay-500">
           <TabsTrigger
             value="context"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Context
           </TabsTrigger>
           <TabsTrigger
             value="destinations"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Destinations
           </TabsTrigger>
           <TabsTrigger
             value="analytics"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Analytics
           </TabsTrigger>
@@ -245,7 +245,7 @@ function SettingsInner() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-clay-100">Destinations</h3>
-              <p className="text-sm text-clay-500">
+              <p className="text-sm text-clay-200">
                 Push batch results to Clay tables or webhook endpoints.
               </p>
             </div>
@@ -273,12 +273,12 @@ function SettingsInner() {
           />
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="border-clay-800 bg-clay-950">
+            <DialogContent className="border-clay-500 bg-clay-950">
               <DialogHeader>
                 <DialogTitle className="text-clay-100">
                   {editing ? "Edit Destination" : "New Destination"}
                 </DialogTitle>
-                <DialogDescription className="text-clay-500">
+                <DialogDescription className="text-clay-200">
                   {editing
                     ? "Update the destination configuration."
                     : "Configure where to push batch results."}
@@ -296,10 +296,10 @@ function SettingsInner() {
             open={deleteConfirm !== null}
             onOpenChange={(open) => !open && setDeleteConfirm(null)}
           >
-            <DialogContent className="border-clay-800 bg-clay-950">
+            <DialogContent className="border-clay-500 bg-clay-950">
               <DialogHeader>
                 <DialogTitle className="text-clay-100">Delete Destination</DialogTitle>
-                <DialogDescription className="text-clay-500">
+                <DialogDescription className="text-clay-200">
                   Are you sure you want to delete &quot;{deleteConfirm?.name}&quot;? This
                   action cannot be undone.
                 </DialogDescription>
@@ -329,10 +329,10 @@ function SettingsInner() {
         <>
           <div className="flex flex-wrap items-center gap-3">
             <Select value={skillFilter} onValueChange={setSkillFilter}>
-              <SelectTrigger className="w-44 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm">
+              <SelectTrigger className="w-44 border-clay-700 bg-clay-800 text-clay-200 h-9 text-sm">
                 <SelectValue placeholder="All skills" />
               </SelectTrigger>
-              <SelectContent className="border-clay-700 bg-clay-900">
+              <SelectContent className="border-clay-700 bg-clay-800">
                 <SelectItem value="all">All skills</SelectItem>
                 {skills.map((s) => (
                   <SelectItem key={s} value={s}>
@@ -343,10 +343,10 @@ function SettingsInner() {
             </Select>
 
             <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-36 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm">
+              <SelectTrigger className="w-36 border-clay-700 bg-clay-800 text-clay-200 h-9 text-sm">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="border-clay-700 bg-clay-900">
+              <SelectContent className="border-clay-700 bg-clay-800">
                 {TIME_RANGES.map((r) => (
                   <SelectItem key={r.value} value={r.value}>
                     {r.label}
@@ -361,14 +361,14 @@ function SettingsInner() {
                   type="date"
                   value={customFrom}
                   onChange={(e) => setCustomFrom(e.target.value)}
-                  className="w-36 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm"
+                  className="w-36 border-clay-700 bg-clay-800 text-clay-200 h-9 text-sm"
                   placeholder="From"
                 />
                 <Input
                   type="date"
                   value={customTo}
                   onChange={(e) => setCustomTo(e.target.value)}
-                  className="w-36 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm"
+                  className="w-36 border-clay-700 bg-clay-800 text-clay-200 h-9 text-sm"
                   placeholder="To"
                 />
               </>
@@ -379,7 +379,7 @@ function SettingsInner() {
               size="sm"
               onClick={loadAnalytics}
               disabled={analyticsLoading}
-              className="border-clay-700 text-clay-400 hover:text-clay-200 h-9"
+              className="border-clay-700 text-clay-200 hover:text-clay-200 h-9"
             >
               <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${analyticsLoading ? "animate-spin" : ""}`} />
               Refresh

@@ -120,7 +120,7 @@ export function SkillIDE({
   return (
     <div className="flex h-full bg-clay-950">
       {/* File tree sidebar */}
-      <div className="w-52 shrink-0 border-r border-clay-800 bg-clay-900">
+      <div className="w-52 shrink-0 border-r border-clay-500 bg-clay-800">
         <FileTree
           onOpenVariant={handleOpenVariant}
           activeTabId={activeTabId}
@@ -175,7 +175,7 @@ export function SkillIDE({
                   />
                 </div>
                 {previewMode !== "off" && (
-                  <div className="w-1/2 overflow-hidden p-2 border-l border-clay-800">
+                  <div className="w-1/2 overflow-hidden p-2 border-l border-clay-500">
                     <PreviewPane
                       content={activeTab.content}
                       skill={activeTab.skill}
@@ -189,8 +189,8 @@ export function SkillIDE({
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <p className="text-sm text-clay-500">No file open</p>
-              <p className="text-xs text-clay-600 mt-1">
+              <p className="text-sm text-clay-200">No file open</p>
+              <p className="text-xs text-clay-300 mt-1">
                 Select a skill variant from the file tree
               </p>
             </div>

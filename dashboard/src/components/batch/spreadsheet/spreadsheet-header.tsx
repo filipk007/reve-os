@@ -16,7 +16,7 @@ export function SpreadsheetHeaderCell({
   return (
     <th
       key={header.id}
-      className="relative px-3 py-2 text-left text-xs font-medium text-clay-500 uppercase tracking-wider bg-clay-900 border-b border-clay-800 select-none whitespace-nowrap"
+      className="relative px-3 py-2 text-left text-xs font-medium text-clay-200 uppercase tracking-wider bg-clay-800 border-b border-clay-500 select-none whitespace-nowrap"
       style={{ width: header.getSize(), minWidth: header.getSize() }}
     >
       <div

@@ -21,7 +21,7 @@ export function FlowStepTestOverlay({ result }: { result: StepTestResult }) {
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
-      className="mt-2 pt-2 border-t border-clay-800"
+      className="mt-2 pt-2 border-t border-clay-500"
     >
       <button
         onClick={() => setExpanded(!expanded)}
@@ -40,16 +40,16 @@ export function FlowStepTestOverlay({ result }: { result: StepTestResult }) {
           {result.success ? "Passed" : "Failed"}
         </span>
         {result.duration_ms > 0 && (
-          <span className="text-xs text-clay-500 flex items-center gap-1">
+          <span className="text-xs text-clay-200 flex items-center gap-1">
             <Clock className="h-3 w-3" />
             {formatDuration(result.duration_ms)}
           </span>
         )}
         <span className="ml-auto">
           {expanded ? (
-            <ChevronUp className="h-3 w-3 text-clay-500" />
+            <ChevronUp className="h-3 w-3 text-clay-200" />
           ) : (
-            <ChevronDown className="h-3 w-3 text-clay-500" />
+            <ChevronDown className="h-3 w-3 text-clay-200" />
           )}
         </span>
       </button>
@@ -66,7 +66,7 @@ export function FlowStepTestOverlay({ result }: { result: StepTestResult }) {
               <p className="text-xs text-kiln-coral mb-1">{result.error}</p>
             )}
             {result.output && (
-              <pre className="text-xs text-clay-400 font-[family-name:var(--font-mono)] max-h-32 overflow-auto whitespace-pre-wrap rounded bg-clay-950 p-2">
+              <pre className="text-xs text-clay-200 font-[family-name:var(--font-mono)] max-h-32 overflow-auto whitespace-pre-wrap rounded bg-clay-950 p-2">
                 {JSON.stringify(result.output, null, 2)}
               </pre>
             )}

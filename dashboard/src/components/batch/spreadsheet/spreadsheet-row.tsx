@@ -23,11 +23,11 @@ export function SpreadsheetRowComponent({
       <tr
         style={style}
         onClick={() => setExpanded(!expanded)}
-        className={`border-b border-clay-800 cursor-pointer transition-colors ${
+        className={`border-b border-clay-500 cursor-pointer transition-colors ${
           isSelected
             ? "bg-kiln-teal/5 hover:bg-kiln-teal/10"
-            : "hover:bg-clay-900/50"
-        } ${expanded ? "bg-clay-900/30" : ""}`}
+            : "hover:bg-clay-800/50"
+        } ${expanded ? "bg-clay-800/30" : ""}`}
       >
         {row.getVisibleCells().map((cell) => (
           <td

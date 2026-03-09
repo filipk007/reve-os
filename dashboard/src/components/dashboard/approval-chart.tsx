@@ -48,21 +48,21 @@ function CustomTooltip({
   const rateColor = getBarColor(entry.approval_rate);
 
   return (
-    <div className="bg-white border border-clay-800 rounded-lg px-3 py-2 shadow-md">
+    <div className="bg-card border border-clay-500 rounded-lg px-3 py-2 shadow-md">
       <p className="text-xs text-clay-300 font-medium mb-1">{label}</p>
       <div className="flex items-center gap-2">
         <span
           className="inline-block h-2.5 w-2.5 rounded-full"
           style={{ backgroundColor: rateColor }}
         />
-        <span className="text-xs text-clay-400">
+        <span className="text-xs text-clay-200">
           Approval:{" "}
           <span className="text-clay-100 font-[family-name:var(--font-mono)]">
             {entry.approval_rate.toFixed(1)}%
           </span>
         </span>
       </div>
-      <p className="text-xs text-clay-500 mt-0.5">
+      <p className="text-xs text-clay-200 mt-0.5">
         {entry.total} total rating{entry.total !== 1 ? "s" : ""}
       </p>
     </div>
@@ -86,9 +86,9 @@ export function ApprovalChart({ feedback }: ApprovalChartProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
     >
-      <Card className="border-clay-800 bg-white shadow-sm">
+      <Card className="border-clay-500 ">
         <CardContent className="p-5">
-          <h3 className="text-xs text-clay-500 uppercase tracking-wider mb-4 font-[family-name:var(--font-sans)]">
+          <h3 className="text-xs text-clay-200 uppercase tracking-wider mb-4 font-[family-name:var(--font-sans)]">
             Approval Rate by Skill (7d)
           </h3>
           <ResponsiveContainer width="100%" height={220}>

@@ -78,7 +78,7 @@ export function SystemHealth() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i} className="border-clay-800 bg-white shadow-sm">
+          <Card key={i} className="border-clay-500 ">
             <CardHeader className="pb-2">
               <Skeleton className="h-4 w-32 bg-clay-800 rounded" />
             </CardHeader>
@@ -103,7 +103,7 @@ export function SystemHealth() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {lastRefresh && (
-            <span className="text-xs text-clay-600">
+            <span className="text-xs text-clay-300">
               Updated {lastRefresh.toLocaleTimeString()}
             </span>
           )}
@@ -113,7 +113,7 @@ export function SystemHealth() {
           size="sm"
           onClick={load}
           disabled={loading}
-          className="border-clay-700 text-clay-400 hover:text-clay-200"
+          className="border-clay-700 text-clay-200 hover:text-clay-200"
         >
           <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
           Refresh
@@ -122,7 +122,7 @@ export function SystemHealth() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Backend Health */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-clay-300 flex items-center gap-2">
@@ -138,7 +138,7 @@ export function SystemHealth() {
           <CardContent className="space-y-2 text-sm">
             {health?.deep_check && (
               <div className="flex justify-between">
-                <span className="text-clay-500">Claude Available</span>
+                <span className="text-clay-200">Claude Available</span>
                 <span className={health.deep_check.claude_available ? "text-kiln-teal" : "text-kiln-coral"}>
                   {health.deep_check.claude_available ? "Yes" : "No"}
                 </span>
@@ -146,19 +146,19 @@ export function SystemHealth() {
             )}
             {health?.deep_check?.latency_ms != null && (
               <div className="flex justify-between">
-                <span className="text-clay-500">Latency</span>
+                <span className="text-clay-200">Latency</span>
                 <span className="text-clay-300 font-mono text-xs">{health.deep_check.latency_ms}ms</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-clay-500">Skills Loaded</span>
+              <span className="text-clay-200">Skills Loaded</span>
               <span className="text-clay-300">{health?.skills_loaded?.length ?? 0}</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Worker Pool */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-clay-300 flex items-center gap-2">
               <Cpu className="h-4 w-4" />
@@ -167,20 +167,20 @@ export function SystemHealth() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-clay-500">Available</span>
+              <span className="text-clay-200">Available</span>
               <span className="text-clay-300">{health?.workers_available ?? 0} / {health?.workers_max ?? 0}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-clay-500">Queue Pending</span>
+              <span className="text-clay-200">Queue Pending</span>
               <span className="text-clay-300">{health?.queue_pending ?? 0}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-clay-500">Queue Total</span>
+              <span className="text-clay-200">Queue Total</span>
               <span className="text-clay-300">{health?.queue_total ?? 0}</span>
             </div>
             {stats && (
               <div className="flex justify-between">
-                <span className="text-clay-500">Cache Hit Rate</span>
+                <span className="text-clay-200">Cache Hit Rate</span>
                 <span className="text-clay-300">{(stats.cache_hit_rate * 100).toFixed(0)}%</span>
               </div>
             )}
@@ -188,7 +188,7 @@ export function SystemHealth() {
         </Card>
 
         {/* Subscription Status */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-clay-300 flex items-center gap-2">
@@ -203,15 +203,15 @@ export function SystemHealth() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-clay-500">Today Requests</span>
+              <span className="text-clay-200">Today Requests</span>
               <span className="text-clay-300">{formatNumber(subscription?.today_requests ?? stats?.usage?.today_requests ?? 0)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-clay-500">Today Tokens</span>
+              <span className="text-clay-200">Today Tokens</span>
               <span className="text-clay-300">{formatTokens(subscription?.today_tokens ?? stats?.usage?.today_tokens ?? 0)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-clay-500">Today Errors</span>
+              <span className="text-clay-200">Today Errors</span>
               <span className={`${(subscription?.today_errors ?? 0) > 0 ? "text-kiln-coral" : "text-clay-300"}`}>
                 {subscription?.today_errors ?? stats?.usage?.today_errors ?? 0}
               </span>
@@ -220,7 +220,7 @@ export function SystemHealth() {
         </Card>
 
         {/* Retry Queue */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-clay-300 flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
@@ -231,14 +231,14 @@ export function SystemHealth() {
             <p className="text-2xl font-bold text-clay-100 font-mono">
               {retries?.pending ?? 0}
             </p>
-            <p className="text-xs text-clay-500 mt-1">pending retries</p>
+            <p className="text-xs text-clay-200 mt-1">pending retries</p>
             {retries && retries.items.length > 0 && (
               <div className="mt-3 space-y-1.5">
                 {retries.items.slice(0, 3).map((item) => (
-                  <div key={item.job_id} className="text-xs text-clay-400 flex items-center gap-2">
-                    <Clock className="h-3 w-3 text-clay-600 shrink-0" />
+                  <div key={item.job_id} className="text-xs text-clay-200 flex items-center gap-2">
+                    <Clock className="h-3 w-3 text-clay-300 shrink-0" />
                     <span className="text-kiln-teal">{item.skill}</span>
-                    <span className="text-clay-600">#{item.retry_count}</span>
+                    <span className="text-clay-300">#{item.retry_count}</span>
                   </div>
                 ))}
               </div>
@@ -247,7 +247,7 @@ export function SystemHealth() {
         </Card>
 
         {/* Dead Letters */}
-        <Card className="border-clay-800 bg-white shadow-sm">
+        <Card className="border-clay-500 ">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-clay-300 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
@@ -258,7 +258,7 @@ export function SystemHealth() {
             <p className={`text-2xl font-bold font-mono ${(stats?.total_dead_letter ?? 0) > 0 ? "text-kiln-coral" : "text-clay-100"}`}>
               {stats?.total_dead_letter ?? 0}
             </p>
-            <p className="text-xs text-clay-500 mt-1">permanently failed jobs</p>
+            <p className="text-xs text-clay-200 mt-1">permanently failed jobs</p>
           </CardContent>
         </Card>
       </div>

@@ -94,14 +94,14 @@ export function FileGridItem({
         "group flex flex-col items-center gap-2 rounded-lg border p-3 cursor-pointer transition-all",
         isSelected
           ? "border-kiln-teal/50 bg-kiln-teal/5"
-          : "border-clay-800 hover:border-clay-700 bg-clay-900/50 hover:bg-clay-900",
+          : "border-clay-500 hover:border-clay-700 bg-clay-800/50 hover:bg-clay-800",
         isMultiSelected && "ring-2 ring-blue-500/50"
       )}
     >
       <Icon
         className={cn(
           "h-8 w-8",
-          isFolder ? "text-amber-500" : "text-clay-400",
+          isFolder ? "text-amber-500" : "text-clay-200",
           node.type === "drive" && "text-kiln-teal"
         )}
       />
@@ -124,7 +124,7 @@ export function FileGridItem({
       {node.category && (
         <Badge
           variant="outline"
-          className="text-[10px] px-1.5 py-0 border-clay-700 text-clay-500"
+          className="text-[10px] px-1.5 py-0 border-clay-700 text-clay-200"
         >
           {node.category}
         </Badge>
@@ -144,7 +144,7 @@ export function FileGridItem({
           {skills.length > 2 && (
             <Badge
               variant="outline"
-              className="text-[10px] px-1 py-0 border-clay-700 text-clay-500"
+              className="text-[10px] px-1 py-0 border-clay-700 text-clay-200"
             >
               +{skills.length - 2}
             </Badge>

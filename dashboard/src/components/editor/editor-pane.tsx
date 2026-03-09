@@ -64,13 +64,13 @@ export function EditorPane({
   };
 
   return (
-    <div className="flex h-full overflow-hidden bg-clay-950 rounded-lg border border-clay-800">
+    <div className="flex h-full overflow-hidden bg-clay-950 rounded-lg border border-clay-500">
       {/* Line numbers */}
-      <div className="shrink-0 py-3 px-2 text-right select-none border-r border-clay-800 overflow-hidden bg-clay-900/50">
+      <div className="shrink-0 py-3 px-2 text-right select-none border-r border-clay-500 overflow-hidden bg-clay-800/50">
         {lines.map((_, i) => (
           <div
             key={i}
-            className="text-[11px] leading-5 text-clay-600 font-[family-name:var(--font-mono)]"
+            className="text-[11px] leading-5 text-clay-300 font-[family-name:var(--font-mono)]"
           >
             {i + 1}
           </div>

@@ -72,10 +72,10 @@ export function PipelineStepCard({
       <div
         ref={setNodeRef}
         style={style}
-        className={`rounded-lg border bg-clay-900 border-l-[3px] ${accentColor} ${
+        className={`rounded-lg border bg-clay-800 border-l-[3px] ${accentColor} ${
           isDragging
             ? "border-kiln-teal/50 bg-clay-800 shadow-lg z-10 opacity-50"
-            : "border-clay-800"
+            : "border-clay-500"
         }`}
       >
         {/* Collapsed header — taller (h-[72px] equivalent via py-5) */}
@@ -83,7 +83,7 @@ export function PipelineStepCard({
           <button
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing text-clay-600 hover:text-clay-400 shrink-0"
+            className="cursor-grab active:cursor-grabbing text-clay-300 hover:text-clay-200 shrink-0"
           >
             <GripVertical className="h-4 w-4" />
           </button>
@@ -104,7 +104,7 @@ export function PipelineStepCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-clay-500 hover:text-clay-200"
+            className="h-8 w-8 text-clay-200 hover:text-clay-200"
             onClick={() => setExpanded(!expanded)}
           >
             {expanded ? (
@@ -116,7 +116,7 @@ export function PipelineStepCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-clay-500 hover:text-kiln-coral"
+            className="h-8 w-8 text-clay-200 hover:text-kiln-coral"
             onClick={onRemove}
           >
             <Trash2 className="h-4 w-4" />
@@ -133,10 +133,10 @@ export function PipelineStepCard({
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="px-4 pb-4 pt-1 border-t border-clay-800 space-y-3">
+              <div className="px-4 pb-4 pt-1 border-t border-clay-500 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-clay-500 mb-1 block">
+                    <label className="text-xs text-clay-200 mb-1 block">
                       Model Override
                     </label>
                     <Select
@@ -148,7 +148,7 @@ export function PipelineStepCard({
                       <SelectTrigger className="border-clay-700 bg-clay-950 text-clay-200 h-8 text-sm">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="border-clay-700 bg-clay-900">
+                      <SelectContent className="border-clay-700 bg-clay-800">
                         <SelectItem value="default">Pipeline default</SelectItem>
                         {MODELS.map((m) => (
                           <SelectItem key={m} value={m}>
@@ -159,7 +159,7 @@ export function PipelineStepCard({
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs text-clay-500 mb-1 block">
+                    <label className="text-xs text-clay-200 mb-1 block">
                       Confidence Field
                     </label>
                     <Input
@@ -171,13 +171,13 @@ export function PipelineStepCard({
                         })
                       }
                       placeholder="e.g., confidence_score"
-                      className="h-8 text-sm border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-600"
+                      className="h-8 text-sm border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-300"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs text-clay-500 mb-1 block">
+                  <label className="text-xs text-clay-200 mb-1 block">
                     Condition
                   </label>
                   <Input
@@ -189,12 +189,12 @@ export function PipelineStepCard({
                       })
                     }
                     placeholder="e.g., prev.icp_score >= 7"
-                    className="h-8 text-sm border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-600"
+                    className="h-8 text-sm border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-300"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-clay-500 mb-1 block">
+                  <label className="text-xs text-clay-200 mb-1 block">
                     Step Instructions
                   </label>
                   <Textarea
@@ -206,7 +206,7 @@ export function PipelineStepCard({
                       })
                     }
                     placeholder="Optional instructions for this step..."
-                    className="h-16 border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-600 text-sm resize-none"
+                    className="h-16 border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-300 text-sm resize-none"
                   />
                 </div>
               </div>

@@ -25,7 +25,7 @@ export function SpreadsheetCell({
         type="checkbox"
         checked={v.checked}
         onChange={v.onChange}
-        className="h-3.5 w-3.5 rounded border-clay-600 bg-clay-900 text-kiln-teal focus:ring-kiln-teal/50 cursor-pointer"
+        className="h-3.5 w-3.5 rounded border-clay-600 bg-clay-800 text-kiln-teal focus:ring-kiln-teal/50 cursor-pointer"
       />
     );
   }
@@ -33,7 +33,7 @@ export function SpreadsheetCell({
   // Index column
   if (columnId === "_index") {
     return (
-      <span className="text-clay-500 font-[family-name:var(--font-mono)] text-xs">
+      <span className="text-clay-200 font-[family-name:var(--font-mono)] text-xs">
         {String(value)}
       </span>
     );
@@ -48,7 +48,7 @@ export function SpreadsheetCell({
   if (columnId === "_duration") {
     const ms = value as number;
     return (
-      <span className="font-[family-name:var(--font-mono)] text-xs text-clay-400">
+      <span className="font-[family-name:var(--font-mono)] text-xs text-clay-200">
         {ms ? formatDuration(ms) : "\u2014"}
       </span>
     );
@@ -57,7 +57,7 @@ export function SpreadsheetCell({
   // Generic cell with tooltip for truncated content
   const strValue = value === null || value === undefined ? "" : String(value);
   if (!strValue) {
-    return <span className="text-clay-600">{"\u2014"}</span>;
+    return <span className="text-clay-300">{"\u2014"}</span>;
   }
 
   const isTruncated = strValue.length > 60;
@@ -73,7 +73,7 @@ export function SpreadsheetCell({
           </TooltipTrigger>
           <TooltipContent
             side="bottom"
-            className="max-w-sm bg-clay-900 border-clay-700 text-clay-200 text-xs"
+            className="max-w-sm bg-clay-800 border-clay-700 text-clay-200 text-xs"
           >
             <pre className="whitespace-pre-wrap font-[family-name:var(--font-mono)]">
               {strValue}

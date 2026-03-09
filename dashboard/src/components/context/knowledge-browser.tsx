@@ -56,12 +56,12 @@ export function KnowledgeBrowser({
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-clay-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-clay-200" />
           <Input
             placeholder="Search knowledge base..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-clay-900 border-clay-700 text-clay-100 placeholder:text-clay-600"
+            className="pl-9 bg-clay-800 border-clay-700 text-clay-100 placeholder:text-clay-300"
           />
         </div>
         <Button
@@ -74,7 +74,7 @@ export function KnowledgeBrowser({
       </div>
 
       {categories.length === 0 ? (
-        <div className="text-center py-12 text-clay-500">
+        <div className="text-center py-12 text-clay-200">
           {totalFiles === 0
             ? "No knowledge base files yet. Add one to get started."
             : "No files match your search."}
@@ -93,17 +93,17 @@ export function KnowledgeBrowser({
                   return (
                     <Card
                       key={file.path}
-                      className="bg-white border-clay-800 shadow-sm p-4 hover:border-clay-700 transition-colors cursor-pointer"
+                      className="bg-card border-clay-500 shadow-sm p-4 hover:border-clay-700 transition-colors cursor-pointer"
                       onClick={() => onSelect(file)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 min-w-0">
-                          <FileText className="h-5 w-5 text-clay-500 shrink-0 mt-0.5" />
+                          <FileText className="h-5 w-5 text-clay-200 shrink-0 mt-0.5" />
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-clay-100 truncate">
                               {file.name}
                             </p>
-                            <p className="text-xs text-clay-500 font-mono mt-0.5">
+                            <p className="text-xs text-clay-200 font-mono mt-0.5">
                               {file.path}
                             </p>
                           </div>
@@ -115,7 +115,7 @@ export function KnowledgeBrowser({
                             e.stopPropagation();
                             onDelete(file);
                           }}
-                          className="text-clay-400 hover:text-kiln-coral shrink-0 ml-2"
+                          className="text-clay-200 hover:text-kiln-coral shrink-0 ml-2"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>

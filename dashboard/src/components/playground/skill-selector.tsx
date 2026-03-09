@@ -20,14 +20,14 @@ export function SkillSelector({
 }) {
   return (
     <div>
-      <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5 font-[family-name:var(--font-sans)]">
+      <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5 font-[family-name:var(--font-sans)]">
         Skill
       </label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-full border-clay-700 bg-clay-900 text-clay-100 focus:ring-kiln-teal">
+        <SelectTrigger className="w-full border-clay-700 bg-clay-800 text-clay-100 focus:ring-kiln-teal">
           <SelectValue placeholder="Select a skill..." />
         </SelectTrigger>
-        <SelectContent className="border-clay-700 bg-clay-900">
+        <SelectContent className="border-clay-700 bg-clay-800">
           {SKILLS.map((s) => (
             <SelectItem
               key={s}

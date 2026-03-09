@@ -97,13 +97,13 @@ export function KnowledgeEditor({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-xl bg-clay-950 border-clay-800 flex flex-col"
+        className="w-full sm:max-w-xl bg-clay-950 border-clay-500 flex flex-col"
       >
         <SheetHeader className="px-6 pt-6 pb-2">
           <SheetTitle className="text-clay-100">
             {isCreate ? "New Knowledge Base File" : file!.name}
           </SheetTitle>
-          <SheetDescription className="text-clay-500">
+          <SheetDescription className="text-clay-200">
             {isCreate ? (
               "Create a new knowledge base file"
             ) : (
@@ -123,14 +123,14 @@ export function KnowledgeEditor({
         {isCreate && (
           <div className="px-6 space-y-3 pb-3">
             <div>
-              <label className="text-xs font-medium text-clay-400 mb-1.5 block">
+              <label className="text-xs font-medium text-clay-200 mb-1.5 block">
                 Category
               </label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="bg-clay-900 border-clay-700 text-clay-100">
+                <SelectTrigger className="bg-clay-800 border-clay-700 text-clay-100">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent className="bg-clay-900 border-clay-700">
+                <SelectContent className="bg-clay-800 border-clay-700">
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat} className="text-clay-100">
                       {cat}
@@ -144,35 +144,35 @@ export function KnowledgeEditor({
             </div>
             {category === "__new__" && (
               <div>
-                <label className="text-xs font-medium text-clay-400 mb-1.5 block">
+                <label className="text-xs font-medium text-clay-200 mb-1.5 block">
                   New Category Name
                 </label>
                 <Input
                   placeholder="e.g. templates"
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
-                  className="bg-clay-900 border-clay-700 text-clay-100 placeholder:text-clay-600"
+                  className="bg-clay-800 border-clay-700 text-clay-100 placeholder:text-clay-300"
                 />
                 {customCategory && (
-                  <p className="text-xs text-clay-500 mt-1">
-                    Will be created as: <span className="font-mono text-clay-400">{slugify(customCategory)}/</span>
+                  <p className="text-xs text-clay-200 mt-1">
+                    Will be created as: <span className="font-mono text-clay-200">{slugify(customCategory)}/</span>
                   </p>
                 )}
               </div>
             )}
             <div>
-              <label className="text-xs font-medium text-clay-400 mb-1.5 block">
+              <label className="text-xs font-medium text-clay-200 mb-1.5 block">
                 Filename
               </label>
               <Input
                 placeholder="e.g. my-framework"
                 value={filename}
                 onChange={(e) => setFilename(e.target.value)}
-                className="bg-clay-900 border-clay-700 text-clay-100 placeholder:text-clay-600"
+                className="bg-clay-800 border-clay-700 text-clay-100 placeholder:text-clay-300"
               />
               {filename && !filename.endsWith(".md") && (
-                <p className="text-xs text-clay-500 mt-1">
-                  Will be saved as: <span className="font-mono text-clay-400">{filename.trim()}.md</span>
+                <p className="text-xs text-clay-200 mt-1">
+                  Will be saved as: <span className="font-mono text-clay-200">{filename.trim()}.md</span>
                 </p>
               )}
             </div>
@@ -184,11 +184,11 @@ export function KnowledgeEditor({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={isCreate ? "# Title\n\nWrite your knowledge base content here..." : undefined}
-            className="w-full h-full min-h-[300px] rounded-md bg-clay-900 border border-clay-700 text-clay-100 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-kiln-teal/50 resize-none"
+            className="w-full h-full min-h-[300px] rounded-md bg-clay-800 border border-clay-700 text-clay-100 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-kiln-teal/50 resize-none"
           />
         </div>
         <div className="px-6 pb-2">
-          <p className="text-xs text-clay-500 text-right">
+          <p className="text-xs text-clay-200 text-right">
             {stats.words} words · ~{stats.tokens} tokens
           </p>
         </div>

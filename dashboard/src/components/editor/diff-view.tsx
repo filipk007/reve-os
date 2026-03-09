@@ -72,8 +72,8 @@ function DiffSide({
 }) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-3 py-1.5 border-b border-clay-800 bg-clay-900">
-        <span className="text-[10px] text-clay-500 uppercase tracking-wider">
+      <div className="px-3 py-1.5 border-b border-clay-500 bg-clay-800">
+        <span className="text-[10px] text-clay-200 uppercase tracking-wider">
           {title}
         </span>
       </div>
@@ -93,7 +93,7 @@ function DiffSide({
                   : "border-l-2 border-transparent"
             }`}
           >
-            <span className="w-10 shrink-0 text-right pr-2 py-0.5 text-clay-600 select-none bg-clay-900/30">
+            <span className="w-10 shrink-0 text-right pr-2 py-0.5 text-clay-300 select-none bg-clay-800/30">
               {line.lineNumber > 0 ? line.lineNumber : ""}
             </span>
             <span className="py-0.5 px-2 whitespace-pre-wrap text-clay-300">
@@ -134,7 +134,7 @@ export function DiffView({
   }, []);
 
   return (
-    <div className="flex h-full rounded-lg border border-clay-800 overflow-hidden bg-clay-950">
+    <div className="flex h-full rounded-lg border border-clay-500 overflow-hidden bg-clay-950">
       <DiffSide
         lines={left}
         title={leftTitle}

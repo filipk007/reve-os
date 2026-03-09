@@ -95,7 +95,7 @@ export function FileTree({
   return (
     <div className="h-full overflow-y-auto py-2">
       <div className="px-3 mb-2">
-        <p className="text-[10px] text-clay-600 uppercase tracking-wider font-medium">
+        <p className="text-[10px] text-clay-300 uppercase tracking-wider font-medium">
           Skills
         </p>
       </div>
@@ -103,17 +103,17 @@ export function FileTree({
         <div key={skill.name}>
           <button
             onClick={() => toggleSkill(i)}
-            className="w-full flex items-center gap-1.5 px-3 py-1.5 text-xs text-clay-400 hover:text-clay-200 hover:bg-clay-800/50 transition-colors"
+            className="w-full flex items-center gap-1.5 px-3 py-1.5 text-xs text-clay-200 hover:text-clay-200 hover:bg-clay-800/50 transition-colors"
           >
             {skill.expanded ? (
               <>
-                <ChevronDown className="h-3 w-3 shrink-0 text-clay-600" />
+                <ChevronDown className="h-3 w-3 shrink-0 text-clay-300" />
                 <FolderOpen className="h-3.5 w-3.5 shrink-0 text-kiln-teal/70" />
               </>
             ) : (
               <>
-                <ChevronRight className="h-3 w-3 shrink-0 text-clay-600" />
-                <Folder className="h-3.5 w-3.5 shrink-0 text-clay-500" />
+                <ChevronRight className="h-3 w-3 shrink-0 text-clay-300" />
+                <Folder className="h-3.5 w-3.5 shrink-0 text-clay-200" />
               </>
             )}
             <span className="truncate">{skill.name}</span>
@@ -129,7 +129,7 @@ export function FileTree({
                 className={`w-full flex items-center gap-1.5 px-3 py-1 text-xs transition-colors ${
                   activeTabId === `${skill.name}/default`
                     ? "text-kiln-teal bg-kiln-teal/5"
-                    : "text-clay-500 hover:text-clay-300 hover:bg-clay-800/30"
+                    : "text-clay-200 hover:text-clay-300 hover:bg-clay-800/30"
                 }`}
               >
                 <FileText className="h-3 w-3 shrink-0" />
@@ -137,7 +137,7 @@ export function FileTree({
               </button>
 
               {skill.loading && (
-                <p className="px-3 py-1 text-[10px] text-clay-600">Loading...</p>
+                <p className="px-3 py-1 text-[10px] text-clay-300">Loading...</p>
               )}
 
               {skill.variants.map((v) => (
@@ -149,7 +149,7 @@ export function FileTree({
                   className={`w-full flex items-center gap-1.5 px-3 py-1 text-xs transition-colors ${
                     activeTabId === `${skill.name}/${v.id}`
                       ? "text-kiln-teal bg-kiln-teal/5"
-                      : "text-clay-500 hover:text-clay-300 hover:bg-clay-800/30"
+                      : "text-clay-200 hover:text-clay-300 hover:bg-clay-800/30"
                   }`}
                 >
                   <FileText className="h-3 w-3 shrink-0" />
@@ -162,7 +162,7 @@ export function FileTree({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleFork(skill.name, i)}
-                className="w-full justify-start px-3 py-1 h-auto text-[10px] text-clay-600 hover:text-kiln-teal"
+                className="w-full justify-start px-3 py-1 h-auto text-[10px] text-clay-300 hover:text-kiln-teal"
               >
                 <Copy className="h-2.5 w-2.5 mr-1" />
                 Fork current

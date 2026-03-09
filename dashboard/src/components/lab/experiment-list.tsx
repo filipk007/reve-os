@@ -9,7 +9,7 @@ import { Trash2, Eye, ArrowRight } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: "bg-clay-800 text-clay-400 border-clay-700",
+  draft: "bg-clay-800 text-clay-200 border-clay-700",
   running: "bg-kiln-mustard/10 text-kiln-mustard border-kiln-mustard/30",
   completed: "bg-kiln-teal/10 text-kiln-teal border-kiln-teal/30",
 };
@@ -44,7 +44,7 @@ export function ExperimentList({
           0
         );
         return (
-          <Card key={exp.id} className="border-clay-800 bg-white shadow-sm">
+          <Card key={exp.id} className="border-clay-500 ">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export function ExperimentList({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-clay-500 hover:text-clay-200"
+                    className="h-7 w-7 text-clay-200 hover:text-clay-200"
                     onClick={() => onView(exp)}
                   >
                     <Eye className="h-3.5 w-3.5" />
@@ -70,7 +70,7 @@ export function ExperimentList({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-clay-500 hover:text-kiln-coral"
+                    className="h-7 w-7 text-clay-200 hover:text-kiln-coral"
                     onClick={() => onDelete(exp)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -80,7 +80,7 @@ export function ExperimentList({
             </CardHeader>
             <CardContent className="pt-0 space-y-2">
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-clay-500">Skill:</span>
+                <span className="text-clay-200">Skill:</span>
                 <span className="text-kiln-teal">{exp.skill}</span>
               </div>
               <div className="flex flex-wrap items-center gap-1">
@@ -88,17 +88,17 @@ export function ExperimentList({
                   <span key={vid} className="flex items-center gap-1">
                     <Badge
                       variant="outline"
-                      className="text-[10px] border-clay-700 text-clay-400"
+                      className="text-[10px] border-clay-700 text-clay-200"
                     >
                       {vid}
                     </Badge>
                     {i < exp.variant_ids.length - 1 && (
-                      <span className="text-clay-700 text-xs">vs</span>
+                      <span className="text-clay-300 text-xs">vs</span>
                     )}
                   </span>
                 ))}
               </div>
-              <div className="flex items-center gap-3 text-xs text-clay-500">
+              <div className="flex items-center gap-3 text-xs text-clay-200">
                 <span>{totalRuns} runs</span>
                 <span>{formatRelativeTime(exp.created_at)}</span>
               </div>

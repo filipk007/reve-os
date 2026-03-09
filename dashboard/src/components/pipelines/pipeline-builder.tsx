@@ -173,7 +173,7 @@ export function PipelineBuilder({
         {/* Name, description, and confidence threshold */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
+            <label className="text-xs text-clay-200 uppercase tracking-wider mb-1.5 block">
               Pipeline Name
             </label>
             <Input
@@ -181,7 +181,7 @@ export function PipelineBuilder({
               onChange={(e) => setName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
               placeholder="my-pipeline"
               disabled={!!initial}
-              className="border-clay-700 bg-clay-900 text-clay-100 placeholder:text-clay-600 focus-visible:ring-kiln-teal/50"
+              className="border-clay-700 bg-clay-800 text-clay-100 placeholder:text-clay-300 focus-visible:ring-kiln-teal/50"
             />
             {name && !(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(name)) && (
               <p className="text-xs text-kiln-coral mt-1">
@@ -190,18 +190,18 @@ export function PipelineBuilder({
             )}
           </div>
           <div>
-            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
+            <label className="text-xs text-clay-200 uppercase tracking-wider mb-1.5 block">
               Description
             </label>
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Score leads then generate emails..."
-              className="border-clay-700 bg-clay-900 text-clay-100 placeholder:text-clay-600 focus-visible:ring-kiln-teal/50"
+              className="border-clay-700 bg-clay-800 text-clay-100 placeholder:text-clay-300 focus-visible:ring-kiln-teal/50"
             />
           </div>
           <div>
-            <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
+            <label className="text-xs text-clay-200 uppercase tracking-wider mb-1.5 block">
               Confidence Threshold
             </label>
             <Input
@@ -211,7 +211,7 @@ export function PipelineBuilder({
               step={0.05}
               value={confidenceThreshold}
               onChange={(e) => setConfidenceThreshold(parseFloat(e.target.value) || 0)}
-              className="border-clay-700 bg-clay-900 text-clay-100 placeholder:text-clay-600 focus-visible:ring-kiln-teal/50"
+              className="border-clay-700 bg-clay-800 text-clay-100 placeholder:text-clay-300 focus-visible:ring-kiln-teal/50"
             />
           </div>
         </div>
@@ -221,7 +221,7 @@ export function PipelineBuilder({
 
         {/* Pipeline steps */}
         <div>
-          <p className="text-xs text-clay-500 uppercase tracking-wider mb-3">
+          <p className="text-xs text-clay-200 uppercase tracking-wider mb-3">
             Pipeline Steps ({steps.length})
           </p>
 
@@ -259,10 +259,10 @@ export function PipelineBuilder({
           {/* Manual add */}
           <div className="flex items-center gap-2 mt-4">
             <Select value={addSkill} onValueChange={setAddSkill}>
-              <SelectTrigger className="flex-1 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm">
+              <SelectTrigger className="flex-1 border-clay-700 bg-clay-800 text-clay-200 h-9 text-sm">
                 <SelectValue placeholder="Add a step..." />
               </SelectTrigger>
-              <SelectContent className="border-clay-700 bg-clay-900">
+              <SelectContent className="border-clay-700 bg-clay-800">
                 {skills.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}

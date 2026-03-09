@@ -50,26 +50,26 @@ export function DestinationForm({ initial, onSubmit, loading }: DestinationFormP
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+        <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
           Name
         </label>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Twelve Labs - ICP Scores"
-          className="border-clay-700 bg-clay-900 text-clay-200"
+          className="border-clay-700 bg-clay-800 text-clay-200"
         />
       </div>
 
       <div>
-        <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+        <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
           Type
         </label>
         <Select value={type} onValueChange={handleTypeChange}>
-          <SelectTrigger className="w-full border-clay-700 bg-clay-900 text-clay-200">
+          <SelectTrigger className="w-full border-clay-700 bg-clay-800 text-clay-200">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="border-clay-700 bg-clay-900">
+          <SelectContent className="border-clay-700 bg-clay-800">
             <SelectItem value="clay_webhook">Clay Webhook</SelectItem>
             <SelectItem value="generic_webhook">Generic Webhook</SelectItem>
           </SelectContent>
@@ -77,31 +77,31 @@ export function DestinationForm({ initial, onSubmit, loading }: DestinationFormP
       </div>
 
       <div>
-        <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+        <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
           URL
         </label>
         <Input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://..."
-          className="border-clay-700 bg-clay-900 text-clay-200"
+          className="border-clay-700 bg-clay-800 text-clay-200"
         />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
             Auth Header Name (optional)
           </label>
           <Input
             value={authName}
             onChange={(e) => setAuthName(e.target.value)}
             placeholder="x-api-key"
-            className="border-clay-700 bg-clay-900 text-clay-200"
+            className="border-clay-700 bg-clay-800 text-clay-200"
           />
         </div>
         <div>
-          <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
             Auth Header Value (optional)
           </label>
           <Input
@@ -109,20 +109,20 @@ export function DestinationForm({ initial, onSubmit, loading }: DestinationFormP
             value={authValue}
             onChange={(e) => setAuthValue(e.target.value)}
             placeholder="secret token"
-            className="border-clay-700 bg-clay-900 text-clay-200"
+            className="border-clay-700 bg-clay-800 text-clay-200"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+        <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
           Client Slug (optional)
         </label>
         <Input
           value={clientSlug}
           onChange={(e) => setClientSlug(e.target.value)}
           placeholder="twelve-labs"
-          className="border-clay-700 bg-clay-900 text-clay-200"
+          className="border-clay-700 bg-clay-800 text-clay-200"
         />
       </div>
 

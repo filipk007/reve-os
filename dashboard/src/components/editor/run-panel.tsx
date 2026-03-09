@@ -43,10 +43,10 @@ export function RunPanel({ skill }: { skill: string }) {
   };
 
   return (
-    <div className="border-t border-clay-800 bg-clay-950">
+    <div className="border-t border-clay-500 bg-clay-950">
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="w-full flex items-center justify-between px-4 py-2 text-xs text-clay-500 hover:text-clay-300 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2 text-xs text-clay-200 hover:text-clay-300 transition-colors"
       >
         <span className="uppercase tracking-wider font-medium">Run Panel</span>
         {collapsed ? (
@@ -60,17 +60,17 @@ export function RunPanel({ skill }: { skill: string }) {
         <div className="px-4 pb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] text-clay-600 uppercase tracking-wider mb-1 block">
+              <label className="text-[10px] text-clay-300 uppercase tracking-wider mb-1 block">
                 JSON Input
               </label>
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="h-32 font-[family-name:var(--font-mono)] text-xs border-clay-700 bg-clay-900 text-clay-200 resize-none"
+                className="h-32 font-[family-name:var(--font-mono)] text-xs border-clay-700 bg-clay-800 text-clay-200 resize-none"
               />
             </div>
             <div>
-              <label className="text-[10px] text-clay-600 uppercase tracking-wider mb-1 block">
+              <label className="text-[10px] text-clay-300 uppercase tracking-wider mb-1 block">
                 Result
               </label>
               {result ? (
@@ -83,13 +83,13 @@ export function RunPanel({ skill }: { skill: string }) {
                       {formatDuration(result._meta.duration_ms)}
                     </Badge>
                   )}
-                  <pre className="h-28 overflow-auto text-xs text-clay-300 font-[family-name:var(--font-mono)] whitespace-pre-wrap rounded bg-clay-900 p-2 border border-clay-800">
+                  <pre className="h-28 overflow-auto text-xs text-clay-300 font-[family-name:var(--font-mono)] whitespace-pre-wrap rounded bg-clay-800 p-2 border border-clay-500">
                     {JSON.stringify(result, null, 2)}
                   </pre>
                 </div>
               ) : (
-                <div className="h-32 flex items-center justify-center rounded border border-clay-800 bg-clay-900">
-                  <span className="text-xs text-clay-600">
+                <div className="h-32 flex items-center justify-center rounded border border-clay-500 bg-clay-800">
+                  <span className="text-xs text-clay-300">
                     {running ? "Running..." : "Run to see results"}
                   </span>
                 </div>

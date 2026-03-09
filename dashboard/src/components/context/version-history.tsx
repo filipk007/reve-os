@@ -76,7 +76,7 @@ export function VersionHistory({ fileId, onRestore }: VersionHistoryProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 text-xs text-clay-400 hover:text-clay-200"
+          className="h-7 text-xs text-clay-200 hover:text-clay-200"
         >
           <History className="h-3 w-3 mr-1" />
           History ({versions.length})
@@ -84,7 +84,7 @@ export function VersionHistory({ fileId, onRestore }: VersionHistoryProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-56 bg-clay-900 border-clay-700"
+        className="w-56 bg-clay-800 border-clay-700"
       >
         {versions.map((v, i) => (
           <DropdownMenuItem
@@ -94,12 +94,12 @@ export function VersionHistory({ fileId, onRestore }: VersionHistoryProps) {
           >
             <div className="flex w-full items-center justify-between">
               <div className="flex items-center gap-2">
-                <RotateCcw className="h-3 w-3 text-clay-500" />
+                <RotateCcw className="h-3 w-3 text-clay-200" />
                 <span className="text-xs">
                   {i === 0 ? "Latest" : formatTime(v.timestamp)}
                 </span>
               </div>
-              <span className="text-[10px] text-clay-600">
+              <span className="text-[10px] text-clay-300">
                 {v.wordCount}w
               </span>
             </div>

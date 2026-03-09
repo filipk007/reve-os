@@ -31,7 +31,7 @@ export default function GettingStartedPage() {
             <h1 className="text-3xl font-bold text-clay-100 font-[family-name:var(--font-sans)]">
               Welcome to The Kiln
             </h1>
-            <p className="text-clay-400 text-lg max-w-lg mx-auto">
+            <p className="text-clay-200 text-lg max-w-lg mx-auto">
               Your AI-powered outbound engine is ready. We've configured your
               skills, loaded your context, and connected your integrations.
             </p>

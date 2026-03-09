@@ -81,13 +81,13 @@ export function PlayClayConfig({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-clay-800 bg-clay-950 max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="border-clay-500 bg-clay-950 max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-clay-100 flex items-center gap-2">
             <Settings2 className="h-5 w-5 text-kiln-teal" />
             Clay HTTP Action Config
           </DialogTitle>
-          <DialogDescription className="text-clay-500">
+          <DialogDescription className="text-clay-200">
             Generate the exact configuration to paste into Clay for &quot;{play.display_name}&quot;
           </DialogDescription>
         </DialogHeader>
@@ -96,14 +96,14 @@ export function PlayClayConfig({
           {/* Client selector + Generate */}
           <div className="flex items-end gap-3">
             <div className="flex-1">
-              <label className="text-xs text-clay-500 mb-1 block">
+              <label className="text-xs text-clay-200 mb-1 block">
                 Client (optional)
               </label>
               <Select value={clientSlug} onValueChange={setClientSlug}>
-                <SelectTrigger className="border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue placeholder="No client" />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   <SelectItem value="none">No client</SelectItem>
                   {clients.map((c) => (
                     <SelectItem key={c.slug} value={c.slug}>
@@ -130,9 +130,9 @@ export function PlayClayConfig({
           {config && (
             <>
               {/* Setup instructions */}
-              <Card className="border-clay-800 bg-clay-900">
+              <Card className="border-clay-500 bg-clay-800">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-clay-400">
+                  <CardTitle className="text-sm text-clay-200">
                     Setup Instructions
                   </CardTitle>
                 </CardHeader>
@@ -148,16 +148,16 @@ export function PlayClayConfig({
               </Card>
 
               {/* Body template (the money shot) */}
-              <Card className="border-clay-800 bg-clay-900">
+              <Card className="border-clay-500 bg-clay-800">
                 <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                  <CardTitle className="text-sm text-clay-400">
+                  <CardTitle className="text-sm text-clay-200">
                     Body Template (paste into Clay)
                   </CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleCopyBody}
-                    className="h-7 px-2 text-clay-500 hover:text-clay-200"
+                    className="h-7 px-2 text-clay-200 hover:text-clay-200"
                   >
                     {copied ? (
                       <Check className="h-3.5 w-3.5 text-kiln-teal" />
@@ -170,7 +170,7 @@ export function PlayClayConfig({
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <pre className="text-xs text-clay-200 bg-clay-950 border border-clay-800 rounded-md p-3 overflow-x-auto font-mono">
+                  <pre className="text-xs text-clay-200 bg-clay-950 border border-clay-500 rounded-md p-3 overflow-x-auto font-mono">
                     {JSON.stringify(config.body_template, null, 2)}
                   </pre>
                 </CardContent>
@@ -178,35 +178,35 @@ export function PlayClayConfig({
 
               {/* Output columns */}
               {config.expected_output_columns.length > 0 && (
-                <Card className="border-clay-800 bg-clay-900">
+                <Card className="border-clay-500 bg-clay-800">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-clay-400">
+                    <CardTitle className="text-sm text-clay-200">
                       Expected Output Columns
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Table>
                       <TableHeader>
-                        <TableRow className="border-clay-800 hover:bg-transparent">
-                          <TableHead className="text-clay-500">
+                        <TableRow className="border-clay-500 hover:bg-transparent">
+                          <TableHead className="text-clay-200">
                             Column
                           </TableHead>
-                          <TableHead className="text-clay-500">Type</TableHead>
-                          <TableHead className="text-clay-500">
+                          <TableHead className="text-clay-200">Type</TableHead>
+                          <TableHead className="text-clay-200">
                             Description
                           </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {config.expected_output_columns.map((col) => (
-                          <TableRow key={col.name} className="border-clay-800">
+                          <TableRow key={col.name} className="border-clay-500">
                             <TableCell className="font-mono text-sm text-clay-200">
                               {col.name}
                             </TableCell>
-                            <TableCell className="text-sm text-clay-400">
+                            <TableCell className="text-sm text-clay-200">
                               {col.type}
                             </TableCell>
-                            <TableCell className="text-sm text-clay-400">
+                            <TableCell className="text-sm text-clay-200">
                               {col.description}
                             </TableCell>
                           </TableRow>
@@ -223,7 +223,7 @@ export function PlayClayConfig({
                   variant="outline"
                   size="sm"
                   onClick={handleCopyFull}
-                  className="border-clay-700 text-clay-400 hover:text-clay-200"
+                  className="border-clay-700 text-clay-200 hover:text-clay-200"
                 >
                   <Clipboard className="h-3.5 w-3.5 mr-1.5" />
                   Copy Full Config JSON

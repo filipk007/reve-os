@@ -30,7 +30,7 @@ export function PreviewPane({
   }, [mode, skill]);
 
   return (
-    <div className="h-full overflow-auto bg-clay-950 rounded-lg border border-clay-800 p-4">
+    <div className="h-full overflow-auto bg-clay-950 rounded-lg border border-clay-500 p-4">
       {mode === "markdown" && (
         <div className="prose prose-invert prose-sm max-w-none">
           <pre className="whitespace-pre-wrap text-sm text-clay-300 font-[family-name:var(--font-mono)] leading-6">
@@ -43,7 +43,7 @@ export function PreviewPane({
         <>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-5 w-5 animate-spin text-clay-500" />
+              <Loader2 className="h-5 w-5 animate-spin text-clay-200" />
             </div>
           ) : assembled ? (
             <div className="space-y-3">
@@ -54,7 +54,7 @@ export function PreviewPane({
                 >
                   ~{assembled.estimated_tokens} tokens
                 </Badge>
-                <span className="text-[10px] text-clay-500">
+                <span className="text-[10px] text-clay-200">
                   {assembled.context_files_loaded.length} context files
                 </span>
               </div>
@@ -64,7 +64,7 @@ export function PreviewPane({
                     <Badge
                       key={f}
                       variant="outline"
-                      className="text-[10px] text-clay-500 border-clay-700"
+                      className="text-[10px] text-clay-200 border-clay-700"
                     >
                       {f}
                     </Badge>
@@ -76,7 +76,7 @@ export function PreviewPane({
               </pre>
             </div>
           ) : (
-            <p className="text-sm text-clay-500 text-center py-12">
+            <p className="text-sm text-clay-200 text-center py-12">
               Unable to load assembled prompt preview.
             </p>
           )}

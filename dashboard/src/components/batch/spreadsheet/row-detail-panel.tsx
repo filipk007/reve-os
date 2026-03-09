@@ -13,79 +13,79 @@ export function RowDetailPanel({
   originalData: Record<string, string>;
 }) {
   return (
-    <div className="bg-clay-950 border-b border-clay-800 px-6 py-4">
+    <div className="bg-clay-950 border-b border-clay-500 px-6 py-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Input data */}
         <div>
-          <p className="text-xs text-clay-500 uppercase tracking-wider mb-2">
+          <p className="text-xs text-clay-200 uppercase tracking-wider mb-2">
             Input Data
           </p>
           <div className="space-y-1">
             {Object.entries(originalData).length > 0 ? (
               Object.entries(originalData).map(([key, val]) => (
                 <div key={key} className="flex gap-2 text-xs">
-                  <span className="text-clay-500 font-[family-name:var(--font-mono)] shrink-0">
+                  <span className="text-clay-200 font-[family-name:var(--font-mono)] shrink-0">
                     {key}:
                   </span>
                   <span className="text-clay-300 truncate">{val}</span>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-clay-600">No input data</p>
+              <p className="text-xs text-clay-300">No input data</p>
             )}
           </div>
         </div>
 
         {/* Result JSON */}
         <div>
-          <p className="text-xs text-clay-500 uppercase tracking-wider mb-2">
+          <p className="text-xs text-clay-200 uppercase tracking-wider mb-2">
             Result
           </p>
           {job.result ? (
-            <pre className="text-xs text-clay-300 font-[family-name:var(--font-mono)] max-h-48 overflow-auto whitespace-pre-wrap rounded bg-clay-900 p-2 border border-clay-800">
+            <pre className="text-xs text-clay-300 font-[family-name:var(--font-mono)] max-h-48 overflow-auto whitespace-pre-wrap rounded bg-clay-800 p-2 border border-clay-500">
               {JSON.stringify(job.result, null, 2)}
             </pre>
           ) : job.error ? (
             <p className="text-xs text-kiln-coral">{job.error}</p>
           ) : (
-            <p className="text-xs text-clay-600">Pending...</p>
+            <p className="text-xs text-clay-300">Pending...</p>
           )}
         </div>
 
         {/* Meta */}
         <div>
-          <p className="text-xs text-clay-500 uppercase tracking-wider mb-2">
+          <p className="text-xs text-clay-200 uppercase tracking-wider mb-2">
             Metadata
           </p>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-clay-500">Status:</span>
+              <span className="text-xs text-clay-200">Status:</span>
               <StatusBadge status={job.status} />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-clay-500">Duration:</span>
+              <span className="text-xs text-clay-200">Duration:</span>
               <span className="text-xs text-clay-300 font-[family-name:var(--font-mono)]">
                 {job.duration_ms ? formatDuration(job.duration_ms) : "\u2014"}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-clay-500">Job ID:</span>
-              <span className="text-xs text-clay-400 font-[family-name:var(--font-mono)] truncate">
+              <span className="text-xs text-clay-200">Job ID:</span>
+              <span className="text-xs text-clay-200 font-[family-name:var(--font-mono)] truncate">
                 {job.id}
               </span>
             </div>
             {job.row_id && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-clay-500">Row ID:</span>
-                <span className="text-xs text-clay-400 font-[family-name:var(--font-mono)]">
+                <span className="text-xs text-clay-200">Row ID:</span>
+                <span className="text-xs text-clay-200 font-[family-name:var(--font-mono)]">
                   {job.row_id}
                 </span>
               </div>
             )}
             {job.created_at && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-clay-500">Created:</span>
-                <span className="text-xs text-clay-400">
+                <span className="text-xs text-clay-200">Created:</span>
+                <span className="text-xs text-clay-200">
                   {formatRelativeTime(job.created_at)}
                 </span>
               </div>

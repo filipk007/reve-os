@@ -18,10 +18,10 @@ import {
 } from "lucide-react";
 
 const STATUS_STYLES: Record<CampaignStatus, string> = {
-  draft: "bg-clay-500/15 text-clay-500 border-clay-500/30",
+  draft: "bg-clay-500/15 text-clay-200 border-clay-500/30",
   active: "bg-kiln-teal/15 text-kiln-teal border-kiln-teal/30",
   paused: "bg-kiln-mustard/15 text-kiln-mustard border-kiln-mustard/30",
-  completed: "bg-clay-400/15 text-clay-400 border-clay-400/30",
+  completed: "bg-clay-400/15 text-clay-200 border-clay-400/30",
 };
 
 interface CampaignListProps {
@@ -64,7 +64,7 @@ export function CampaignList({
         return (
           <Card
             key={campaign.id}
-            className="border-clay-800 bg-white shadow-sm flex flex-col hover:border-clay-700 transition-colors"
+            className="border-clay-500  flex flex-col hover:border-clay-700 transition-colors"
           >
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-2">
@@ -78,7 +78,7 @@ export function CampaignList({
                     </h4>
                   </button>
                   {campaign.description && (
-                    <p className="text-xs text-clay-500 mt-0.5 line-clamp-2">
+                    <p className="text-xs text-clay-200 mt-0.5 line-clamp-2">
                       {campaign.description}
                     </p>
                   )}
@@ -106,10 +106,10 @@ export function CampaignList({
               {/* Progress bar */}
               <div>
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-clay-400">Goal Progress</span>
+                  <span className="text-clay-200">Goal Progress</span>
                   <span className="text-clay-300 font-medium">
                     {progress.total_sent} / {goalTarget}{" "}
-                    <span className="text-clay-500">{goal.metric}</span>
+                    <span className="text-clay-200">{goal.metric}</span>
                   </span>
                 </div>
                 <div className="h-2 bg-clay-800 rounded-full overflow-hidden">
@@ -126,7 +126,7 @@ export function CampaignList({
                   <div className="text-xs font-medium text-clay-200">
                     {progress.total_processed}
                   </div>
-                  <div className="text-[10px] text-clay-500 flex items-center justify-center gap-0.5">
+                  <div className="text-[10px] text-clay-200 flex items-center justify-center gap-0.5">
                     <Clock className="h-2.5 w-2.5" />
                     proc
                   </div>
@@ -135,7 +135,7 @@ export function CampaignList({
                   <div className="text-xs font-medium text-kiln-teal">
                     {progress.total_approved}
                   </div>
-                  <div className="text-[10px] text-clay-500 flex items-center justify-center gap-0.5">
+                  <div className="text-[10px] text-clay-200 flex items-center justify-center gap-0.5">
                     <CheckCircle className="h-2.5 w-2.5" />
                     ok
                   </div>
@@ -144,7 +144,7 @@ export function CampaignList({
                   <div className="text-xs font-medium text-clay-200">
                     {progress.total_sent}
                   </div>
-                  <div className="text-[10px] text-clay-500 flex items-center justify-center gap-0.5">
+                  <div className="text-[10px] text-clay-200 flex items-center justify-center gap-0.5">
                     <Rocket className="h-2.5 w-2.5" />
                     sent
                   </div>
@@ -153,7 +153,7 @@ export function CampaignList({
                   <div className="text-xs font-medium text-kiln-mustard">
                     {progress.total_pending_review}
                   </div>
-                  <div className="text-[10px] text-clay-500 flex items-center justify-center gap-0.5">
+                  <div className="text-[10px] text-clay-200 flex items-center justify-center gap-0.5">
                     <Eye className="h-2.5 w-2.5" />
                     review
                   </div>
@@ -161,7 +161,7 @@ export function CampaignList({
               </div>
 
               {/* Approval rate + Audience */}
-              <div className="flex items-center justify-between text-xs text-clay-400">
+              <div className="flex items-center justify-between text-xs text-clay-200">
                 <span className="flex items-center gap-1">
                   {progress.approval_rate > 0 ? (
                     <>
@@ -169,7 +169,7 @@ export function CampaignList({
                       {(progress.approval_rate * 100).toFixed(0)}% approval
                     </>
                   ) : (
-                    <span className="text-clay-500">No data yet</span>
+                    <span className="text-clay-200">No data yet</span>
                   )}
                 </span>
                 <span className="flex items-center gap-1">
@@ -179,7 +179,7 @@ export function CampaignList({
               </div>
 
               {/* Action buttons */}
-              <div className="flex items-center gap-1 pt-1 border-t border-clay-800">
+              <div className="flex items-center gap-1 pt-1 border-t border-clay-500">
                 {(campaign.status === "draft" ||
                   campaign.status === "paused") && (
                   <Button
@@ -207,7 +207,7 @@ export function CampaignList({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 text-xs text-clay-400 hover:bg-clay-800 hover:text-clay-200"
+                    className="h-7 text-xs text-clay-200 hover:bg-clay-800 hover:text-clay-200"
                     onClick={() => onRunBatch(campaign)}
                   >
                     <Rocket className="h-3 w-3 mr-1" />
@@ -218,7 +218,7 @@ export function CampaignList({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-xs text-clay-400 hover:bg-clay-800 hover:text-clay-200"
+                  className="h-7 text-xs text-clay-200 hover:bg-clay-800 hover:text-clay-200"
                   onClick={() => onView(campaign)}
                 >
                   <Eye className="h-3 w-3 mr-1" />
@@ -227,7 +227,7 @@ export function CampaignList({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-clay-500 hover:text-kiln-coral"
+                  className="h-7 w-7 text-clay-200 hover:text-kiln-coral"
                   onClick={() => onDelete(campaign)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />

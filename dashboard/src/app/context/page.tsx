@@ -321,7 +321,7 @@ export default function ContextPage() {
     return (
       <div className="flex flex-col h-full">
         <Header title="Context Hub" />
-        <div className="flex-1 flex items-center justify-center text-clay-500 text-sm">
+        <div className="flex-1 flex items-center justify-center text-clay-200 text-sm">
           Loading file explorer...
         </div>
       </div>
@@ -334,7 +334,7 @@ export default function ContextPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Tree Sidebar */}
-        <div className="hidden md:flex w-60 shrink-0 border-r border-clay-800 bg-clay-950 flex-col">
+        <div className="hidden md:flex w-60 shrink-0 border-r border-clay-500 bg-clay-950 flex-col">
           <FileTree
             tree={explorer.fileTree}
             expandedFolders={explorer.expandedFolders}
@@ -369,7 +369,7 @@ export default function ContextPage() {
           />
 
           {/* Breadcrumbs + Toolbar */}
-          <div className="flex items-center justify-between gap-4 border-b border-clay-800/50 px-4 py-2">
+          <div className="flex items-center justify-between gap-4 border-b border-clay-500/50 px-4 py-2">
             <Breadcrumbs
               items={explorer.breadcrumbs}
               onNavigate={explorer.navigateTo}
@@ -472,10 +472,10 @@ export default function ContextPage() {
 
       {/* Prompt Preview Dialog */}
       <Dialog open={promptPreviewOpen} onOpenChange={setPromptPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto border-clay-800 bg-clay-950">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">Prompt Preview</DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Preview the assembled prompt with skill + context files.
             </DialogDescription>
           </DialogHeader>
@@ -488,10 +488,10 @@ export default function ContextPage() {
         open={deleteTarget !== null}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
       >
-        <DialogContent className="border-clay-800 bg-clay-950">
+        <DialogContent className="border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">Delete File</DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Are you sure you want to delete &quot;{deleteTarget?.name}&quot;?
               This action cannot be undone.
             </DialogDescription>

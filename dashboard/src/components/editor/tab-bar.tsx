@@ -15,7 +15,7 @@ export function TabBar({
   onClose: (id: string) => void;
 }) {
   return (
-    <div className="flex items-center border-b border-clay-800 bg-clay-950 overflow-x-auto">
+    <div className="flex items-center border-b border-clay-500 bg-clay-950 overflow-x-auto">
       {tabs.map((tab) => {
         const isActive = tab.id === activeTabId;
         return (
@@ -29,10 +29,10 @@ export function TabBar({
                 onClose(tab.id);
               }
             }}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs border-r border-clay-800 shrink-0 transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs border-r border-clay-500 shrink-0 transition-colors ${
               isActive
-                ? "bg-clay-900 text-clay-100 border-b-2 border-b-kiln-teal"
-                : "text-clay-500 hover:text-clay-300 hover:bg-clay-900/50"
+                ? "bg-clay-800 text-clay-100 border-b-2 border-b-kiln-teal"
+                : "text-clay-200 hover:text-clay-300 hover:bg-clay-800/50"
             }`}
           >
             {tab.isDirty && (
@@ -47,7 +47,7 @@ export function TabBar({
                 e.stopPropagation();
                 onClose(tab.id);
               }}
-              className="ml-1 p-0.5 rounded hover:bg-clay-800 text-clay-600 hover:text-clay-400"
+              className="ml-1 p-0.5 rounded hover:bg-clay-800 text-clay-300 hover:text-clay-200"
             >
               <X className="h-3 w-3" />
             </span>
@@ -55,7 +55,7 @@ export function TabBar({
         );
       })}
       {tabs.length === 0 && (
-        <span className="px-3 py-2 text-xs text-clay-600">
+        <span className="px-3 py-2 text-xs text-clay-300">
           Open a variant from the file tree
         </span>
       )}

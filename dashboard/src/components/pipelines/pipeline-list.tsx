@@ -30,7 +30,7 @@ export function PipelineList({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {pipelines.map((p) => (
-        <Card key={p.name} className="border-clay-800 bg-white shadow-sm flex flex-col">
+        <Card key={p.name} className="border-clay-500  flex flex-col">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <h4 className="font-semibold text-clay-100">{p.name}</h4>
@@ -38,7 +38,7 @@ export function PipelineList({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-clay-500 hover:text-kiln-teal"
+                  className="h-7 w-7 text-clay-200 hover:text-kiln-teal"
                   onClick={() => onTest(p)}
                 >
                   <Play className="h-3.5 w-3.5" />
@@ -46,7 +46,7 @@ export function PipelineList({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-clay-500 hover:text-clay-200"
+                  className="h-7 w-7 text-clay-200 hover:text-clay-200"
                   onClick={() => onEdit(p)}
                 >
                   <Edit2 className="h-3.5 w-3.5" />
@@ -54,7 +54,7 @@ export function PipelineList({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-clay-500 hover:text-kiln-coral"
+                  className="h-7 w-7 text-clay-200 hover:text-kiln-coral"
                   onClick={() => onDelete(p)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -62,7 +62,7 @@ export function PipelineList({
               </div>
             </div>
             {p.description && (
-              <p className="text-xs text-clay-500 mt-1">{p.description}</p>
+              <p className="text-xs text-clay-200 mt-1">{p.description}</p>
             )}
           </CardHeader>
           <CardContent className="pt-0 mt-auto">
@@ -76,7 +76,7 @@ export function PipelineList({
                     {s.skill}
                   </Badge>
                   {i < p.steps.length - 1 && (
-                    <ArrowRight className="h-3 w-3 text-clay-600" />
+                    <ArrowRight className="h-3 w-3 text-clay-300" />
                   )}
                 </span>
               ))}

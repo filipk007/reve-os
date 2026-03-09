@@ -260,16 +260,16 @@ function SkillsInner() {
   return (
     <div className="flex-1 overflow-auto p-4 md:p-6 pb-20 md:pb-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-clay-900 border border-clay-800 mb-6">
+        <TabsList className="bg-clay-800 border border-clay-500 mb-6">
           <TabsTrigger
             value="pipelines"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Pipelines
           </TabsTrigger>
           <TabsTrigger
             value="lab"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Lab
           </TabsTrigger>
@@ -279,16 +279,16 @@ function SkillsInner() {
         <TabsContent value="pipelines">
           <Tabs value={pipelineView} onValueChange={setPipelineView}>
             <div className="flex items-center justify-between mb-6">
-              <TabsList className="bg-clay-900 border border-clay-800">
+              <TabsList className="bg-clay-800 border border-clay-500">
                 <TabsTrigger
                   value="list"
-                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
                 >
                   My Pipelines
                 </TabsTrigger>
                 <TabsTrigger
                   value="builder"
-                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
                 >
                   Builder
                 </TabsTrigger>
@@ -327,22 +327,22 @@ function SkillsInner() {
         {/* ─── Lab Tab ─── */}
         <TabsContent value="lab">
           <Tabs defaultValue="variants">
-            <TabsList className="bg-clay-900 border border-clay-800 mb-6">
+            <TabsList className="bg-clay-800 border border-clay-500 mb-6">
               <TabsTrigger
                 value="variants"
-                className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+                className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
               >
                 Variants
               </TabsTrigger>
               <TabsTrigger
                 value="experiments"
-                className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+                className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
               >
                 Experiments
               </TabsTrigger>
               <TabsTrigger
                 value="results"
-                className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+                className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
               >
                 Results
               </TabsTrigger>
@@ -351,10 +351,10 @@ function SkillsInner() {
             <TabsContent value="variants">
               <div className="space-y-4">
                 <Select value={selectedSkill} onValueChange={setSelectedSkill}>
-                  <SelectTrigger className="w-56 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm">
+                  <SelectTrigger className="w-56 border-clay-700 bg-clay-800 text-clay-200 h-9 text-sm">
                     <SelectValue placeholder="Select skill..." />
                   </SelectTrigger>
-                  <SelectContent className="border-clay-700 bg-clay-900">
+                  <SelectContent className="border-clay-700 bg-clay-800">
                     {skills.map((s) => (
                       <SelectItem key={s} value={s}>
                         {s}
@@ -380,7 +380,7 @@ function SkillsInner() {
 
             <TabsContent value="experiments">
               <div className="space-y-6">
-                <div className="rounded-xl border border-clay-800 bg-white shadow-sm p-4">
+                <div className="rounded-xl border border-clay-500  p-4">
                   <h4 className="text-sm font-medium text-clay-300 mb-4">
                     New Experiment
                   </h4>
@@ -401,7 +401,7 @@ function SkillsInner() {
             <TabsContent value="results">
               {experiments.filter((e) => Object.keys(e.results).length > 0).length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-sm text-clay-500">
+                  <p className="text-sm text-clay-200">
                     No experiment results yet. Run an experiment first.
                   </p>
                 </div>
@@ -428,10 +428,10 @@ function SkillsInner() {
         open={deleteConfirm !== null}
         onOpenChange={(open) => !open && setDeleteConfirm(null)}
       >
-        <DialogContent className="border-clay-800 bg-clay-950">
+        <DialogContent className="border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">Delete Pipeline</DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Are you sure you want to delete &quot;{deleteConfirm?.name}
               &quot;? This will remove the YAML file permanently.
             </DialogDescription>
@@ -460,13 +460,13 @@ function SkillsInner() {
       >
         <SheetContent
           side="right"
-          className="w-full sm:max-w-lg bg-clay-900 border-clay-800 overflow-y-auto"
+          className="w-full sm:max-w-lg bg-clay-800 border-clay-500 overflow-y-auto"
         >
           <SheetHeader>
             <SheetTitle className="text-clay-100">
               Test: {testingPipeline}
             </SheetTitle>
-            <SheetDescription className="text-clay-500">
+            <SheetDescription className="text-clay-200">
               Run the pipeline with sample data
             </SheetDescription>
           </SheetHeader>
@@ -489,7 +489,7 @@ function SkillsInner() {
       >
         <SheetContent
           side="right"
-          className="w-full sm:max-w-lg bg-clay-900 border-clay-800 overflow-y-auto"
+          className="w-full sm:max-w-lg bg-clay-800 border-clay-500 overflow-y-auto"
         >
           {viewingExp && (
             <>
@@ -497,7 +497,7 @@ function SkillsInner() {
                 <SheetTitle className="text-clay-100">
                   {viewingExp.name}
                 </SheetTitle>
-                <SheetDescription className="text-clay-500">
+                <SheetDescription className="text-clay-200">
                   {viewingExp.skill} — {viewingExp.status}
                 </SheetDescription>
               </SheetHeader>
@@ -525,10 +525,10 @@ function SkillsInner() {
         open={deleteVariantConfirm !== null}
         onOpenChange={(open) => !open && setDeleteVariantConfirm(null)}
       >
-        <DialogContent className="border-clay-800 bg-clay-950">
+        <DialogContent className="border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">Delete Variant</DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Delete &quot;{deleteVariantConfirm?.label}&quot;? This cannot be
               undone.
             </DialogDescription>
@@ -555,12 +555,12 @@ function SkillsInner() {
         open={deleteExpConfirm !== null}
         onOpenChange={(open) => !open && setDeleteExpConfirm(null)}
       >
-        <DialogContent className="border-clay-800 bg-clay-950">
+        <DialogContent className="border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">
               Delete Experiment
             </DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Delete &quot;{deleteExpConfirm?.name}&quot;? Results will be lost.
             </DialogDescription>
           </DialogHeader>

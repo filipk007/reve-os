@@ -233,16 +233,16 @@ function CampaignsInner() {
   return (
     <div className="flex-1 overflow-auto p-4 md:p-6 space-y-6 pb-20 md:pb-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-clay-900 border border-clay-800">
+        <TabsList className="bg-clay-800 border border-clay-500">
           <TabsTrigger
             value="campaigns"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Campaigns
           </TabsTrigger>
           <TabsTrigger
             value="review"
-            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+            className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
           >
             Review Queue
             {reviewStats && reviewStats.pending > 0 && (
@@ -285,7 +285,7 @@ function CampaignsInner() {
                       {draftCampaigns > 0 && (
                         <Badge
                           variant="outline"
-                          className="bg-clay-500/10 text-clay-500 border-clay-500/30 text-xs"
+                          className="bg-clay-500/10 text-clay-200 border-clay-500/30 text-xs"
                         >
                           {draftCampaigns} draft
                         </Badge>
@@ -307,10 +307,10 @@ function CampaignsInner() {
                     value={statusFilter}
                     onValueChange={setStatusFilter}
                   >
-                    <SelectTrigger className="w-36 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm">
+                    <SelectTrigger className="w-36 border-clay-700 bg-clay-800 text-clay-200 h-9 text-sm">
                       <SelectValue placeholder="Filter..." />
                     </SelectTrigger>
-                    <SelectContent className="border-clay-700 bg-clay-900">
+                    <SelectContent className="border-clay-700 bg-clay-800">
                       <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="draft">Draft</SelectItem>
                       <SelectItem value="active">Active</SelectItem>
@@ -331,7 +331,7 @@ function CampaignsInner() {
 
               {campaignsLoading ? (
                 <div className="flex items-center justify-center py-20">
-                  <Loader2 className="h-8 w-8 text-clay-500 animate-spin" />
+                  <Loader2 className="h-8 w-8 text-clay-200 animate-spin" />
                 </div>
               ) : (
                 <ErrorBoundary>
@@ -360,21 +360,21 @@ function CampaignsInner() {
               value={reviewTab}
               onValueChange={(v) => setReviewTab(v as ReviewFilterTab)}
             >
-              <TabsList className="bg-clay-900 border border-clay-800">
+              <TabsList className="bg-clay-800 border border-clay-500">
                 <TabsTrigger
                   value="all"
-                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
                 >
                   All
                   {reviewTotal > 0 && (
-                    <span className="ml-1.5 text-xs text-clay-500">
+                    <span className="ml-1.5 text-xs text-clay-200">
                       {reviewTotal}
                     </span>
                   )}
                 </TabsTrigger>
                 <TabsTrigger
                   value="pending"
-                  className="data-[state=active]:bg-kiln-mustard/10 data-[state=active]:text-kiln-mustard text-clay-400"
+                  className="data-[state=active]:bg-kiln-mustard/10 data-[state=active]:text-kiln-mustard text-clay-200"
                 >
                   Pending
                   {reviewStats && reviewStats.pending > 0 && (
@@ -385,13 +385,13 @@ function CampaignsInner() {
                 </TabsTrigger>
                 <TabsTrigger
                   value="approved"
-                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-400"
+                  className="data-[state=active]:bg-kiln-teal/10 data-[state=active]:text-kiln-teal text-clay-200"
                 >
                   Approved
                 </TabsTrigger>
                 <TabsTrigger
                   value="rejected"
-                  className="data-[state=active]:bg-kiln-coral/10 data-[state=active]:text-kiln-coral text-clay-400"
+                  className="data-[state=active]:bg-kiln-coral/10 data-[state=active]:text-kiln-coral text-clay-200"
                 >
                   Rejected
                 </TabsTrigger>
@@ -400,10 +400,10 @@ function CampaignsInner() {
 
             {campaigns.length > 0 && (
               <Select value={reviewCampaignFilter} onValueChange={setReviewCampaignFilter}>
-                <SelectTrigger className="w-48 border-clay-700 bg-clay-900 text-clay-200 h-9 text-sm">
+                <SelectTrigger className="w-48 border-clay-700 bg-clay-800 text-clay-200 h-9 text-sm">
                   <SelectValue placeholder="All campaigns" />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   <SelectItem value="all">All campaigns</SelectItem>
                   {campaigns.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
@@ -419,7 +419,7 @@ function CampaignsInner() {
               size="sm"
               onClick={loadAllReview}
               disabled={reviewLoading}
-              className="border-clay-700 text-clay-400 hover:text-clay-200 h-9"
+              className="border-clay-700 text-clay-200 hover:text-clay-200 h-9"
             >
               <RefreshCw
                 className={`h-3.5 w-3.5 mr-1.5 ${reviewLoading ? "animate-spin" : ""}`}
@@ -462,12 +462,12 @@ function CampaignsInner() {
         open={deleteConfirm !== null}
         onOpenChange={(open) => !open && setDeleteConfirm(null)}
       >
-        <DialogContent className="border-clay-800 bg-clay-950">
+        <DialogContent className="border-clay-500 bg-clay-950">
           <DialogHeader>
             <DialogTitle className="text-clay-100">
               Delete Campaign
             </DialogTitle>
-            <DialogDescription className="text-clay-500">
+            <DialogDescription className="text-clay-200">
               Are you sure you want to delete &quot;{deleteConfirm?.name}
               &quot;? All progress, audience data, and review items will be
               permanently removed.

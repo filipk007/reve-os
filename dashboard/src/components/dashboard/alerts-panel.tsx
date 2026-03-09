@@ -65,7 +65,7 @@ export function AlertsPanel({ alerts, recommendations }: AlertsPanelProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className="border-clay-800 bg-white shadow-sm">
+          <Card className="border-clay-500 ">
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center h-8 w-8 rounded-full bg-kiln-teal/15">
@@ -73,7 +73,7 @@ export function AlertsPanel({ alerts, recommendations }: AlertsPanelProps) {
                 </div>
                 <div>
                   <p className="text-sm text-clay-200">All systems healthy</p>
-                  <p className="text-xs text-clay-500">
+                  <p className="text-xs text-clay-200">
                     No alerts or recommendations at this time
                   </p>
                 </div>
@@ -98,7 +98,7 @@ export function AlertsPanel({ alerts, recommendations }: AlertsPanelProps) {
               >
                 <Card
                   className={cn(
-                    "border-clay-800 bg-white shadow-sm border-l-3",
+                    "border-clay-500  border-l-3",
                     borderColor
                   )}
                 >
@@ -112,12 +112,12 @@ export function AlertsPanel({ alerts, recommendations }: AlertsPanelProps) {
                           {alert.message}
                         </p>
                         {alert.campaign_name && (
-                          <p className="text-xs text-clay-500 mt-0.5">
+                          <p className="text-xs text-clay-200 mt-0.5">
                             Campaign: {alert.campaign_name}
                           </p>
                         )}
                         {alert.skill && (
-                          <p className="text-xs text-clay-500 mt-0.5">
+                          <p className="text-xs text-clay-200 mt-0.5">
                             Skill: {alert.skill}
                           </p>
                         )}
@@ -140,10 +140,10 @@ export function AlertsPanel({ alerts, recommendations }: AlertsPanelProps) {
                 delay: (alerts.length + index) * 0.05,
               }}
             >
-              <Card className="border-clay-800 bg-white shadow-sm">
+              <Card className="border-clay-500 ">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <TrendingUp className="h-4 w-4 mt-0.5 shrink-0 text-clay-400" />
+                    <TrendingUp className="h-4 w-4 mt-0.5 shrink-0 text-clay-200" />
                     <p className="text-sm text-clay-300">{rec.message}</p>
                   </div>
                 </CardContent>

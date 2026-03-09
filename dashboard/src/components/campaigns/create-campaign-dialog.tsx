@@ -187,12 +187,12 @@ export function CreateCampaignDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-clay-800 bg-clay-950 max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="border-clay-500 bg-clay-950 max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-clay-100 font-[family-name:var(--font-sans)]">
             New Campaign
           </DialogTitle>
-          <DialogDescription className="text-clay-500">
+          <DialogDescription className="text-clay-200">
             Set up an automated campaign with a pipeline, audience, and delivery
             schedule.
           </DialogDescription>
@@ -202,25 +202,25 @@ export function CreateCampaignDialog({
           {/* Name + Description */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
                 Name *
               </label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Q2 Outbound Campaign"
-                className="border-clay-700 bg-clay-900 text-clay-200 placeholder:text-clay-600"
+                className="border-clay-700 bg-clay-800 text-clay-200 placeholder:text-clay-300"
               />
             </div>
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
                 Model
               </label>
               <Select value={model} onValueChange={setModel}>
-                <SelectTrigger className="w-full border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="w-full border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   <SelectItem value="opus">Opus (highest quality)</SelectItem>
                   <SelectItem value="sonnet">Sonnet (balanced)</SelectItem>
                   <SelectItem value="haiku">Haiku (fast)</SelectItem>
@@ -230,7 +230,7 @@ export function CreateCampaignDialog({
           </div>
 
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
               Description
             </label>
             <Textarea
@@ -238,21 +238,21 @@ export function CreateCampaignDialog({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the campaign purpose..."
               rows={2}
-              className="border-clay-700 bg-clay-900 text-clay-200 placeholder:text-clay-600 min-h-0"
+              className="border-clay-700 bg-clay-800 text-clay-200 placeholder:text-clay-300 min-h-0"
             />
           </div>
 
           {/* Pipeline + Destination + Client */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
                 Pipeline *
               </label>
               <Select value={pipeline} onValueChange={setPipeline}>
-                <SelectTrigger className="w-full border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="w-full border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue placeholder="Select pipeline..." />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   {pipelines.map((p) => (
                     <SelectItem key={p.name} value={p.name}>
                       {p.name}
@@ -262,7 +262,7 @@ export function CreateCampaignDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
                 Destination
               </label>
               <Select
@@ -271,10 +271,10 @@ export function CreateCampaignDialog({
                   setDestinationId(v === "none" ? "" : v)
                 }
               >
-                <SelectTrigger className="w-full border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="w-full border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue placeholder="None" />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   <SelectItem value="none">None</SelectItem>
                   {destinations.map((d) => (
                     <SelectItem key={d.id} value={d.id}>
@@ -285,7 +285,7 @@ export function CreateCampaignDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
                 Client
               </label>
               <Select
@@ -294,10 +294,10 @@ export function CreateCampaignDialog({
                   setClientSlug(v === "none" ? "" : v)
                 }
               >
-                <SelectTrigger className="w-full border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="w-full border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue placeholder="None" />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   <SelectItem value="none">None</SelectItem>
                   {clients.map((c) => (
                     <SelectItem key={c.slug} value={c.slug}>
@@ -311,7 +311,7 @@ export function CreateCampaignDialog({
 
           {/* Goal */}
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
               Goal
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -321,13 +321,13 @@ export function CreateCampaignDialog({
                 value={targetCount}
                 onChange={(e) => setTargetCount(Number(e.target.value))}
                 placeholder="100"
-                className="border-clay-700 bg-clay-900 text-clay-200 placeholder:text-clay-600"
+                className="border-clay-700 bg-clay-800 text-clay-200 placeholder:text-clay-300"
               />
               <Select value={metric} onValueChange={setMetric}>
-                <SelectTrigger className="w-full border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="w-full border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   <SelectItem value="emails_sent">emails sent</SelectItem>
                   <SelectItem value="leads_qualified">
                     leads qualified
@@ -344,7 +344,7 @@ export function CreateCampaignDialog({
                 value={goalDescription}
                 onChange={(e) => setGoalDescription(e.target.value)}
                 placeholder="Goal description (optional)"
-                className="border-clay-700 bg-clay-900 text-clay-200 placeholder:text-clay-600"
+                className="border-clay-700 bg-clay-800 text-clay-200 placeholder:text-clay-300"
               />
             </div>
           </div>
@@ -352,14 +352,14 @@ export function CreateCampaignDialog({
           {/* Schedule */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
                 Frequency
               </label>
               <Select value={frequency} onValueChange={setFrequency}>
-                <SelectTrigger className="w-full border-clay-700 bg-clay-900 text-clay-200">
+                <SelectTrigger className="w-full border-clay-700 bg-clay-800 text-clay-200">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-clay-700 bg-clay-900">
+                <SelectContent className="border-clay-700 bg-clay-800">
                   <SelectItem value="manual">Manual</SelectItem>
                   <SelectItem value="hourly">Hourly</SelectItem>
                   <SelectItem value="daily">Daily</SelectItem>
@@ -368,7 +368,7 @@ export function CreateCampaignDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
                 Batch Size
               </label>
               <Input
@@ -377,14 +377,14 @@ export function CreateCampaignDialog({
                 max={500}
                 value={batchSize}
                 onChange={(e) => setBatchSize(Number(e.target.value))}
-                className="border-clay-700 bg-clay-900 text-clay-200"
+                className="border-clay-700 bg-clay-800 text-clay-200"
               />
             </div>
           </div>
 
           {/* Confidence Threshold */}
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
               Confidence Threshold:{" "}
               <span className="text-kiln-teal">
                 {(confidenceThreshold * 100).toFixed(0)}%
@@ -400,7 +400,7 @@ export function CreateCampaignDialog({
               }
               className="w-full h-2 rounded-full appearance-none cursor-pointer bg-clay-800 accent-kiln-teal"
             />
-            <div className="flex justify-between text-[10px] text-clay-600 mt-1">
+            <div className="flex justify-between text-[10px] text-clay-300 mt-1">
               <span>0% (review all)</span>
               <span>100% (auto-send all)</span>
             </div>
@@ -408,7 +408,7 @@ export function CreateCampaignDialog({
 
           {/* Instructions */}
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
               Custom Instructions
             </label>
             <Textarea
@@ -416,13 +416,13 @@ export function CreateCampaignDialog({
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="Optional instructions for the AI model..."
               rows={2}
-              className="border-clay-700 bg-clay-900 text-clay-200 placeholder:text-clay-600 min-h-0"
+              className="border-clay-700 bg-clay-800 text-clay-200 placeholder:text-clay-300 min-h-0"
             />
           </div>
 
           {/* Audience CSV Upload */}
           <div>
-            <label className="block text-xs text-clay-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs text-clay-200 uppercase tracking-wider mb-1.5">
               Audience (CSV)
             </label>
             <div
@@ -440,15 +440,15 @@ export function CreateCampaignDialog({
                 const file = e.dataTransfer.files[0];
                 if (file) handleFileUpload(file);
               }}
-              className="cursor-pointer border-2 border-dashed border-clay-700 rounded-lg bg-clay-900/50 hover:border-kiln-teal/50 transition-all duration-200 p-4 text-center"
+              className="cursor-pointer border-2 border-dashed border-clay-700 rounded-lg bg-clay-800/50 hover:border-kiln-teal/50 transition-all duration-200 p-4 text-center"
             >
-              <Upload className="h-5 w-5 text-clay-600 mx-auto mb-1" />
+              <Upload className="h-5 w-5 text-clay-300 mx-auto mb-1" />
               {audienceFileName ? (
                 <p className="text-sm text-kiln-teal">
                   {audienceFileName} ({audienceRows.length} rows)
                 </p>
               ) : (
-                <p className="text-xs text-clay-500">
+                <p className="text-xs text-clay-200">
                   Drop a CSV or click to upload audience rows
                 </p>
               )}

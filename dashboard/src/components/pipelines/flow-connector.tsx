@@ -22,7 +22,7 @@ export function FlowConnector({
       {/* Insert button */}
       <motion.button
         onClick={() => onInsert(index)}
-        className="absolute top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-clay-800 border border-clay-700 flex items-center justify-center text-clay-500 hover:bg-kiln-teal hover:text-clay-950 hover:border-kiln-teal opacity-0 group-hover:opacity-100 transition-all duration-150 z-10"
+        className="absolute top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-clay-800 border border-clay-700 flex items-center justify-center text-clay-200 hover:bg-kiln-teal hover:text-clay-950 hover:border-kiln-teal opacity-0 group-hover:opacity-100 transition-all duration-150 z-10"
         whileHover={{ scale: 1.15 }}
         whileTap={{ scale: 0.95 }}
       >

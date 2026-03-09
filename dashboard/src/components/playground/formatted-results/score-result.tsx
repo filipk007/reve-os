@@ -50,7 +50,7 @@ function ScoreGauge({ score }: { score: number }) {
 function getTier(score: number): { label: string; color: string } {
   if (score >= 80) return { label: "Hot", color: "bg-kiln-teal/15 text-kiln-teal border-kiln-teal/30" };
   if (score >= 60) return { label: "Warm", color: "bg-kiln-mustard/15 text-kiln-mustard border-kiln-mustard/30" };
-  if (score >= 40) return { label: "Neutral", color: "bg-clay-800 text-clay-400 border-clay-700" };
+  if (score >= 40) return { label: "Neutral", color: "bg-clay-800 text-clay-200 border-clay-700" };
   return { label: "Cold", color: "bg-kiln-coral/15 text-kiln-coral border-kiln-coral/30" };
 }
 
@@ -85,7 +85,7 @@ export function ScoreResult({ data }: { data: Record<string, unknown> }) {
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex items-center gap-2 text-clay-500">
+      <div className="flex items-center gap-2 text-clay-200">
         <Target className="h-4 w-4" />
         <span className="text-xs uppercase tracking-wider">ICP Score</span>
       </div>
@@ -97,7 +97,7 @@ export function ScoreResult({ data }: { data: Record<string, unknown> }) {
             {tier.label}
           </Badge>
           {reasoning && (
-            <p className="text-sm text-clay-400 mt-2 max-w-xs">{reasoning}</p>
+            <p className="text-sm text-clay-200 mt-2 max-w-xs">{reasoning}</p>
           )}
         </div>
       </div>
@@ -105,7 +105,7 @@ export function ScoreResult({ data }: { data: Record<string, unknown> }) {
       {/* Dimension breakdown */}
       {dimensions && (
         <div className="space-y-2">
-          <p className="text-xs text-clay-500 uppercase tracking-wider">
+          <p className="text-xs text-clay-200 uppercase tracking-wider">
             Breakdown
           </p>
           <div className="space-y-1.5">
@@ -113,7 +113,7 @@ export function ScoreResult({ data }: { data: Record<string, unknown> }) {
               const numVal = typeof val === "number" ? val : 0;
               return (
                 <div key={key} className="flex items-center gap-2">
-                  <span className="text-xs text-clay-400 w-32 truncate capitalize">
+                  <span className="text-xs text-clay-200 w-32 truncate capitalize">
                     {key.replace(/_/g, " ")}
                   </span>
                   <div className="flex-1 h-2 rounded-full bg-clay-800 overflow-hidden">
@@ -122,7 +122,7 @@ export function ScoreResult({ data }: { data: Record<string, unknown> }) {
                       style={{ width: `${Math.min(100, numVal)}%` }}
                     />
                   </div>
-                  <span className="text-xs text-clay-500 font-[family-name:var(--font-mono)] w-8 text-right">
+                  <span className="text-xs text-clay-200 font-[family-name:var(--font-mono)] w-8 text-right">
                     {Math.round(numVal)}
                   </span>
                 </div>
@@ -134,10 +134,10 @@ export function ScoreResult({ data }: { data: Record<string, unknown> }) {
 
       {/* Full JSON fallback */}
       <details className="group">
-        <summary className="text-xs text-clay-500 cursor-pointer hover:text-clay-400">
+        <summary className="text-xs text-clay-200 cursor-pointer hover:text-clay-200">
           Show raw JSON
         </summary>
-        <pre className="mt-2 text-xs text-clay-400 font-[family-name:var(--font-mono)] overflow-x-auto">
+        <pre className="mt-2 text-xs text-clay-200 font-[family-name:var(--font-mono)] overflow-x-auto">
           {JSON.stringify(data, null, 2)}
         </pre>
       </details>

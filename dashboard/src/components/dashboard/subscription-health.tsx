@@ -66,7 +66,7 @@ export function SubscriptionHealth() {
 
   if (!data) {
     return (
-      <Card className="border-clay-800 bg-white shadow-sm">
+      <Card className="border-clay-500 ">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-40 bg-clay-800 rounded" />
         </CardHeader>
@@ -102,7 +102,7 @@ export function SubscriptionHealth() {
   }));
 
   return (
-    <Card className="border-clay-800 bg-white shadow-sm">
+    <Card className="border-clay-500 ">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold text-clay-200 font-[family-name:var(--font-sans)]">
@@ -133,29 +133,29 @@ export function SubscriptionHealth() {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <p className="text-xs text-clay-500">Today</p>
+            <p className="text-xs text-clay-200">Today</p>
             <p className="text-lg font-semibold text-kiln-teal font-[family-name:var(--font-mono)]">
               {formatTokens(data.today.total_tokens)}
             </p>
-            <p className="text-xs text-clay-600">
+            <p className="text-xs text-clay-300">
               {formatNumber(data.today.request_count)} req
             </p>
           </div>
           <div>
-            <p className="text-xs text-clay-500">This Week</p>
+            <p className="text-xs text-clay-200">This Week</p>
             <p className="text-lg font-semibold text-kiln-teal font-[family-name:var(--font-mono)]">
               {formatTokens(data.week.total_tokens)}
             </p>
-            <p className="text-xs text-clay-600">
+            <p className="text-xs text-clay-300">
               {formatNumber(data.week.request_count)} req
             </p>
           </div>
           <div>
-            <p className="text-xs text-clay-500">This Month</p>
+            <p className="text-xs text-clay-200">This Month</p>
             <p className="text-lg font-semibold text-kiln-teal font-[family-name:var(--font-mono)]">
               {formatTokens(data.month.total_tokens)}
             </p>
-            <p className="text-xs text-clay-600">
+            <p className="text-xs text-clay-300">
               {formatNumber(data.month.request_count)} req
             </p>
           </div>
@@ -165,13 +165,13 @@ export function SubscriptionHealth() {
         {hoursRemaining !== null && avgHourlyTokens > 0 && (
           <div className="rounded-md bg-clay-800/50 border border-clay-700 p-3 flex items-center justify-between">
             <div>
-              <p className="text-xs text-clay-500">Projected Capacity</p>
+              <p className="text-xs text-clay-200">Projected Capacity</p>
               <p className="text-sm font-medium text-clay-200">
                 ~{hoursRemaining}h remaining at current rate
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-clay-500">Avg/hour</p>
+              <p className="text-xs text-clay-200">Avg/hour</p>
               <p className="text-sm font-mono text-clay-300">
                 {formatTokens(Math.round(avgHourlyTokens))}
               </p>

@@ -43,7 +43,7 @@ export function SpreadsheetToolbar({
   const hasSelection = selectedCount > 0;
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 border-b border-clay-800 bg-clay-900/50">
+    <div className="flex items-center gap-2 px-4 py-2 border-b border-clay-500 bg-clay-800/50">
       {hasSelection ? (
         // Bulk action mode
         <>
@@ -54,7 +54,7 @@ export function SpreadsheetToolbar({
             variant="ghost"
             size="sm"
             onClick={onClearSelection}
-            className="h-7 px-2 text-clay-500 hover:text-clay-300"
+            className="h-7 px-2 text-clay-200 hover:text-clay-300"
           >
             <X className="h-3 w-3 mr-1" />
             Clear
@@ -98,10 +98,10 @@ export function SpreadsheetToolbar({
         // Filter mode
         <>
           <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-            <SelectTrigger className="w-32 h-7 text-xs border-clay-700 bg-clay-900 text-clay-300">
+            <SelectTrigger className="w-32 h-7 text-xs border-clay-700 bg-clay-800 text-clay-300">
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
-            <SelectContent className="border-clay-700 bg-clay-900">
+            <SelectContent className="border-clay-700 bg-clay-800">
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="failed">Failed</SelectItem>
@@ -114,7 +114,7 @@ export function SpreadsheetToolbar({
             placeholder="Search rows..."
             value={globalFilter}
             onChange={(e) => onGlobalFilterChange(e.target.value)}
-            className="h-7 w-48 text-xs border-clay-700 bg-clay-900 text-clay-200 placeholder:text-clay-600"
+            className="h-7 w-48 text-xs border-clay-700 bg-clay-800 text-clay-200 placeholder:text-clay-300"
           />
 
           <div className="ml-auto flex items-center gap-2">

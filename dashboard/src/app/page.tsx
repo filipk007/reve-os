@@ -97,7 +97,7 @@ export default function DashboardPage() {
             </Button>
             <button
               onClick={dismissOnboarding}
-              className="text-xs text-clay-500 hover:text-clay-300 transition-colors mt-2"
+              className="text-xs text-clay-200 hover:text-clay-300 transition-colors mt-2"
             >
               Skip — I've used this before
             </button>
@@ -119,11 +119,11 @@ export default function DashboardPage() {
           {/* Hero stats row */}
           {stats && stats.total_processed > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card className="border-clay-800 bg-white shadow-sm">
+              <Card className="border-clay-500 ">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-1">
                     <Zap className="h-4 w-4 text-kiln-teal" />
-                    <span className="text-xs text-clay-500 uppercase tracking-wider">
+                    <span className="text-xs text-clay-200 uppercase tracking-wider">
                       Jobs Today
                     </span>
                   </div>
@@ -132,11 +132,11 @@ export default function DashboardPage() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className="border-clay-800 bg-white shadow-sm">
+              <Card className="border-clay-500 ">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-1">
                     <Target className="h-4 w-4 text-kiln-teal" />
-                    <span className="text-xs text-clay-500 uppercase tracking-wider">
+                    <span className="text-xs text-clay-200 uppercase tracking-wider">
                       Success Rate
                     </span>
                   </div>
@@ -145,11 +145,11 @@ export default function DashboardPage() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className="border-clay-800 bg-white shadow-sm">
+              <Card className="border-clay-500 ">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-1">
                     <DollarSign className="h-4 w-4 text-kiln-teal" />
-                    <span className="text-xs text-clay-500 uppercase tracking-wider">
+                    <span className="text-xs text-clay-200 uppercase tracking-wider">
                       Value Delivered
                     </span>
                   </div>
@@ -200,11 +200,11 @@ export default function DashboardPage() {
         ) : (
           stats && stats.total_processed > 0 && (
             <section className="pt-8">
-              <Card className="border-clay-800 bg-white shadow-sm">
+              <Card className="border-clay-500 ">
                 <CardContent className="p-6 text-center">
-                  <Rocket className="h-8 w-8 text-clay-600 mx-auto mb-3" />
+                  <Rocket className="h-8 w-8 text-clay-300 mx-auto mb-3" />
                   <h3 className="text-sm font-medium text-clay-200 mb-1">No campaigns yet</h3>
-                  <p className="text-xs text-clay-500 mb-4">Create your first campaign to see results here.</p>
+                  <p className="text-xs text-clay-200 mb-4">Create your first campaign to see results here.</p>
                   <Button asChild size="sm" className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold">
                     <Link href="/campaigns">Create Campaign</Link>
                   </Button>
@@ -229,9 +229,9 @@ export default function DashboardPage() {
             className="flex items-center gap-2 text-lg font-semibold text-clay-100 hover:text-clay-50 transition-colors mb-4"
           >
             {techDetailsOpen ? (
-              <ChevronUp className="h-5 w-5 text-clay-400" />
+              <ChevronUp className="h-5 w-5 text-clay-200" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-clay-400" />
+              <ChevronDown className="h-5 w-5 text-clay-200" />
             )}
             Technical Details
           </button>

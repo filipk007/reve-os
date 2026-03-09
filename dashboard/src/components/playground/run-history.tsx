@@ -65,7 +65,7 @@ export function RunHistory({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <button
-          className="relative p-1.5 rounded transition-colors text-clay-500 hover:text-clay-300"
+          className="relative p-1.5 rounded transition-colors text-clay-200 hover:text-clay-300"
           title="Run history"
         >
           <Clock className="h-4 w-4" />
@@ -76,13 +76,13 @@ export function RunHistory({
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md bg-clay-950 border-clay-800 overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-md bg-clay-950 border-clay-500 overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="text-clay-100">Run History</SheetTitle>
         </SheetHeader>
         <div className="mt-4 space-y-2">
           {history.length === 0 && (
-            <p className="text-sm text-clay-500 text-center py-8">
+            <p className="text-sm text-clay-200 text-center py-8">
               No runs yet. Results will appear here after you run a skill.
             </p>
           )}
@@ -96,13 +96,13 @@ export function RunHistory({
                   onRestore(entry);
                   setOpen(false);
                 }}
-                className="w-full text-left rounded-lg border border-clay-800 bg-clay-900 p-3 hover:border-kiln-teal/30 transition-colors"
+                className="w-full text-left rounded-lg border border-clay-500 bg-clay-800 p-3 hover:border-kiln-teal/30 transition-colors"
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium text-clay-200">
                     {entry.skill}
                   </span>
-                  <span className="text-xs text-clay-500">
+                  <span className="text-xs text-clay-200">
                     {new Date(entry.timestamp).toLocaleTimeString()}
                   </span>
                 </div>
@@ -117,11 +117,11 @@ export function RunHistory({
                   >
                     {isError ? "error" : "success"}
                   </Badge>
-                  <Badge variant="outline" className="text-[10px] border-clay-700 text-clay-400">
+                  <Badge variant="outline" className="text-[10px] border-clay-700 text-clay-200">
                     {entry.model}
                   </Badge>
                   {meta?.duration_ms && (
-                    <span className="text-[10px] text-clay-500">
+                    <span className="text-[10px] text-clay-200">
                       {formatSmartDuration(meta.duration_ms)}
                     </span>
                   )}
@@ -135,7 +135,7 @@ export function RunHistory({
                 onClear();
                 setOpen(false);
               }}
-              className="flex items-center gap-1.5 text-xs text-clay-500 hover:text-kiln-coral transition-colors mx-auto pt-2"
+              className="flex items-center gap-1.5 text-xs text-clay-200 hover:text-kiln-coral transition-colors mx-auto pt-2"
             >
               <Trash2 className="h-3 w-3" />
               Clear history

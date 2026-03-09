@@ -183,10 +183,10 @@ export function StatsCards() {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4" aria-live="polite">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Card key={i} className="border-clay-800 bg-white shadow-sm">
+          <Card key={i} className="border-clay-500 ">
             <CardContent className="p-4">
-              <Skeleton className="h-3 w-20 mb-3 bg-clay-900 rounded" />
-              <Skeleton className="h-7 w-14 bg-clay-900 rounded" />
+              <Skeleton className="h-3 w-20 mb-3 bg-clay-800 rounded" />
+              <Skeleton className="h-7 w-14 bg-clay-800 rounded" />
             </CardContent>
           </Card>
         ))}
@@ -212,16 +212,16 @@ export function StatsCards() {
           <Tooltip key={c.key}>
             <TooltipTrigger asChild>
               <Card
-                className={`border-clay-800 bg-white shadow-sm hover:border-clay-700 transition-all duration-200 group ${
+                className={`border-clay-500  hover:border-clay-700 transition-all duration-200 group ${
                   c.group === "health" ? "lg:col-span-1" : ""
                 }`}
               >
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs text-clay-500 uppercase tracking-wider font-[family-name:var(--font-sans)]">
+                    <p className="text-xs text-clay-200 uppercase tracking-wider font-[family-name:var(--font-sans)]">
                       {c.label}
                     </p>
-                    <Icon className="h-5 w-5 text-clay-600 opacity-60 group-hover:opacity-90 group-hover:text-clay-400 transition-all" />
+                    <Icon className="h-5 w-5 text-clay-300 opacity-60 group-hover:opacity-90 group-hover:text-clay-200 transition-all" />
                   </div>
                   <p
                     className={`text-2xl font-semibold font-[family-name:var(--font-mono)] ${
@@ -236,7 +236,7 @@ export function StatsCards() {
             </TooltipTrigger>
             <TooltipContent
               side="bottom"
-              className="max-w-xs bg-clay-900 border-clay-700 text-clay-300 text-xs"
+              className="max-w-xs bg-clay-800 border-clay-700 text-clay-300 text-xs"
             >
               {METRIC_TOOLTIPS[c.key]}
               {stale && (

@@ -58,7 +58,7 @@ export function PipelineTestPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-xs text-clay-500 uppercase tracking-wider mb-2 block">
+        <label className="text-xs text-clay-200 uppercase tracking-wider mb-2 block">
           Test Data (JSON)
         </label>
         <Textarea
@@ -94,13 +94,13 @@ export function PipelineTestPanel({
             >
               {formatDuration(result.total_duration_ms)}
             </Badge>
-            <span className="text-xs text-clay-500">
+            <span className="text-xs text-clay-200">
               {result.steps.length} steps
             </span>
           </div>
 
           {result.steps.map((step, i) => (
-            <Card key={i} className="border-clay-800 bg-clay-950">
+            <Card key={i} className="border-clay-500 bg-clay-950">
               <CardHeader className="py-2 px-3 flex-row items-center gap-2 space-y-0">
                 {step.success ? (
                   <CheckCircle className="h-4 w-4 text-kiln-teal" />
@@ -111,7 +111,7 @@ export function PipelineTestPanel({
                   {step.skill}
                 </span>
                 {step.duration_ms > 0 && (
-                  <span className="text-xs text-clay-500 ml-auto font-[family-name:var(--font-mono)]">
+                  <span className="text-xs text-clay-200 ml-auto font-[family-name:var(--font-mono)]">
                     {formatDuration(step.duration_ms)}
                   </span>
                 )}

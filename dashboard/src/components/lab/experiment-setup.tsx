@@ -57,14 +57,14 @@ export function ExperimentSetup({
   return (
     <div className="space-y-4 max-w-lg">
       <div>
-        <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
+        <label className="text-xs text-clay-200 uppercase tracking-wider mb-1.5 block">
           Skill
         </label>
         <Select value={skill} onValueChange={setSkill}>
-          <SelectTrigger className="border-clay-700 bg-clay-900 text-clay-200 h-9">
+          <SelectTrigger className="border-clay-700 bg-clay-800 text-clay-200 h-9">
             <SelectValue placeholder="Select skill..." />
           </SelectTrigger>
-          <SelectContent className="border-clay-700 bg-clay-900">
+          <SelectContent className="border-clay-700 bg-clay-800">
             {skills.map((s) => (
               <SelectItem key={s} value={s}>
                 {s}
@@ -75,20 +75,20 @@ export function ExperimentSetup({
       </div>
 
       <div>
-        <label className="text-xs text-clay-500 uppercase tracking-wider mb-1.5 block">
+        <label className="text-xs text-clay-200 uppercase tracking-wider mb-1.5 block">
           Experiment Name
         </label>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g., PVC vs Direct CTA"
-          className="border-clay-700 bg-clay-900 text-clay-100 placeholder:text-clay-600"
+          className="border-clay-700 bg-clay-800 text-clay-100 placeholder:text-clay-300"
         />
       </div>
 
       {skill && (
         <div>
-          <label className="text-xs text-clay-500 uppercase tracking-wider mb-2 block">
+          <label className="text-xs text-clay-200 uppercase tracking-wider mb-2 block">
             Select Variants (min 2)
           </label>
           <div className="flex flex-wrap gap-2">
@@ -97,7 +97,7 @@ export function ExperimentSetup({
               className={`px-3 py-1.5 rounded-md border text-sm transition-colors ${
                 selectedIds.includes("default")
                   ? "border-kiln-teal/30 bg-kiln-teal/10 text-kiln-teal"
-                  : "border-clay-700 text-clay-400 hover:border-clay-600"
+                  : "border-clay-700 text-clay-200 hover:border-clay-600"
               }`}
             >
               Default
@@ -109,7 +109,7 @@ export function ExperimentSetup({
                 className={`px-3 py-1.5 rounded-md border text-sm transition-colors ${
                   selectedIds.includes(v.id)
                     ? "border-kiln-teal/30 bg-kiln-teal/10 text-kiln-teal"
-                    : "border-clay-700 text-clay-400 hover:border-clay-600"
+                    : "border-clay-700 text-clay-200 hover:border-clay-600"
                 }`}
               >
                 {v.label}
@@ -117,7 +117,7 @@ export function ExperimentSetup({
             ))}
           </div>
           {variants.length === 0 && (
-            <p className="text-xs text-clay-600 mt-2">
+            <p className="text-xs text-clay-300 mt-2">
               No variants found. Fork the skill first in the Variants tab.
             </p>
           )}

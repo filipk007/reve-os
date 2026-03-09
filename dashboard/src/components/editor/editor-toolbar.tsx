@@ -44,12 +44,12 @@ export function EditorToolbar({
   charCount: number;
 }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 border-b border-clay-800 bg-clay-900/50">
+    <div className="flex items-center gap-2 px-3 py-1.5 border-b border-clay-500 bg-clay-800/50">
       <Input
         value={label}
         onChange={(e) => onLabelChange(e.target.value)}
         placeholder="Variant label..."
-        className="h-7 w-40 text-xs border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-600"
+        className="h-7 w-40 text-xs border-clay-700 bg-clay-950 text-clay-200 placeholder:text-clay-300"
       />
 
       <div className="w-px h-4 bg-clay-800" />
@@ -94,7 +94,7 @@ export function EditorToolbar({
         className={`h-7 text-xs ${
           previewMode !== "off"
             ? "bg-kiln-teal/10 text-kiln-teal border-kiln-teal/30"
-            : "border-clay-700 text-clay-400"
+            : "border-clay-700 text-clay-200"
         }`}
       >
         {previewMode !== "off" ? (
@@ -112,14 +112,14 @@ export function EditorToolbar({
         className={`h-7 text-xs ${
           diffActive
             ? "bg-kiln-teal/10 text-kiln-teal border-kiln-teal/30"
-            : "border-clay-700 text-clay-400"
+            : "border-clay-700 text-clay-200"
         }`}
       >
         <GitCompare className="h-3 w-3 mr-1" />
         Diff
       </Button>
 
-      <div className="ml-auto flex items-center gap-3 text-[10px] text-clay-600">
+      <div className="ml-auto flex items-center gap-3 text-[10px] text-clay-300">
         <span>{wordCount} words</span>
         <span>{charCount} chars</span>
       </div>

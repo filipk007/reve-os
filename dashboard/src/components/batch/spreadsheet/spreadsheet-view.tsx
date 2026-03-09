@@ -103,7 +103,7 @@ export function SpreadsheetView({
   }, [jobs, originalRows, selectedJobIds]);
 
   return (
-    <div className="rounded-xl border border-clay-800 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-clay-500  overflow-hidden">
       <SpreadsheetToolbar
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
@@ -144,7 +144,7 @@ export function SpreadsheetView({
               <tr>
                 <td
                   colSpan={table.getHeaderGroups()[0]?.headers.length || 1}
-                  className="text-center py-12 text-sm text-clay-500"
+                  className="text-center py-12 text-sm text-clay-200"
                 >
                   No matching rows
                 </td>
