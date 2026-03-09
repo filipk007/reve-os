@@ -169,8 +169,11 @@ async def get_skill_content(name: str):
 async def update_skill_content(name: str, body: UpdateSkillRequest):
     from app.core.skill_loader import save_skill
 
-    if not save_skill(name, body.content):
+    result = save_skill(name, body.content)
+    if result is False:
         return {"error": True, "error_message": f"Skill '{name}' not found"}
+    if isinstance(result, str):
+        return {"error": True, "error_message": result}
     logger.info("[context] Updated skill: %s", name)
     return {"name": name, "content": body.content}
 
@@ -179,8 +182,11 @@ async def update_skill_content(name: str, body: UpdateSkillRequest):
 async def create_skill_endpoint(body: CreateSkillRequest):
     from app.core.skill_loader import create_skill
 
-    if not create_skill(body.name, body.content):
+    result = create_skill(body.name, body.content)
+    if result is False:
         return {"error": True, "error_message": f"Skill '{body.name}' already exists"}
+    if isinstance(result, str):
+        return {"error": True, "error_message": result}
     logger.info("[context] Created skill: %s", body.name)
     return {"name": body.name, "content": body.content}
 

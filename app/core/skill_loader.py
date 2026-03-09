@@ -190,23 +190,39 @@ def get_skill_raw(name: str) -> str | None:
     return skill_file.read_text()
 
 
-def save_skill(name: str, content: str) -> bool:
-    """Write content to an existing skill.md and invalidate cache."""
+def save_skill(name: str, content: str) -> bool | str:
+    """Write content to an existing skill.md and invalidate cache.
+
+    Returns True on success, False if skill not found, or an error string on failure.
+    """
     skill_file = settings.skills_dir / name / "skill.md"
     if not skill_file.exists():
         return False
-    skill_file.write_text(content)
+    try:
+        skill_file.write_text(content)
+    except PermissionError:
+        return f"Permission denied writing to {skill_file}. Check file ownership on the server."
+    except OSError as e:
+        return f"Failed to write skill file: {e}"
     _skill_cache.pop(name, None)
     return True
 
 
-def create_skill(name: str, content: str) -> bool:
-    """Create a new skill directory with skill.md. Returns False if exists."""
+def create_skill(name: str, content: str) -> bool | str:
+    """Create a new skill directory with skill.md.
+
+    Returns True on success, False if exists, or an error string on failure.
+    """
     skill_dir = settings.skills_dir / name
     if skill_dir.exists():
         return False
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "skill.md").write_text(content)
+    try:
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "skill.md").write_text(content)
+    except PermissionError:
+        return f"Permission denied creating {skill_dir}. Check directory ownership on the server."
+    except OSError as e:
+        return f"Failed to create skill: {e}"
     return True
 
 
