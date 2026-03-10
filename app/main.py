@@ -117,10 +117,10 @@ async def startup():
     app.state.job_queue._context_index = app.state.context_index
 
     # Log research API availability
-    if settings.sgai_api_key:
-        logger.info("  ScrapeGraph research: enabled")
+    if settings.parallel_api_key:
+        logger.info("  Parallel.ai research: enabled")
     else:
-        logger.info("  ScrapeGraph research: disabled (no SGAI_API_KEY)")
+        logger.info("  Parallel.ai research: disabled (no PARALLEL_API_KEY)")
     if settings.sumble_api_key:
         logger.info("  Sumble research: enabled")
     else:

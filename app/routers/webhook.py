@@ -28,8 +28,8 @@ async def _maybe_fetch_research(skill: str, data: dict) -> None:
         ctx: dict = {}
         domain = data.get("company_domain", "")
         name = data.get("company_name", "")
-        if domain and settings.sgai_api_key:
-            ctx.update(await fetch_company_intel(domain, name, settings.sgai_api_key))
+        if domain and settings.parallel_api_key:
+            ctx.update(await fetch_company_intel(domain, name, settings.parallel_api_key))
         if domain and settings.sumble_api_key:
             profile = await fetch_company_profile(
                 domain, data, settings.sumble_api_key,
@@ -51,8 +51,8 @@ async def _maybe_fetch_research(skill: str, data: dict) -> None:
 
     elif skill == "competitor-research":
         competitor_domain = data.get("competitor_domain", "")
-        if competitor_domain and settings.sgai_api_key:
-            intel = await fetch_competitor_intel(competitor_domain, settings.sgai_api_key)
+        if competitor_domain and settings.parallel_api_key:
+            intel = await fetch_competitor_intel(competitor_domain, settings.parallel_api_key)
             if intel:
                 data["research_context"] = intel
 

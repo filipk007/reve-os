@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     auto_route_thresholds: dict[str, int] = {"light_max_tokens": 2000, "standard_max_tokens": 10000}
     enable_smart_routing: bool = False
 
-    # ScrapeGraph web intelligence
-    sgai_api_key: str = ""
+    # Parallel.ai web intelligence (search + extract)
+    parallel_api_key: str = ""
 
     # Sumble company intelligence
     sumble_api_key: str = ""

@@ -1,6 +1,8 @@
 """Thin async research fetchers — no class, no cache, no dedup.
 
 Called directly from webhook/job_queue when a research skill is invoked.
+Uses Parallel.ai for web search and content extraction,
+Sumble for structured company/people enrichment.
 """
 
 import asyncio
@@ -19,58 +21,71 @@ _DEFAULT_TECHNOLOGIES = [
 ]
 
 
-def _extract_sg_content(data) -> str:
-    """Extract text content from a ScrapeGraph response."""
-    if isinstance(data, str):
-        return data
-    if isinstance(data, dict):
-        result = data.get("result")
-        if result:
-            return str(result)
-        content = data.get("content")
+def _format_search_results(results) -> str:
+    """Format Parallel search results into readable text with citations."""
+    parts = []
+    for r in results:
+        title = getattr(r, "title", "")
+        url = getattr(r, "url", "")
+        excerpts = getattr(r, "excerpts", [])
+        excerpt_text = " ".join(excerpts) if excerpts else ""
+        if title:
+            parts.append(f"**{title}** ({url})\n{excerpt_text}")
+    return "\n\n".join(parts)
+
+
+def _format_extract_content(results) -> str:
+    """Extract full content from Parallel extract results."""
+    for r in results:
+        content = getattr(r, "full_content", None)
         if content:
-            return str(content)
-        return str(data)
-    return str(data)
+            return content
+    return ""
 
 
-async def fetch_company_intel(domain: str, name: str, sgai_key: str) -> dict:
-    """ScrapeGraph smartscraper + searchscraper in parallel.
+async def fetch_company_intel(domain: str, name: str, parallel_key: str) -> dict:
+    """Parallel Search (news) + Extract (website) in parallel.
 
     Returns {"website_overview": "...", "recent_news": "..."}.
     """
-    from scrapegraph_py import AsyncClient
+    from parallel import AsyncParallel
 
     website_overview = ""
     recent_news = ""
 
     try:
-        async with AsyncClient(api_key=sgai_key) as client:
-            scrape_coro = client.smartscraper(
-                website_url=f"https://{domain}",
-                user_prompt=(
-                    f"Extract a concise summary of what {name} does, their main "
-                    "products/services, key value propositions, and target customers."
-                ),
-            )
-            search_coro = client.searchscraper(
-                user_prompt=(
-                    f'Recent news about "{name}" ({domain}): funding, acquisitions, '
-                    "partnerships, product launches, leadership changes in the last 90 days."
-                ),
-                num_results=3,
-            )
-            scrape_result, search_result = await asyncio.gather(
-                scrape_coro, search_coro, return_exceptions=True,
-            )
+        client = AsyncParallel(api_key=parallel_key)
 
-        if not isinstance(scrape_result, Exception) and scrape_result:
-            website_overview = _extract_sg_content(scrape_result)[:2000]
-        elif isinstance(scrape_result, Exception):
-            logger.warning("[research] Website scrape failed for %s: %s", name, scrape_result)
+        extract_coro = client.beta.extract(
+            urls=[f"https://{domain}"],
+            objective=(
+                f"What does {name} do, their main products/services, "
+                "key value propositions, and target customers"
+            ),
+            full_content=True,
+            excerpts=False,
+        )
+        search_coro = client.beta.search(
+            objective=(
+                f'Recent news about "{name}" ({domain}): funding, acquisitions, '
+                "partnerships, product launches, leadership changes in the last 90 days."
+            ),
+            search_queries=[f"{name} news", f"{name} funding announcement"],
+            max_results=3,
+            max_chars_per_result=500,
+        )
+
+        extract_result, search_result = await asyncio.gather(
+            extract_coro, search_coro, return_exceptions=True,
+        )
+
+        if not isinstance(extract_result, Exception) and extract_result:
+            website_overview = _format_extract_content(extract_result.results)[:2000]
+        elif isinstance(extract_result, Exception):
+            logger.warning("[research] Website extract failed for %s: %s", name, extract_result)
 
         if not isinstance(search_result, Exception) and search_result:
-            recent_news = _extract_sg_content(search_result)[:2000]
+            recent_news = _format_search_results(search_result.results)[:2000]
         elif isinstance(search_result, Exception):
             logger.warning("[research] News search failed for %s: %s", name, search_result)
 
@@ -167,8 +182,8 @@ async def fetch_company_profile(
     return {"tech_stack": tech_stack, "key_people": key_people}
 
 
-async def fetch_competitor_intel(competitor_domain: str, sgai_key: str) -> dict:
-    """ScrapeGraph smartscraper on competitor site.
+async def fetch_competitor_intel(competitor_domain: str, parallel_key: str) -> dict:
+    """Parallel Extract on competitor site.
 
     Returns {"positioning": "...", "differentiators": "..."}.
     """
@@ -176,21 +191,22 @@ async def fetch_competitor_intel(competitor_domain: str, sgai_key: str) -> dict:
     differentiators = ""
 
     try:
-        from scrapegraph_py import AsyncClient
+        from parallel import AsyncParallel
 
-        async with AsyncClient(api_key=sgai_key) as client:
-            result = await client.smartscraper(
-                website_url=f"https://{competitor_domain}",
-                user_prompt=(
-                    f"Extract {competitor_domain}'s main products, pricing model, key "
-                    "differentiators, target customers, and any competitive claims "
-                    "against alternatives."
-                ),
-            )
+        client = AsyncParallel(api_key=parallel_key)
+        result = await client.beta.extract(
+            urls=[f"https://{competitor_domain}"],
+            objective=(
+                f"Extract {competitor_domain}'s main products, pricing model, key "
+                "differentiators, target customers, and any competitive claims "
+                "against alternatives."
+            ),
+            full_content=True,
+            excerpts=False,
+        )
 
-        if result:
-            content = _extract_sg_content(result)[:2000]
-            # Split into positioning and differentiators heuristically
+        if result and result.results:
+            content = _format_extract_content(result.results)[:2000]
             positioning = content
             differentiators = content
 
