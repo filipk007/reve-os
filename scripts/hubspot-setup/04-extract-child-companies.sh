@@ -133,6 +133,7 @@ print('\n'.join(ids))
       -H "Authorization: Bearer ${TOKEN}")
 
     # Append to temp rows
+    export CHILD_RESP
     python3 - "$child_id" "$parent_id" "$PARENT_NAME" "$PARENT_DOMAIN" "$LINKEDIN_PROP" << 'PYEOF'
 import sys, json, os
 

@@ -59,6 +59,7 @@ for domain in "$@"; do
       \"limit\": 1
     }")
 
+  export RESPONSE
   python3 - "$domain" << 'PYEOF'
 import sys, json, os
 
