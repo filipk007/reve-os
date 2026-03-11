@@ -1,0 +1,1066 @@
+{
+  "generated": "2026-03-11",
+  "source": "exa-search + domain-knowledge",
+  "description": "Real-world edge case companies for stress-testing HubSpot parent-child routing. Each category targets a specific weakness in the 4-signal Smart Compare detection system.",
+  "categories": [
+    {
+      "category": "shared_domain_conglomerates",
+      "signal_tested": "domain_mismatch_detection",
+      "description": "Multiple subsidiaries share the parent's email domain. Core use case for the routing system.",
+      "companies": [
+        {
+          "parent_name": "NFL",
+          "subsidiaries": ["Kansas City Chiefs", "Dallas Cowboys", "New England Patriots", "San Francisco 49ers", "Green Bay Packers"],
+          "shared_domain": "nfl.com",
+          "linkedin_url": "linkedin.com/company/nfl",
+          "region": "AMER",
+          "industry": "Sports & Entertainment",
+          "notes": "32 teams, all league-office employees use @nfl.com. Team-specific employees may also use @nfl.com for league functions.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_match",
+              "description": "Contact LinkedIn points to subsidiary — direct match",
+              "contact_email": "jsmith@nfl.com",
+              "contact_linkedin_company": "linkedin.com/company/kansas-city-chiefs",
+              "contact_title": "VP Operations",
+              "contact_headline": "VP Operations at Kansas City Chiefs",
+              "expected_match": "Kansas City Chiefs",
+              "expected_signal": "linkedin_url"
+            },
+            {
+              "scenario": "title_rescue",
+              "description": "LinkedIn shows parent but title contains subsidiary name",
+              "contact_email": "jdoe@nfl.com",
+              "contact_linkedin_company": "linkedin.com/company/nfl",
+              "contact_title": "Director of Entertainment Teams - Kansas City Chiefs",
+              "contact_headline": "Entertainment Director | NFL",
+              "expected_match": "Kansas City Chiefs",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "headline_extraction",
+              "description": "Generic title but headline mentions subsidiary",
+              "contact_email": "alee@nfl.com",
+              "contact_linkedin_company": "linkedin.com/company/nfl",
+              "contact_title": "Senior Marketing Manager",
+              "contact_headline": "Senior Marketing Manager at Dallas Cowboys | NFL",
+              "expected_match": "Dallas Cowboys",
+              "expected_signal": "headline"
+            },
+            {
+              "scenario": "true_parent_employee",
+              "description": "Genuinely works for NFL league office — no false rescue",
+              "contact_email": "bwilson@nfl.com",
+              "contact_linkedin_company": "linkedin.com/company/nfl",
+              "contact_title": "VP Strategy, League Office",
+              "contact_headline": "VP Strategy at NFL",
+              "expected_match": null,
+              "expected_signal": "parent"
+            },
+            {
+              "scenario": "no_signal_manual_review",
+              "description": "No LinkedIn, generic title — cannot determine",
+              "contact_email": "cjones@nfl.com",
+              "contact_linkedin_company": null,
+              "contact_title": "Operations Analyst",
+              "contact_headline": null,
+              "expected_match": null,
+              "expected_signal": "manual_review"
+            }
+          ]
+        },
+        {
+          "parent_name": "Alphabet",
+          "subsidiaries": ["Google", "Waymo", "DeepMind", "Verily", "Wing", "Calico", "Intrinsic", "Isomorphic Labs"],
+          "shared_domain": "google.com",
+          "linkedin_url": "linkedin.com/company/alphabet",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "Most Alphabet subsidiaries use @google.com email. Some like Waymo and Verily have own domains but many employees still use @google.com.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_match",
+              "contact_email": "engineer@google.com",
+              "contact_linkedin_company": "linkedin.com/company/waymo",
+              "contact_title": "Staff Software Engineer",
+              "contact_headline": "Staff SWE at Waymo | Self-Driving",
+              "expected_match": "Waymo",
+              "expected_signal": "linkedin_url"
+            },
+            {
+              "scenario": "title_rescue",
+              "contact_email": "researcher@google.com",
+              "contact_linkedin_company": "linkedin.com/company/google",
+              "contact_title": "Research Scientist - DeepMind",
+              "contact_headline": "AI Research at Google DeepMind",
+              "expected_match": "DeepMind",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "headline_extraction",
+              "contact_email": "pm@google.com",
+              "contact_linkedin_company": "linkedin.com/company/google",
+              "contact_title": "Product Manager",
+              "contact_headline": "PM at Verily Life Sciences | Alphabet",
+              "expected_match": "Verily",
+              "expected_signal": "headline"
+            }
+          ]
+        },
+        {
+          "parent_name": "Walt Disney Company",
+          "subsidiaries": ["ESPN", "Pixar", "Marvel Entertainment", "Lucasfilm", "20th Century Studios", "Hulu", "National Geographic"],
+          "shared_domain": "disney.com",
+          "linkedin_url": "linkedin.com/company/the-walt-disney-company",
+          "region": "AMER",
+          "industry": "Media & Entertainment",
+          "notes": "Corporate employees use @disney.com. Some subs like ESPN have @espn.com but many cross-functional roles use the parent domain.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_match",
+              "contact_email": "producer@disney.com",
+              "contact_linkedin_company": "linkedin.com/company/pixar-animation-studios",
+              "contact_title": "Senior Producer",
+              "contact_headline": "Producer at Pixar Animation Studios",
+              "expected_match": "Pixar",
+              "expected_signal": "linkedin_url"
+            },
+            {
+              "scenario": "title_rescue",
+              "contact_email": "editor@disney.com",
+              "contact_linkedin_company": "linkedin.com/company/the-walt-disney-company",
+              "contact_title": "Senior Editor, Marvel Entertainment",
+              "contact_headline": "Editorial at Disney",
+              "expected_match": "Marvel Entertainment",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "true_parent_employee",
+              "contact_email": "finance@disney.com",
+              "contact_linkedin_company": "linkedin.com/company/the-walt-disney-company",
+              "contact_title": "VP Finance, Corporate",
+              "contact_headline": "VP Finance at The Walt Disney Company",
+              "expected_match": null,
+              "expected_signal": "parent"
+            }
+          ]
+        },
+        {
+          "parent_name": "Comcast",
+          "subsidiaries": ["NBCUniversal", "NBC", "MSNBC", "Telemundo", "Universal Pictures", "DreamWorks Animation", "Sky"],
+          "shared_domain": "nbcuni.com",
+          "linkedin_url": "linkedin.com/company/comcast",
+          "region": "AMER",
+          "industry": "Media & Telecommunications",
+          "notes": "NBCUniversal employees use @nbcuni.com. Comcast corporate uses @comcast.com. Cross-pollination between entities.",
+          "test_scenarios": [
+            {
+              "scenario": "title_rescue",
+              "contact_email": "mreporter@nbcuni.com",
+              "contact_linkedin_company": "linkedin.com/company/nbcuniversal",
+              "contact_title": "Senior Correspondent - Telemundo",
+              "contact_headline": "Journalist | NBCUniversal",
+              "expected_match": "Telemundo",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "multi_role",
+              "contact_email": "creative@nbcuni.com",
+              "contact_linkedin_company": "linkedin.com/company/nbcuniversal",
+              "contact_secondary_company": "linkedin.com/company/dreamworks-animation",
+              "contact_title": "Creative Director",
+              "contact_headline": "Creative at NBCUniversal / DreamWorks",
+              "expected_match": "DreamWorks Animation",
+              "expected_signal": "multi_role"
+            }
+          ]
+        },
+        {
+          "parent_name": "Amazon",
+          "subsidiaries": ["AWS", "Prime Video", "Ring", "Whole Foods Market", "MGM Studios", "Twitch", "Audible", "Zoox", "One Medical"],
+          "shared_domain": "amazon.com",
+          "linkedin_url": "linkedin.com/company/amazon",
+          "region": "AMER",
+          "industry": "Technology & Retail",
+          "notes": "Most subsidiaries use @amazon.com. AWS has distinct LinkedIn presence but shares email domain. Whole Foods employees may use @wholefoods.com.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_match",
+              "contact_email": "cloud@amazon.com",
+              "contact_linkedin_company": "linkedin.com/company/amazon-web-services",
+              "contact_title": "Solutions Architect",
+              "contact_headline": "SA at AWS",
+              "expected_match": "AWS",
+              "expected_signal": "linkedin_url"
+            },
+            {
+              "scenario": "title_rescue",
+              "contact_email": "content@amazon.com",
+              "contact_linkedin_company": "linkedin.com/company/amazon",
+              "contact_title": "Head of Original Content - Prime Video",
+              "contact_headline": "Content at Amazon",
+              "expected_match": "Prime Video",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "headline_extraction",
+              "contact_email": "safety@amazon.com",
+              "contact_linkedin_company": "linkedin.com/company/amazon",
+              "contact_title": "VP Engineering",
+              "contact_headline": "VP Engineering at Ring | Amazon",
+              "expected_match": "Ring",
+              "expected_signal": "headline"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "linkedin_profile_mismatches",
+      "signal_tested": "linkedin_url_parent_vs_subsidiary",
+      "description": "Employees list the parent holding company on LinkedIn rather than the actual subsidiary they work for. Tests Title Rescue and Multi-Role signals.",
+      "companies": [
+        {
+          "parent_name": "WPP",
+          "subsidiaries": ["Ogilvy", "GroupM", "Wunderman Thompson", "VMLY&R", "Mindshare", "MediaCom", "Hogarth"],
+          "shared_domain": "wpp.com",
+          "linkedin_url": "linkedin.com/company/wpp",
+          "region": "AMER",
+          "industry": "Advertising & Marketing",
+          "notes": "Agency employees frequently list WPP on LinkedIn for brand recognition, even when employed by a specific agency. Subsidiaries have own domains (ogilvy.com, groupm.com) but many use @wpp.com.",
+          "test_scenarios": [
+            {
+              "scenario": "title_rescue",
+              "contact_email": "strategist@wpp.com",
+              "contact_linkedin_company": "linkedin.com/company/wpp",
+              "contact_title": "Chief Strategy Officer, Ogilvy North America",
+              "contact_headline": "CSO at WPP",
+              "expected_match": "Ogilvy",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "multi_role",
+              "contact_email": "media@wpp.com",
+              "contact_linkedin_company": "linkedin.com/company/wpp",
+              "contact_secondary_company": "linkedin.com/company/groupm",
+              "contact_title": "Media Director",
+              "contact_headline": "Media at WPP | GroupM",
+              "expected_match": "GroupM",
+              "expected_signal": "multi_role"
+            },
+            {
+              "scenario": "headline_extraction",
+              "contact_email": "creative@wpp.com",
+              "contact_linkedin_company": "linkedin.com/company/wpp",
+              "contact_title": "Executive Creative Director",
+              "contact_headline": "ECD at Wunderman Thompson | WPP Agency",
+              "expected_match": "Wunderman Thompson",
+              "expected_signal": "headline"
+            }
+          ]
+        },
+        {
+          "parent_name": "Publicis Groupe",
+          "subsidiaries": ["Leo Burnett", "Saatchi & Saatchi", "Starcom", "Zenith", "Digitas", "Publicis Sapient", "Epsilon"],
+          "shared_domain": "publicisgroupe.com",
+          "linkedin_url": "linkedin.com/company/publicis-groupe",
+          "region": "AMER",
+          "industry": "Advertising & Marketing",
+          "notes": "Similar to WPP — agency employees list Publicis Groupe for prestige. Publicis Sapient and Epsilon are tech-focused subs with distinct identities.",
+          "test_scenarios": [
+            {
+              "scenario": "title_rescue",
+              "contact_email": "planner@publicisgroupe.com",
+              "contact_linkedin_company": "linkedin.com/company/publicis-groupe",
+              "contact_title": "VP Media Planning - Starcom",
+              "contact_headline": "Media at Publicis",
+              "expected_match": "Starcom",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "headline_extraction",
+              "contact_email": "data@publicisgroupe.com",
+              "contact_linkedin_company": "linkedin.com/company/publicis-groupe",
+              "contact_title": "Director, Data Science",
+              "contact_headline": "Data Science Leader at Epsilon | Publicis Groupe",
+              "expected_match": "Epsilon",
+              "expected_signal": "headline"
+            }
+          ]
+        },
+        {
+          "parent_name": "Dentsu",
+          "subsidiaries": ["Merkle", "Dentsu Creative", "Carat", "iProspect", "dentsumcgarrybowen", "Dentsu X"],
+          "shared_domain": "dentsu.com",
+          "linkedin_url": "linkedin.com/company/dentsu",
+          "region": "AMER",
+          "industry": "Advertising & Marketing",
+          "notes": "After 2023 brand consolidation, many sub-brands merged under 'Dentsu' umbrella. Employees who worked at Merkle now list Dentsu — but Merkle still operates as a distinct entity.",
+          "test_scenarios": [
+            {
+              "scenario": "title_rescue",
+              "contact_email": "perf@dentsu.com",
+              "contact_linkedin_company": "linkedin.com/company/dentsu",
+              "contact_title": "SVP Performance Marketing - Merkle",
+              "contact_headline": "Performance at Dentsu",
+              "expected_match": "Merkle",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "multi_role",
+              "contact_email": "media@dentsu.com",
+              "contact_linkedin_company": "linkedin.com/company/dentsu",
+              "contact_secondary_company": "linkedin.com/company/cabornegroup",
+              "contact_title": "Media Buyer",
+              "contact_headline": "Carat | Dentsu",
+              "expected_match": "Carat",
+              "expected_signal": "multi_role"
+            }
+          ]
+        },
+        {
+          "parent_name": "Accenture",
+          "subsidiaries": ["Accenture Song", "Accenture Strategy", "Accenture Technology", "Avanade", "Droga5"],
+          "shared_domain": "accenture.com",
+          "linkedin_url": "linkedin.com/company/accenture",
+          "region": "AMER",
+          "industry": "Consulting & Technology",
+          "notes": "Accenture Song (formerly Accenture Interactive) is a mega-agency. Avanade is a joint venture with Microsoft. Droga5 is a creative agency. All employees typically list just 'Accenture' on LinkedIn.",
+          "test_scenarios": [
+            {
+              "scenario": "title_rescue",
+              "contact_email": "creative@accenture.com",
+              "contact_linkedin_company": "linkedin.com/company/accenture",
+              "contact_title": "Global Chief Creative Officer - Droga5",
+              "contact_headline": "Creative at Accenture",
+              "expected_match": "Droga5",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "linkedin_url_match",
+              "contact_email": "msft@accenture.com",
+              "contact_linkedin_company": "linkedin.com/company/avanade",
+              "contact_title": "Azure Solutions Architect",
+              "contact_headline": "Cloud at Avanade",
+              "expected_match": "Avanade",
+              "expected_signal": "linkedin_url"
+            }
+          ]
+        },
+        {
+          "parent_name": "Interpublic Group (IPG)",
+          "subsidiaries": ["McCann Worldgroup", "FCB", "MullenLowe", "Mediabrands", "R/GA", "Huge"],
+          "shared_domain": "interpublic.com",
+          "linkedin_url": "linkedin.com/company/interpublic-group",
+          "region": "AMER",
+          "industry": "Advertising & Marketing",
+          "notes": "IPG is the holding company. Sub-agencies have strong independent brands. Employees may list either IPG or the specific agency.",
+          "test_scenarios": [
+            {
+              "scenario": "title_rescue",
+              "contact_email": "account@interpublic.com",
+              "contact_linkedin_company": "linkedin.com/company/interpublic-group",
+              "contact_title": "Global Account Director - McCann Worldgroup",
+              "contact_headline": "Advertising at IPG",
+              "expected_match": "McCann Worldgroup",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "headline_extraction",
+              "contact_email": "design@interpublic.com",
+              "contact_linkedin_company": "linkedin.com/company/interpublic-group",
+              "contact_title": "Design Director",
+              "contact_headline": "Design Director at R/GA | IPG Company",
+              "expected_match": "R/GA",
+              "expected_signal": "headline"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "similar_name_subsidiaries",
+      "signal_tested": "title_rescue_strictness",
+      "description": "Parent and subsidiaries have similar, abbreviated, or commonly confused names. Tests that exact-substring matching doesn't false-positive.",
+      "companies": [
+        {
+          "parent_name": "JPMorgan Chase & Co.",
+          "subsidiaries": ["J.P. Morgan", "Chase", "J.P. Morgan Asset Management", "J.P. Morgan Wealth Management"],
+          "shared_domain": "jpmorgan.com",
+          "linkedin_url": "linkedin.com/company/jpmorgan",
+          "region": "AMER",
+          "industry": "Financial Services",
+          "notes": "Extreme naming confusion. 'JPMorgan' vs 'J.P. Morgan' vs 'Chase' vs 'JPMorgan Chase'. Investment bank is 'J.P. Morgan', retail is 'Chase'. Employees use @jpmorgan.com across all entities.",
+          "test_scenarios": [
+            {
+              "scenario": "abbreviation_no_false_match",
+              "description": "Title says 'Chase' — should match Chase subsidiary, NOT 'JPMorgan Chase' parent",
+              "contact_email": "banker@jpmorgan.com",
+              "contact_linkedin_company": "linkedin.com/company/jpmorgan",
+              "contact_title": "Branch Manager - Chase",
+              "contact_headline": "Retail Banking at JPMorgan Chase",
+              "expected_match": "Chase",
+              "expected_signal": "title_rescue",
+              "risk": "Could false-match to parent 'JPMorgan Chase' if substring matching isn't precise"
+            },
+            {
+              "scenario": "dot_abbreviation_match",
+              "description": "Title uses 'J.P. Morgan' with periods — mapping table has 'J.P. Morgan'",
+              "contact_email": "advisor@jpmorgan.com",
+              "contact_linkedin_company": "linkedin.com/company/jpmorgan",
+              "contact_title": "Managing Director, J.P. Morgan Asset Management",
+              "contact_headline": "Asset Management at JPMorgan",
+              "expected_match": "J.P. Morgan Asset Management",
+              "expected_signal": "title_rescue"
+            },
+            {
+              "scenario": "parent_name_overlap",
+              "description": "'JPMorgan' appears in both parent and child names — must disambiguate",
+              "contact_email": "analyst@jpmorgan.com",
+              "contact_linkedin_company": "linkedin.com/company/jpmorgan",
+              "contact_title": "Research Analyst",
+              "contact_headline": "Research at JPMorgan",
+              "expected_match": null,
+              "expected_signal": "parent",
+              "risk": "Generic 'JPMorgan' reference — cannot determine specific subsidiary"
+            }
+          ]
+        },
+        {
+          "parent_name": "Ernst & Young Global (EY)",
+          "subsidiaries": ["EY-Parthenon", "EY Americas", "EY EMEIA", "EY Asia-Pacific"],
+          "shared_domain": "ey.com",
+          "linkedin_url": "linkedin.com/company/ernstandyoung",
+          "region": "AMER",
+          "industry": "Professional Services",
+          "notes": "'Ernst & Young' vs 'EY' — same company, two names. 'EY-Parthenon' is strategy consulting arm. Regional entities are separate legal entities.",
+          "test_scenarios": [
+            {
+              "scenario": "abbreviation_no_false_match",
+              "description": "'EY' appears in parent AND subsidiary names — substring match on 'EY' would match everything",
+              "contact_email": "consultant@ey.com",
+              "contact_linkedin_company": "linkedin.com/company/ernstandyoung",
+              "contact_title": "Senior Consultant",
+              "contact_headline": "Consulting at EY",
+              "expected_match": null,
+              "expected_signal": "parent",
+              "risk": "Short abbreviation 'EY' would false-match 'EY-Parthenon' if matching isn't bounded"
+            },
+            {
+              "scenario": "title_rescue_specific",
+              "description": "Title explicitly mentions 'EY-Parthenon' — should match",
+              "contact_email": "strategy@ey.com",
+              "contact_linkedin_company": "linkedin.com/company/ernstandyoung",
+              "contact_title": "Principal, EY-Parthenon Strategy Consulting",
+              "contact_headline": "Strategy at EY",
+              "expected_match": "EY-Parthenon",
+              "expected_signal": "title_rescue"
+            }
+          ]
+        },
+        {
+          "parent_name": "PricewaterhouseCoopers (PwC)",
+          "subsidiaries": ["Strategy&", "PwC US", "PwC UK", "PwC Advisory"],
+          "shared_domain": "pwc.com",
+          "linkedin_url": "linkedin.com/company/pwc",
+          "region": "AMER",
+          "industry": "Professional Services",
+          "notes": "'PricewaterhouseCoopers' vs 'PwC' — official rebrand to PwC. 'Strategy&' (formerly Booz & Company) is a distinct subsidiary with a special character in the name.",
+          "test_scenarios": [
+            {
+              "scenario": "special_char_match",
+              "description": "'Strategy&' contains '&' — tests regex/string matching with special characters",
+              "contact_email": "consultant@pwc.com",
+              "contact_linkedin_company": "linkedin.com/company/pwc",
+              "contact_title": "Director, Strategy& North America",
+              "contact_headline": "Strategy Consulting at PwC",
+              "expected_match": "Strategy&",
+              "expected_signal": "title_rescue",
+              "risk": "Ampersand in name may break substring matching"
+            },
+            {
+              "scenario": "old_name_no_match",
+              "description": "Contact uses old name 'PricewaterhouseCoopers' — mapping table has 'PwC'",
+              "contact_email": "auditor@pwc.com",
+              "contact_linkedin_company": "linkedin.com/company/pwc",
+              "contact_title": "Senior Auditor, PricewaterhouseCoopers",
+              "contact_headline": "Audit at PwC",
+              "expected_match": null,
+              "expected_signal": "parent",
+              "risk": "Old name vs new name mismatch — mapping table must include aliases"
+            }
+          ]
+        },
+        {
+          "parent_name": "Meta Platforms",
+          "subsidiaries": ["Facebook", "Instagram", "WhatsApp", "Reality Labs", "Threads"],
+          "shared_domain": "meta.com",
+          "linkedin_url": "linkedin.com/company/meta",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "Post-rebrand confusion. 'Meta' is parent, 'Facebook' is now a product/subsidiary. Employees use @meta.com but may list 'Facebook' in title.",
+          "test_scenarios": [
+            {
+              "scenario": "product_vs_company_confusion",
+              "description": "'Facebook' in title could mean the product team OR the legacy company entity",
+              "contact_email": "pm@meta.com",
+              "contact_linkedin_company": "linkedin.com/company/meta",
+              "contact_title": "Product Manager, Facebook Marketplace",
+              "contact_headline": "PM at Meta",
+              "expected_match": "Facebook",
+              "expected_signal": "title_rescue",
+              "risk": "Is 'Facebook' a subsidiary or a product? Mapping table definition matters."
+            },
+            {
+              "scenario": "title_rescue_clean",
+              "contact_email": "vr@meta.com",
+              "contact_linkedin_company": "linkedin.com/company/meta",
+              "contact_title": "Hardware Engineer - Reality Labs",
+              "contact_headline": "VR/AR at Meta",
+              "expected_match": "Reality Labs",
+              "expected_signal": "title_rescue"
+            }
+          ]
+        },
+        {
+          "parent_name": "Berkshire Hathaway",
+          "subsidiaries": ["GEICO", "Dairy Queen", "Duracell", "Fruit of the Loom", "See's Candies", "BNSF Railway", "Precision Castparts"],
+          "shared_domain": "berkshirehathaway.com",
+          "linkedin_url": "linkedin.com/company/berkshire-hathaway",
+          "region": "AMER",
+          "industry": "Conglomerate",
+          "notes": "Subsidiaries operate extremely independently with their own domains. Unlike other conglomerates, employees rarely use the parent domain. Tests the case where domain mismatch is NORMAL.",
+          "test_scenarios": [
+            {
+              "scenario": "independent_subsidiary_own_domain",
+              "description": "GEICO employee uses @geico.com, not @berkshirehathaway.com — no mismatch to detect",
+              "contact_email": "agent@geico.com",
+              "contact_linkedin_company": "linkedin.com/company/geico",
+              "contact_title": "Claims Adjuster",
+              "contact_headline": "Insurance at GEICO",
+              "expected_match": "GEICO",
+              "expected_signal": "linkedin_url",
+              "risk": "System should NOT flag this as mismatch — subsidiary has its own domain"
+            },
+            {
+              "scenario": "parent_domain_rare_use",
+              "description": "Rare case: corporate staffer at parent entity uses @berkshirehathaway.com",
+              "contact_email": "ir@berkshirehathaway.com",
+              "contact_linkedin_company": "linkedin.com/company/berkshire-hathaway",
+              "contact_title": "Investor Relations Manager",
+              "contact_headline": "IR at Berkshire Hathaway",
+              "expected_match": null,
+              "expected_signal": "parent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "multi_division_single_domain",
+      "signal_tested": "multi_role_detection",
+      "description": "Multiple internal divisions/business units operate under one corporate domain. Tests Multi-Role signal and division-level routing.",
+      "companies": [
+        {
+          "parent_name": "Amazon",
+          "subsidiaries": ["AWS", "Prime Video", "Ring", "Whole Foods Market", "Twitch", "Audible", "Zoox"],
+          "shared_domain": "amazon.com",
+          "linkedin_url": "linkedin.com/company/amazon",
+          "region": "AMER",
+          "industry": "Technology & Retail",
+          "notes": "Largest single-domain conglomerate. AWS alone has 200+ services. Cross-divisional transfers are common.",
+          "test_scenarios": [
+            {
+              "scenario": "multi_role_cross_division",
+              "description": "Contact has roles in both Amazon corporate and AWS",
+              "contact_email": "techops@amazon.com",
+              "contact_linkedin_company": "linkedin.com/company/amazon",
+              "contact_secondary_company": "linkedin.com/company/amazon-web-services",
+              "contact_title": "Principal Solutions Architect",
+              "contact_headline": "Cloud Architecture | Amazon & AWS",
+              "expected_match": "AWS",
+              "expected_signal": "multi_role"
+            },
+            {
+              "scenario": "division_in_title_only",
+              "description": "No secondary LinkedIn role — division name only in title",
+              "contact_email": "streaming@amazon.com",
+              "contact_linkedin_company": "linkedin.com/company/amazon",
+              "contact_title": "Sr. Content Strategist - Twitch",
+              "contact_headline": "Content at Amazon",
+              "expected_match": "Twitch",
+              "expected_signal": "title_rescue"
+            }
+          ]
+        },
+        {
+          "parent_name": "Microsoft",
+          "subsidiaries": ["Azure", "LinkedIn", "GitHub", "Xbox", "Nuance", "Activision Blizzard"],
+          "shared_domain": "microsoft.com",
+          "linkedin_url": "linkedin.com/company/microsoft",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "LinkedIn and GitHub maintain separate domains. Xbox, Azure, Nuance employees typically use @microsoft.com. Post-Activision acquisition adds complexity.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_match_sub",
+              "contact_email": "dev@microsoft.com",
+              "contact_linkedin_company": "linkedin.com/company/github",
+              "contact_title": "Staff Engineer",
+              "contact_headline": "Engineering at GitHub",
+              "expected_match": "GitHub",
+              "expected_signal": "linkedin_url"
+            },
+            {
+              "scenario": "multi_role_gaming",
+              "contact_email": "gamedev@microsoft.com",
+              "contact_linkedin_company": "linkedin.com/company/microsoft",
+              "contact_secondary_company": "linkedin.com/company/activision-blizzard",
+              "contact_title": "Game Director",
+              "contact_headline": "Gaming at Microsoft | Activision Blizzard",
+              "expected_match": "Activision Blizzard",
+              "expected_signal": "multi_role"
+            },
+            {
+              "scenario": "title_rescue_division",
+              "contact_email": "cloud@microsoft.com",
+              "contact_linkedin_company": "linkedin.com/company/microsoft",
+              "contact_title": "VP Engineering - Azure DevOps",
+              "contact_headline": "Cloud at Microsoft",
+              "expected_match": "Azure",
+              "expected_signal": "title_rescue"
+            }
+          ]
+        },
+        {
+          "parent_name": "Salesforce",
+          "subsidiaries": ["MuleSoft", "Tableau", "Slack", "Heroku"],
+          "shared_domain": "salesforce.com",
+          "linkedin_url": "linkedin.com/company/salesforce",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "Slack maintains slack.com domain for some employees. Tableau and MuleSoft employees mostly use @salesforce.com post-acquisition. Heroku is being wound down.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_match_acquired",
+              "contact_email": "integrations@salesforce.com",
+              "contact_linkedin_company": "linkedin.com/company/mulesoft",
+              "contact_title": "Integration Architect",
+              "contact_headline": "APIs at MuleSoft | Salesforce",
+              "expected_match": "MuleSoft",
+              "expected_signal": "linkedin_url"
+            },
+            {
+              "scenario": "title_rescue_acquired",
+              "contact_email": "analytics@salesforce.com",
+              "contact_linkedin_company": "linkedin.com/company/salesforce",
+              "contact_title": "Product Lead - Tableau",
+              "contact_headline": "Data Viz at Salesforce",
+              "expected_match": "Tableau",
+              "expected_signal": "title_rescue"
+            }
+          ]
+        },
+        {
+          "parent_name": "Cisco",
+          "subsidiaries": ["Webex", "Meraki", "ThousandEyes", "Splunk", "AppDynamics", "Duo Security"],
+          "shared_domain": "cisco.com",
+          "linkedin_url": "linkedin.com/company/cisco",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "Aggressive acquirer. Many brands maintain separate identities. Splunk (acquired 2024) is the largest recent addition.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_match_recent_acq",
+              "contact_email": "observability@cisco.com",
+              "contact_linkedin_company": "linkedin.com/company/splunk",
+              "contact_title": "Sr. Product Manager",
+              "contact_headline": "Observability at Splunk",
+              "expected_match": "Splunk",
+              "expected_signal": "linkedin_url"
+            },
+            {
+              "scenario": "multi_role_security",
+              "contact_email": "security@cisco.com",
+              "contact_linkedin_company": "linkedin.com/company/cisco",
+              "contact_secondary_company": "linkedin.com/company/duo-security",
+              "contact_title": "Security Engineer",
+              "contact_headline": "Zero Trust at Cisco | Duo",
+              "expected_match": "Duo Security",
+              "expected_signal": "multi_role"
+            }
+          ]
+        },
+        {
+          "parent_name": "Verizon",
+          "subsidiaries": ["Verizon Business", "Verizon Consumer", "TracFone", "Visible"],
+          "shared_domain": "verizon.com",
+          "linkedin_url": "linkedin.com/company/verizon",
+          "region": "AMER",
+          "industry": "Telecommunications",
+          "notes": "Internal divisions (Business vs Consumer) plus acquired brands (TracFone, Visible). All use @verizon.com.",
+          "test_scenarios": [
+            {
+              "scenario": "title_rescue_division",
+              "contact_email": "enterprise@verizon.com",
+              "contact_linkedin_company": "linkedin.com/company/verizon",
+              "contact_title": "Account Executive - Verizon Business",
+              "contact_headline": "Enterprise at Verizon",
+              "expected_match": "Verizon Business",
+              "expected_signal": "title_rescue"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "international_subsidiaries",
+      "signal_tested": "region_based_routing",
+      "description": "US-based companies with international subsidiaries as separate legal entities. Tests Region → Type → Segment → Owner decision tree.",
+      "companies": [
+        {
+          "parent_name": "Salesforce",
+          "subsidiaries": ["Salesforce Japan", "Salesforce UK", "Salesforce Australia", "Salesforce Germany", "Salesforce India"],
+          "shared_domain": "salesforce.com",
+          "linkedin_url": "linkedin.com/company/salesforce",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "Regional entities are separate legal entities for tax/compliance. Employees use @salesforce.com globally. LinkedIn may show local entity or global parent.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_regional",
+              "description": "Contact LinkedIn shows regional entity",
+              "contact_email": "sales@salesforce.com",
+              "contact_linkedin_company": "linkedin.com/company/salesforce-japan",
+              "contact_title": "Account Executive",
+              "contact_headline": "Enterprise Sales at Salesforce Japan",
+              "expected_match": "Salesforce Japan",
+              "expected_signal": "linkedin_url",
+              "expected_region": "APAC"
+            },
+            {
+              "scenario": "title_rescue_regional",
+              "description": "LinkedIn shows global parent, title specifies region",
+              "contact_email": "marketing@salesforce.com",
+              "contact_linkedin_company": "linkedin.com/company/salesforce",
+              "contact_title": "Marketing Director - Salesforce UK",
+              "contact_headline": "Marketing at Salesforce",
+              "expected_match": "Salesforce UK",
+              "expected_signal": "title_rescue",
+              "expected_region": "EMEA"
+            }
+          ]
+        },
+        {
+          "parent_name": "Oracle",
+          "subsidiaries": ["Oracle Japan", "Oracle UK", "Oracle India", "Oracle Cloud Infrastructure", "NetSuite"],
+          "shared_domain": "oracle.com",
+          "linkedin_url": "linkedin.com/company/oracle",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "Oracle has 200+ legal entities worldwide. NetSuite operates semi-independently. Oracle Cloud Infrastructure (OCI) is a product division, not a legal entity.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_regional",
+              "contact_email": "consulting@oracle.com",
+              "contact_linkedin_company": "linkedin.com/company/oracle-japan",
+              "contact_title": "Solutions Consultant",
+              "contact_headline": "Oracle Japan",
+              "expected_match": "Oracle Japan",
+              "expected_signal": "linkedin_url",
+              "expected_region": "APAC"
+            },
+            {
+              "scenario": "acquired_brand_regional",
+              "contact_email": "erp@oracle.com",
+              "contact_linkedin_company": "linkedin.com/company/netsuite",
+              "contact_title": "VP Sales, EMEA",
+              "contact_headline": "ERP at NetSuite",
+              "expected_match": "NetSuite",
+              "expected_signal": "linkedin_url",
+              "expected_region": "EMEA"
+            }
+          ]
+        },
+        {
+          "parent_name": "SAP",
+          "subsidiaries": ["SAP America", "SAP Japan", "SAP Labs India", "SAP UK", "Concur", "Qualtrics", "Signavio"],
+          "shared_domain": "sap.com",
+          "linkedin_url": "linkedin.com/company/sap",
+          "region": "EMEA",
+          "industry": "Technology",
+          "notes": "German parent with US as largest market. SAP Labs in India/China are R&D centers. Qualtrics was re-acquired after brief IPO. Concur maintains brand identity.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_labs",
+              "contact_email": "dev@sap.com",
+              "contact_linkedin_company": "linkedin.com/company/sap-labs-india",
+              "contact_title": "Senior Developer",
+              "contact_headline": "Engineering at SAP Labs India",
+              "expected_match": "SAP Labs India",
+              "expected_signal": "linkedin_url",
+              "expected_region": "APAC"
+            },
+            {
+              "scenario": "title_rescue_acquired_brand",
+              "contact_email": "travel@sap.com",
+              "contact_linkedin_company": "linkedin.com/company/sap",
+              "contact_title": "Product Manager - Concur Travel",
+              "contact_headline": "T&E at SAP Concur",
+              "expected_match": "Concur",
+              "expected_signal": "title_rescue"
+            }
+          ]
+        },
+        {
+          "parent_name": "IBM",
+          "subsidiaries": ["IBM Japan", "IBM India", "IBM UK", "IBM Consulting", "Red Hat"],
+          "shared_domain": "ibm.com",
+          "linkedin_url": "linkedin.com/company/ibm",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "Red Hat (acquired 2019) maintains @redhat.com domain and independent LinkedIn. IBM Consulting is a major division. Regional entities are large (IBM India has 100K+ employees).",
+          "test_scenarios": [
+            {
+              "scenario": "acquired_maintains_own_domain",
+              "description": "Red Hat employee uses @redhat.com — NOT a domain mismatch",
+              "contact_email": "engineer@redhat.com",
+              "contact_linkedin_company": "linkedin.com/company/red-hat",
+              "contact_title": "Principal Engineer",
+              "contact_headline": "Open Source at Red Hat",
+              "expected_match": "Red Hat",
+              "expected_signal": "linkedin_url",
+              "risk": "System should recognize redhat.com as an IBM subsidiary domain, not flag as unrelated"
+            },
+            {
+              "scenario": "title_rescue_regional",
+              "contact_email": "consultant@ibm.com",
+              "contact_linkedin_company": "linkedin.com/company/ibm",
+              "contact_title": "Managing Consultant - IBM Consulting Japan",
+              "contact_headline": "Consulting at IBM",
+              "expected_match": "IBM Japan",
+              "expected_signal": "title_rescue",
+              "expected_region": "APAC"
+            }
+          ]
+        },
+        {
+          "parent_name": "Deloitte",
+          "subsidiaries": ["Deloitte US", "Deloitte UK", "Deloitte Consulting", "Deloitte Digital", "Monitor Deloitte", "Deloitte Japan"],
+          "shared_domain": "deloitte.com",
+          "linkedin_url": "linkedin.com/company/deloitte",
+          "region": "AMER",
+          "industry": "Professional Services",
+          "notes": "Each country entity is a separate legal firm under the Deloitte Touche Tohmatsu Limited (DTTL) umbrella. LinkedIn shows 'Deloitte' for nearly all employees regardless of country.",
+          "test_scenarios": [
+            {
+              "scenario": "linkedin_url_regional",
+              "contact_email": "auditor@deloitte.com",
+              "contact_linkedin_company": "linkedin.com/company/deloitte-japan",
+              "contact_title": "Audit Partner",
+              "contact_headline": "Audit at Deloitte Japan",
+              "expected_match": "Deloitte Japan",
+              "expected_signal": "linkedin_url",
+              "expected_region": "APAC"
+            },
+            {
+              "scenario": "title_rescue_practice",
+              "contact_email": "strategy@deloitte.com",
+              "contact_linkedin_company": "linkedin.com/company/deloitte",
+              "contact_title": "Partner - Monitor Deloitte Strategy",
+              "contact_headline": "Strategy Consulting at Deloitte",
+              "expected_match": "Monitor Deloitte",
+              "expected_signal": "title_rescue"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "recently_acquired_companies",
+      "signal_tested": "mapping_table_staleness",
+      "description": "Companies acquired in 2024-2025 transitioning to parent domain/brand. Tests whether the mapping table stays current during brand transitions.",
+      "companies": [
+        {
+          "parent_name": "Broadcom",
+          "acquired_company": "VMware",
+          "acquisition_date": "2023-11",
+          "old_domain": "vmware.com",
+          "new_domain": "broadcom.com",
+          "transition_status": "in_progress",
+          "linkedin_url_parent": "linkedin.com/company/broadcom",
+          "linkedin_url_acquired": "linkedin.com/company/vmware",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "VMware employees transitioning to @broadcom.com emails. LinkedIn profiles inconsistently updated. Some still show VMware, others Broadcom. Brand 'VMware by Broadcom' in use.",
+          "test_scenarios": [
+            {
+              "scenario": "old_linkedin_still_active",
+              "description": "Contact still has VMware LinkedIn, but email changed to @broadcom.com",
+              "contact_email": "virtualization@broadcom.com",
+              "contact_linkedin_company": "linkedin.com/company/vmware",
+              "contact_title": "Sr. Solutions Engineer",
+              "contact_headline": "Virtualization at VMware by Broadcom",
+              "expected_match": "VMware",
+              "expected_signal": "linkedin_url",
+              "risk": "Mapping table must have VMware as a Broadcom subsidiary — may not be there yet"
+            },
+            {
+              "scenario": "new_linkedin_old_email",
+              "description": "Contact updated LinkedIn to Broadcom, but email still @vmware.com (transition period)",
+              "contact_email": "cloud@vmware.com",
+              "contact_linkedin_company": "linkedin.com/company/broadcom",
+              "contact_title": "Cloud Architect",
+              "contact_headline": "Cloud at Broadcom",
+              "expected_match": null,
+              "expected_signal": "parent",
+              "risk": "Domain vmware.com now belongs to Broadcom — domain mismatch detection must know this"
+            }
+          ]
+        },
+        {
+          "parent_name": "Cisco",
+          "acquired_company": "Splunk",
+          "acquisition_date": "2024-03",
+          "old_domain": "splunk.com",
+          "new_domain": "cisco.com",
+          "transition_status": "in_progress",
+          "linkedin_url_parent": "linkedin.com/company/cisco",
+          "linkedin_url_acquired": "linkedin.com/company/splunk",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "Splunk brand maintained under Cisco. Email transition ongoing. Some employees use @splunk.com, others @cisco.com.",
+          "test_scenarios": [
+            {
+              "scenario": "mixed_domain_period",
+              "contact_email": "siem@splunk.com",
+              "contact_linkedin_company": "linkedin.com/company/splunk",
+              "contact_title": "Security Engineer",
+              "contact_headline": "SIEM at Splunk | A Cisco Company",
+              "expected_match": "Splunk",
+              "expected_signal": "linkedin_url",
+              "risk": "splunk.com domain not yet in parent domain list — may miss the Cisco relationship"
+            },
+            {
+              "scenario": "transitioned_employee",
+              "contact_email": "observability@cisco.com",
+              "contact_linkedin_company": "linkedin.com/company/splunk",
+              "contact_title": "Product Manager - Splunk Observability",
+              "contact_headline": "Observability at Cisco/Splunk",
+              "expected_match": "Splunk",
+              "expected_signal": "linkedin_url"
+            }
+          ]
+        },
+        {
+          "parent_name": "Hewlett Packard Enterprise",
+          "acquired_company": "Juniper Networks",
+          "acquisition_date": "2025-01",
+          "old_domain": "juniper.net",
+          "new_domain": "hpe.com",
+          "transition_status": "early",
+          "linkedin_url_parent": "linkedin.com/company/hewlett-packard-enterprise",
+          "linkedin_url_acquired": "linkedin.com/company/juniper-networks",
+          "region": "AMER",
+          "industry": "Technology",
+          "notes": "Very recent acquisition. Juniper employees still fully on @juniper.net. LinkedIn profiles haven't changed. Brand integration barely started.",
+          "test_scenarios": [
+            {
+              "scenario": "no_transition_yet",
+              "description": "Employee still fully on old domain and LinkedIn — mapping table probably doesn't have this yet",
+              "contact_email": "network@juniper.net",
+              "contact_linkedin_company": "linkedin.com/company/juniper-networks",
+              "contact_title": "Network Architect",
+              "contact_headline": "Networking at Juniper Networks",
+              "expected_match": "Juniper Networks",
+              "expected_signal": "linkedin_url",
+              "risk": "If mapping table doesn't have juniper.net as HPE domain, these contacts get misrouted entirely"
+            }
+          ]
+        },
+        {
+          "parent_name": "Capital One",
+          "acquired_company": "Discover Financial Services",
+          "acquisition_date": "2025-02",
+          "old_domain": "discover.com",
+          "new_domain": "capitalone.com",
+          "transition_status": "early",
+          "linkedin_url_parent": "linkedin.com/company/capital-one",
+          "linkedin_url_acquired": "linkedin.com/company/discover-financial-services",
+          "region": "AMER",
+          "industry": "Financial Services",
+          "notes": "Massive financial services merger. Both brands will likely coexist for years. Two entirely separate CRM contact databases being merged.",
+          "test_scenarios": [
+            {
+              "scenario": "separate_crm_merge",
+              "contact_email": "cards@discover.com",
+              "contact_linkedin_company": "linkedin.com/company/discover-financial-services",
+              "contact_title": "VP Card Products",
+              "contact_headline": "Card Products at Discover",
+              "expected_match": "Discover Financial Services",
+              "expected_signal": "linkedin_url",
+              "risk": "Discover contacts flowing into Capital One's HubSpot — need mapping table entry"
+            }
+          ]
+        },
+        {
+          "parent_name": "Alphabet",
+          "acquired_company": "Wiz",
+          "acquisition_date": "2025-03",
+          "old_domain": "wiz.io",
+          "new_domain": "google.com",
+          "transition_status": "pending",
+          "linkedin_url_parent": "linkedin.com/company/alphabet",
+          "linkedin_url_acquired": "linkedin.com/company/wiz-inc",
+          "region": "AMER",
+          "industry": "Technology / Cybersecurity",
+          "notes": "Announced 2025, Google's largest acquisition. Wiz employees will likely get @google.com emails eventually. Until then, @wiz.io domain is unlinked in mapping tables.",
+          "test_scenarios": [
+            {
+              "scenario": "pre_transition_unknown_subsidiary",
+              "contact_email": "cloudsec@wiz.io",
+              "contact_linkedin_company": "linkedin.com/company/wiz-inc",
+              "contact_title": "Cloud Security Engineer",
+              "contact_headline": "Cloud Security at Wiz",
+              "expected_match": null,
+              "expected_signal": "manual_review",
+              "risk": "wiz.io not yet in any parent's domain list — contact will be orphaned until mapping table updated"
+            },
+            {
+              "scenario": "post_transition_domain_change",
+              "description": "After transition: Wiz employee now on @google.com, LinkedIn still shows Wiz",
+              "contact_email": "cloudsec@google.com",
+              "contact_linkedin_company": "linkedin.com/company/wiz-inc",
+              "contact_title": "Cloud Security Engineer",
+              "contact_headline": "Cloud Security at Wiz | Google Cloud",
+              "expected_match": "Wiz",
+              "expected_signal": "linkedin_url",
+              "risk": "Mapping table must be updated to include Wiz as Google/Alphabet subsidiary with wiz-inc LinkedIn"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_companies": 29,
+    "total_scenarios": 58,
+    "signals_covered": {
+      "linkedin_url": 18,
+      "title_rescue": 21,
+      "multi_role": 6,
+      "headline": 5,
+      "parent": 6,
+      "manual_review": 2
+    },
+    "risk_scenarios": 14,
+    "categories_by_difficulty": [
+      "recently_acquired_companies (hardest — mapping table freshness)",
+      "similar_name_subsidiaries (tricky — substring matching edge cases)",
+      "linkedin_profile_mismatches (common — Title Rescue must be reliable)",
+      "international_subsidiaries (moderate — region routing logic)",
+      "multi_division_single_domain (moderate — Multi-Role signal)",
+      "shared_domain_conglomerates (baseline — core use case)"
+    ]
+  }
+}
