@@ -6,6 +6,13 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { fetchBatchStatus, fetchJob } from "@/lib/api";
 import { SpreadsheetView } from "@/components/batch/spreadsheet/spreadsheet-view";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { EmailPreviewPanel } from "@/components/batch/email-preview-panel";
 import type { BatchStatus, Job } from "@/lib/types";
 import { Loader2, AlertCircle, FileSpreadsheet } from "lucide-react";
 
@@ -18,6 +25,7 @@ function BatchResultsInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [batchDone, setBatchDone] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchFullJobs = useCallback(async (bs: BatchStatus) => {
@@ -173,8 +181,27 @@ function BatchResultsInner() {
           jobs={jobs}
           originalRows={[]}
           csvHeaders={[]}
+          onRowClick={setSelectedJob}
         />
       )}
+
+      {/* Side panel for result preview */}
+      <Sheet
+        open={!!selectedJob}
+        onOpenChange={(open) => {
+          if (!open) setSelectedJob(null);
+        }}
+      >
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-lg overflow-y-auto"
+        >
+          <SheetHeader>
+            <SheetTitle>Result Preview</SheetTitle>
+          </SheetHeader>
+          {selectedJob && <EmailPreviewPanel job={selectedJob} />}
+        </SheetContent>
+      </Sheet>
 
       {/* Still processing, no jobs yet */}
       {!batchDone && jobs.length === 0 && batchStatus && (

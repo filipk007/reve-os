@@ -16,12 +16,14 @@ export function SpreadsheetView({
   csvHeaders,
   onRetrySelected,
   onPushSelected,
+  onRowClick,
 }: {
   jobs: Job[];
   originalRows: Record<string, string>[];
   csvHeaders: string[];
   onRetrySelected?: (jobIds: string[]) => void;
   onPushSelected?: (jobIds: string[]) => void;
+  onRowClick?: (job: Job) => void;
 }) {
   const {
     table,
@@ -157,6 +159,7 @@ export function SpreadsheetView({
                   <SpreadsheetRowComponent
                     key={row.id}
                     row={row}
+                    onRowClick={onRowClick}
                   />
                 );
               })
