@@ -16,9 +16,9 @@ Requirements for Phase 1 (demo-ready). Each maps to roadmap phases.
 
 ### Enrichment
 
-- [ ] **ENRICH-01**: DeepLine integration in `research_fetcher.py` following existing provider pattern
-- [ ] **ENRICH-02**: Waterfall email discovery via DeepLine (multi-provider fallback)
-- [ ] **ENRICH-03**: Firmographic enrichment via DeepLine (company size, revenue, tech stack)
+- [x] **ENRICH-01**: DeepLine integration in `research_fetcher.py` following existing provider pattern
+- [x] **ENRICH-02**: Waterfall email discovery via DeepLine (multi-provider fallback)
+- [x] **ENRICH-03**: Firmographic enrichment via DeepLine (company size, revenue, tech stack)
 
 ### Dashboard
 
@@ -80,9 +80,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SKILL-02 | Phase 1: Classify Skill | Complete |
 | SKILL-03 | Phase 1: Classify Skill | Complete |
 | SKILL-04 | Phase 1: Classify Skill | Complete |
-| ENRICH-01 | Phase 2: DeepLine Enrichment | Pending |
-| ENRICH-02 | Phase 2: DeepLine Enrichment | Pending |
-| ENRICH-03 | Phase 2: DeepLine Enrichment | Pending |
+| ENRICH-01 | Phase 2: DeepLine Enrichment | Complete |
+| ENRICH-02 | Phase 2: DeepLine Enrichment | Complete |
+| ENRICH-03 | Phase 2: DeepLine Enrichment | Complete |
 | DASH-01 | Phase 3: Batch Results Dashboard | Pending |
 | DASH-02 | Phase 3: Batch Results Dashboard | Pending |
 | DASH-03 | Phase 3: Batch Results Dashboard | Pending |
