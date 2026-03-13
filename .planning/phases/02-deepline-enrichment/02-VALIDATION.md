@@ -19,7 +19,7 @@ created: 2026-03-13
 |----------|-------|
 | **Framework** | pytest 7.x |
 | **Config file** | tests/ (existing) |
-| **Quick run command** | `python -m pytest tests/test_deepline_provider.py -v` |
+| **Quick run command** | `python -m pytest tests/test_research_fetcher.py -k "deepline" -v` |
 | **Full suite command** | `python -m pytest tests/ --tb=short` |
 | **Estimated runtime** | ~15 seconds |
 
@@ -27,7 +27,7 @@ created: 2026-03-13
 
 ## Sampling Rate
 
-- **After every task commit:** Run `python -m pytest tests/test_deepline_provider.py -v`
+- **After every task commit:** Run `python -m pytest tests/test_research_fetcher.py -k "deepline" -v`
 - **After every plan wave:** Run `python -m pytest tests/ --tb=short`
 - **Before `/gsd:verify-work`:** Full suite must be green
 - **Max feedback latency:** 15 seconds
@@ -38,9 +38,9 @@ created: 2026-03-13
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | ENRICH-01 | unit | `pytest tests/test_deepline_provider.py -v` | ❌ W0 | ⬜ pending |
-| 02-01-02 | 01 | 1 | ENRICH-02 | unit | `pytest tests/test_deepline_provider.py -v` | ❌ W0 | ⬜ pending |
-| 02-01-03 | 01 | 1 | ENRICH-03 | unit | `pytest tests/test_deepline_provider.py -v` | ❌ W0 | ⬜ pending |
+| 02-01-01 | 01 | 1 | ENRICH-01 | unit | `pytest tests/test_research_fetcher.py -k "deepline" -v` | ❌ W0 | ⬜ pending |
+| 02-01-02 | 01 | 1 | ENRICH-02 | unit | `pytest tests/test_research_fetcher.py -k "deepline" -v` | ❌ W0 | ⬜ pending |
+| 02-01-03 | 01 | 1 | ENRICH-03 | unit | `pytest tests/test_research_fetcher.py -k "deepline" -v` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -48,7 +48,7 @@ created: 2026-03-13
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_deepline_provider.py` — stubs for ENRICH-01, ENRICH-02, ENRICH-03
+- [ ] `tests/test_research_fetcher.py -k "deepline"` — stubs for ENRICH-01, ENRICH-02, ENRICH-03
 - [ ] `tests/conftest.py` — shared fixtures (if needed)
 
 *Existing pytest infrastructure covers framework requirements.*
