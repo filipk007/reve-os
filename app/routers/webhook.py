@@ -8,7 +8,13 @@ from app.core.claude_executor import SubscriptionLimitError
 from app.core.context_assembler import build_agent_prompts, build_prompt
 from app.core.model_router import resolve_model
 from app.core.pipeline_runner import run_skill_chain
-from app.core.research_fetcher import fetch_company_intel, fetch_company_profile, fetch_competitor_intel
+from app.core.research_fetcher import (
+    fetch_company_intel,
+    fetch_company_profile,
+    fetch_competitor_intel,
+    fetch_deepline_company,
+    fetch_deepline_email,
+)
 from app.core.skill_loader import load_context_files, load_skill, load_skill_config
 from app.core.token_estimator import estimate_cost, estimate_tokens
 from app.models.requests import WebhookRequest
@@ -36,10 +42,17 @@ async def _maybe_fetch_research(skill: str, data: dict) -> None:
                 settings.sumble_base_url, settings.sumble_timeout,
             )
             ctx.update(profile)
+        if domain and settings.deepline_api_key:
+            deepline_company = await fetch_deepline_company(
+                domain, settings.deepline_api_key,
+                settings.deepline_base_url, settings.deepline_timeout,
+            )
+            ctx.update(deepline_company)
         if ctx:
             data["research_context"] = ctx
 
     elif skill == "people-research":
+        ctx = {}
         domain = data.get("company_domain", "")
         if domain and settings.sumble_api_key:
             profile = await fetch_company_profile(
@@ -47,7 +60,18 @@ async def _maybe_fetch_research(skill: str, data: dict) -> None:
                 settings.sumble_base_url, settings.sumble_timeout,
             )
             if profile:
-                data["research_context"] = profile
+                ctx.update(profile)
+        first_name = data.get("first_name", "")
+        last_name = data.get("last_name", "")
+        if first_name and last_name and domain and settings.deepline_api_key:
+            email_result = await fetch_deepline_email(
+                first_name, last_name, domain,
+                settings.deepline_api_key,
+                settings.deepline_base_url, settings.deepline_timeout,
+            )
+            ctx.update(email_result)
+        if ctx:
+            data["research_context"] = ctx
 
     elif skill == "competitor-research":
         competitor_domain = data.get("competitor_domain", "")

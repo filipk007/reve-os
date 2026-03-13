@@ -39,6 +39,16 @@ class Settings(BaseSettings):
     sumble_base_url: str = "https://api.sumble.com/v3"
     sumble_timeout: int = 30
 
+    # Findymail contact enrichment
+    findymail_api_key: str = ""
+    findymail_base_url: str = "https://app.findymail.com"
+    findymail_timeout: int = 30
+
+    # DeepLine enrichment (email waterfall + firmographic)
+    deepline_api_key: str = ""
+    deepline_base_url: str = "https://code.deepline.com"
+    deepline_timeout: int = 60
+
     # Retry worker
     retry_max_attempts: int = 5
     retry_check_interval: int = 10

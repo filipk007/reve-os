@@ -2,7 +2,8 @@
 
 Called directly from webhook/job_queue when a research skill is invoked.
 Uses Parallel.ai for web search and content extraction,
-Sumble for structured company/people enrichment.
+Sumble for structured company/people enrichment,
+DeepLine for email waterfall and firmographic enrichment.
 """
 
 import asyncio
@@ -214,3 +215,134 @@ async def fetch_competitor_intel(competitor_domain: str, parallel_key: str) -> d
         logger.warning("[research] fetch_competitor_intel failed for %s: %s", competitor_domain, e)
 
     return {"positioning": positioning, "differentiators": differentiators}
+
+
+# ---------------------------------------------------------------------------
+# DeepLine enrichment (email waterfall + firmographic)
+# ---------------------------------------------------------------------------
+
+
+async def _deepline_execute(
+    operation: str,
+    payload: dict,
+    deepline_key: str,
+    deepline_url: str = "https://code.deepline.com",
+    timeout: int = 60,
+) -> dict:
+    """Execute a DeepLine operation via HTTP API.
+
+    Single endpoint: POST /api/v2/integrations/execute
+    """
+    async with httpx.AsyncClient(
+        base_url=deepline_url.rstrip("/"),
+        headers={
+            "Authorization": f"Bearer {deepline_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "clay-webhook-os/3.0",
+        },
+        timeout=timeout,
+    ) as client:
+        resp = await client.post(
+            "/api/v2/integrations/execute",
+            json={
+                "provider": "deepline_native",
+                "operation": operation,
+                "payload": payload,
+            },
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+
+async def fetch_deepline_email(
+    first_name: str,
+    last_name: str,
+    domain: str,
+    deepline_key: str,
+    deepline_url: str = "https://code.deepline.com",
+    deepline_timeout: int = 60,
+) -> dict:
+    """DeepLine email waterfall: leadmagic -> dropleads -> hunter -> native -> PDL.
+
+    Returns {"email": "...", "email_status": "...", "provider": "..."}.
+    """
+    email = ""
+    email_status = ""
+    provider = ""
+
+    try:
+        result = await _deepline_execute(
+            operation="cost_aware_first_name_and_domain_to_email_waterfall",
+            payload={
+                "first_name": first_name,
+                "last_name": last_name,
+                "domain": domain,
+            },
+            deepline_key=deepline_key,
+            deepline_url=deepline_url,
+            timeout=deepline_timeout,
+        )
+        data = result.get("data", {})
+        # Extract email — providers return it at different paths
+        email = data.get("email", "")
+        if not email:
+            emails_list = data.get("emails", [])
+            if isinstance(emails_list, list) and emails_list:
+                first_entry = emails_list[0]
+                email = first_entry.get("address", "") if isinstance(first_entry, dict) else str(first_entry)
+        email_status = data.get("email_status", data.get("status", ""))
+        provider = result.get("meta", {}).get("provider", "deepline")
+
+    except Exception as e:
+        logger.warning("[deepline] Email waterfall failed for %s@%s: %s", first_name, domain, e)
+
+    return {"email": email, "email_status": email_status, "provider": provider}
+
+
+async def fetch_deepline_company(
+    domain: str,
+    deepline_key: str,
+    deepline_url: str = "https://code.deepline.com",
+    deepline_timeout: int = 30,
+) -> dict:
+    """DeepLine company enrichment: firmographic data (size, revenue, tech stack).
+
+    Returns {"company_size": "...", "revenue_range": "...", "tech_stack": [...], "industry": "..."}.
+    """
+    company_size = ""
+    revenue_range = ""
+    tech_stack: list = []
+    industry = ""
+
+    try:
+        result = await _deepline_execute(
+            operation="deepline_native_enrich_company",
+            payload={"domain": domain},
+            deepline_key=deepline_key,
+            deepline_url=deepline_url,
+            timeout=deepline_timeout,
+        )
+        data = result.get("data", {})
+        # Company data may be nested under output.company or flat in data
+        company = data.get("output", {}).get("company", data)
+
+        company_size = str(company.get("employee_count", company.get("headcount", "")))
+        revenue_range = company.get("revenue_range", company.get("revenue", ""))
+        industry = company.get("industry", "")
+
+        raw_tech = company.get("technologies", company.get("tech_stack", []))
+        if isinstance(raw_tech, list):
+            tech_stack = [
+                t.get("name", str(t)) if isinstance(t, dict) else str(t)
+                for t in raw_tech
+            ]
+
+    except Exception as e:
+        logger.warning("[deepline] Company enrichment failed for %s: %s", domain, e)
+
+    return {
+        "company_size": company_size,
+        "revenue_range": revenue_range,
+        "tech_stack": tech_stack,
+        "industry": industry,
+    }
