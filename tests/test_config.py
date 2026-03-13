@@ -258,6 +258,25 @@ class TestDerivedPathTypes:
 # ---------------------------------------------------------------------------
 
 
+class TestConfigDeepline:
+    def test_deepline_settings_exist(self):
+        s = Settings(_env_file=None)
+        assert isinstance(s.deepline_api_key, str)
+        assert isinstance(s.deepline_base_url, str)
+        assert isinstance(s.deepline_timeout, int)
+
+    def test_deepline_defaults(self):
+        s = Settings(_env_file=None)
+        assert s.deepline_api_key == ""
+        assert s.deepline_base_url == "https://code.deepline.com"
+        assert s.deepline_timeout == 60
+
+    def test_deepline_env_override(self):
+        with patch.dict("os.environ", {"DEEPLINE_API_KEY": "test-key"}):
+            s = Settings()
+            assert s.deepline_api_key == "test-key"
+
+
 class TestSettingsSingleton:
     def test_module_settings_is_instance(self):
         from app.config import settings

@@ -1,5 +1,6 @@
 """Tests for app.core.research_fetcher — thin async research functions."""
 
+import httpx
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -239,6 +240,235 @@ class TestFetchCompetitorIntel:
         result = await fetch_competitor_intel("comp.com", "key")
         assert result["positioning"] == ""
         assert result["differentiators"] == ""
+
+
+class TestFetchDeeplineEmail:
+    @pytest.mark.asyncio
+    async def test_returns_email_on_success(self):
+        from app.core.research_fetcher import fetch_deepline_email
+
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = {
+            "data": {"email": "jane@acme.com", "email_status": "valid"},
+            "meta": {"provider": "dropleads"},
+        }
+        resp.raise_for_status = MagicMock()
+
+        with patch("app.core.research_fetcher.httpx.AsyncClient") as mock_cls:
+            client = AsyncMock()
+            client.post = AsyncMock(return_value=resp)
+            mock_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await fetch_deepline_email("Jane", "Doe", "acme.com", "key")
+
+        assert result["email"] == "jane@acme.com"
+        assert result["email_status"] == "valid"
+        assert result["provider"] == "dropleads"
+
+    @pytest.mark.asyncio
+    async def test_returns_empty_on_network_failure(self):
+        from app.core.research_fetcher import fetch_deepline_email
+
+        with patch("app.core.research_fetcher.httpx.AsyncClient") as mock_cls:
+            client = AsyncMock()
+            client.post = AsyncMock(side_effect=Exception("network error"))
+            mock_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await fetch_deepline_email("Jane", "Doe", "acme.com", "key")
+
+        assert result["email"] == ""
+        assert result["email_status"] == ""
+        assert result["provider"] == ""
+
+    @pytest.mark.asyncio
+    async def test_returns_empty_on_http_error(self):
+        from app.core.research_fetcher import fetch_deepline_email
+
+        resp = MagicMock()
+        resp.raise_for_status = MagicMock(side_effect=httpx.HTTPStatusError(
+            "402", request=MagicMock(), response=MagicMock(),
+        ))
+
+        with patch("app.core.research_fetcher.httpx.AsyncClient") as mock_cls:
+            client = AsyncMock()
+            client.post = AsyncMock(return_value=resp)
+            mock_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await fetch_deepline_email("Jane", "Doe", "acme.com", "key")
+
+        assert result["email"] == ""
+        assert result["email_status"] == ""
+        assert result["provider"] == ""
+
+    @pytest.mark.asyncio
+    async def test_extracts_email_from_emails_array(self):
+        from app.core.research_fetcher import fetch_deepline_email
+
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = {
+            "data": {"emails": [{"address": "alt@acme.com"}]},
+            "meta": {"provider": "hunter"},
+        }
+        resp.raise_for_status = MagicMock()
+
+        with patch("app.core.research_fetcher.httpx.AsyncClient") as mock_cls:
+            client = AsyncMock()
+            client.post = AsyncMock(return_value=resp)
+            mock_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await fetch_deepline_email("Jane", "Doe", "acme.com", "key")
+
+        assert result["email"] == "alt@acme.com"
+
+    @pytest.mark.asyncio
+    async def test_sends_correct_payload(self):
+        from app.core.research_fetcher import fetch_deepline_email
+
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = {
+            "data": {"email": "j@a.com", "email_status": "valid"},
+            "meta": {"provider": "native"},
+        }
+        resp.raise_for_status = MagicMock()
+
+        with patch("app.core.research_fetcher.httpx.AsyncClient") as mock_cls:
+            client = AsyncMock()
+            client.post = AsyncMock(return_value=resp)
+            mock_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            await fetch_deepline_email("Jane", "Doe", "acme.com", "key")
+
+        call_args = client.post.call_args
+        assert call_args[0][0] == "/api/v2/integrations/execute"
+        payload = call_args[1]["json"]
+        assert payload["provider"] == "deepline_native"
+        assert payload["operation"] == "cost_aware_first_name_and_domain_to_email_waterfall"
+        assert payload["payload"] == {"first_name": "Jane", "last_name": "Doe", "domain": "acme.com"}
+
+
+class TestFetchDeeplineCompany:
+    @pytest.mark.asyncio
+    async def test_returns_firmographic_on_success(self):
+        from app.core.research_fetcher import fetch_deepline_company
+
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = {
+            "data": {
+                "output": {
+                    "company": {
+                        "employee_count": "500",
+                        "revenue_range": "$10M-$50M",
+                        "technologies": [{"name": "Python"}, {"name": "React"}],
+                        "industry": "SaaS",
+                    }
+                }
+            },
+            "meta": {},
+        }
+        resp.raise_for_status = MagicMock()
+
+        with patch("app.core.research_fetcher.httpx.AsyncClient") as mock_cls:
+            client = AsyncMock()
+            client.post = AsyncMock(return_value=resp)
+            mock_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await fetch_deepline_company("acme.com", "key")
+
+        assert result["company_size"] == "500"
+        assert result["revenue_range"] == "$10M-$50M"
+        assert result["tech_stack"] == ["Python", "React"]
+        assert result["industry"] == "SaaS"
+
+    @pytest.mark.asyncio
+    async def test_returns_empty_on_failure(self):
+        from app.core.research_fetcher import fetch_deepline_company
+
+        with patch("app.core.research_fetcher.httpx.AsyncClient") as mock_cls:
+            client = AsyncMock()
+            client.post = AsyncMock(side_effect=Exception("timeout"))
+            mock_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await fetch_deepline_company("acme.com", "key")
+
+        assert result["company_size"] == ""
+        assert result["revenue_range"] == ""
+        assert result["tech_stack"] == []
+        assert result["industry"] == ""
+
+    @pytest.mark.asyncio
+    async def test_handles_nested_output_path(self):
+        from app.core.research_fetcher import fetch_deepline_company
+
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = {
+            "data": {
+                "output": {
+                    "company": {
+                        "headcount": "200",
+                        "revenue": "$5M-$10M",
+                        "tech_stack": ["Go", "Kubernetes"],
+                        "industry": "DevTools",
+                    }
+                }
+            },
+            "meta": {},
+        }
+        resp.raise_for_status = MagicMock()
+
+        with patch("app.core.research_fetcher.httpx.AsyncClient") as mock_cls:
+            client = AsyncMock()
+            client.post = AsyncMock(return_value=resp)
+            mock_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await fetch_deepline_company("acme.com", "key")
+
+        assert result["company_size"] == "200"
+        assert result["revenue_range"] == "$5M-$10M"
+        assert result["tech_stack"] == ["Go", "Kubernetes"]
+        assert result["industry"] == "DevTools"
+
+    @pytest.mark.asyncio
+    async def test_handles_flat_data_path(self):
+        from app.core.research_fetcher import fetch_deepline_company
+
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = {
+            "data": {
+                "employee_count": "1000",
+                "revenue_range": "$50M-$100M",
+                "technologies": ["Java", "Spring"],
+                "industry": "FinTech",
+            },
+            "meta": {},
+        }
+        resp.raise_for_status = MagicMock()
+
+        with patch("app.core.research_fetcher.httpx.AsyncClient") as mock_cls:
+            client = AsyncMock()
+            client.post = AsyncMock(return_value=resp)
+            mock_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+            mock_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await fetch_deepline_company("acme.com", "key")
+
+        assert result["company_size"] == "1000"
+        assert result["revenue_range"] == "$50M-$100M"
+        assert result["tech_stack"] == ["Java", "Spring"]
+        assert result["industry"] == "FinTech"
 
 
 class TestFormatHelpers:
