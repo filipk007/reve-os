@@ -22,11 +22,10 @@ Transform CW-OS from an internal tool into a demo-ready productized GTM platform
   2. Sending a batch of rows with company descriptions through `classify` returns standardized industry verticals for each row
   3. Every classify response includes the original value, normalized value, and a per-field confidence score (0.0-1.0) in valid JSON
   4. The classify skill runs on haiku model tier and costs under $0.01 per row
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md -- TDD: classify skill tests + implementation
 
 ### Phase 2: DeepLine Enrichment
 **Goal**: Users can enrich company and contact records with email addresses and firmographic data through a single API that waterfalls across multiple providers
@@ -76,7 +75,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Classify Skill | 0/? | Not started | - |
+| 1. Classify Skill | 0/1 | Not started | - |
 | 2. DeepLine Enrichment | 0/? | Not started | - |
 | 3. Batch Results Dashboard | 0/? | Not started | - |
 | 4. Demo Flow | 0/? | Not started | - |
