@@ -46,6 +46,9 @@ export default function FunctionsPage() {
   const [builderOpen, setBuilderOpen] = useState(false);
   const [draggedFunc, setDraggedFunc] = useState<string | null>(null);
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+  const newFolderInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -139,15 +142,21 @@ export default function FunctionsPage() {
   };
 
   const handleCreateFolder = async () => {
-    const name = prompt("Folder name:");
-    if (!name?.trim()) return;
+    if (!newFolderName.trim()) return;
     try {
-      await createFolder({ name: name.trim() });
-      toast.success(`Folder "${name}" created`);
+      await createFolder({ name: newFolderName.trim() });
+      toast.success(`Folder "${newFolderName.trim()}" created`);
+      setNewFolderName("");
+      setShowNewFolderInput(false);
       load();
     } catch {
       toast.error("Failed to create folder");
     }
+  };
+
+  const handleToggleNewFolder = () => {
+    setShowNewFolderInput(true);
+    setTimeout(() => newFolderInputRef.current?.focus(), 50);
   };
 
   const handleDeleteFolder = async (name: string) => {
@@ -175,15 +184,37 @@ export default function FunctionsPage() {
               className="pl-9 bg-clay-800 border-clay-600 text-clay-100 placeholder:text-clay-400"
             />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCreateFolder}
-            className="border-clay-600 text-clay-200 hover:bg-clay-700"
-          >
-            <Folder className="h-4 w-4 mr-1.5" />
-            New Folder
-          </Button>
+          {showNewFolderInput ? (
+            <div className="flex items-center gap-1.5">
+              <Input
+                ref={newFolderInputRef}
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreateFolder();
+                  if (e.key === "Escape") { setShowNewFolderInput(false); setNewFolderName(""); }
+                }}
+                placeholder="Folder name..."
+                className="h-8 w-40 bg-clay-800 border-clay-600 text-clay-100 text-xs"
+              />
+              <Button size="sm" onClick={handleCreateFolder} disabled={!newFolderName.trim()} className="h-8 bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light text-xs">
+                Create
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { setShowNewFolderInput(false); setNewFolderName(""); }} className="h-8 text-clay-400 text-xs">
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToggleNewFolder}
+              className="border-clay-600 text-clay-200 hover:bg-clay-700"
+            >
+              <Folder className="h-4 w-4 mr-1.5" />
+              New Folder
+            </Button>
+          )}
           <Button
             size="sm"
             onClick={handleCreateFunction}
