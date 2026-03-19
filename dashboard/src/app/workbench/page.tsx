@@ -59,6 +59,7 @@ function WorkbenchPage() {
               onFileUpload={wb.handleFileUpload}
               onDrop={wb.handleDrop}
               onClear={wb.resetWorkbench}
+              selectedFunction={wb.selectedFunction}
             />
 
             {wb.csvData && (
