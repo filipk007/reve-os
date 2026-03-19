@@ -220,17 +220,18 @@ async def generate_clay_config(request: Request, func_id: str):
 
     api_url = "https://clay.nomynoms.com"
 
+    webhook_url = f"{api_url}/webhook/functions/{func.id}"
+
     config = {
         "function": func.id,
         "function_name": func.name,
-        "webhook_url": f"{api_url}/webhook",
+        "webhook_url": webhook_url,
         "method": "POST",
         "headers": {
             "Content-Type": "application/json",
             "x-api-key": "{{Your API Key}}",
         },
         "body_template": {
-            "function": func.id,
             "data": {
                 inp.name: f"{{{{{inp.name}}}}}" for inp in func.inputs
             },
@@ -242,7 +243,7 @@ async def generate_clay_config(request: Request, func_id: str):
         "setup_instructions": [
             "1. In Clay, create a new HTTP API column",
             "2. Set Method to POST",
-            f"3. Set URL to: {api_url}/webhook",
+            f"3. Set URL to: {webhook_url}",
             "4. Set Headers: Content-Type: application/json, x-api-key: (your key)",
             "5. Set Body to the body_template above, replacing {{Column Name}} with your Clay column references",
             f"6. Map output columns: {', '.join(o.key for o in func.outputs)}",

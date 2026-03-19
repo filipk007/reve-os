@@ -17,7 +17,7 @@ from app.core.research_fetcher import (
 )
 from app.core.skill_loader import load_context_files, load_skill, load_skill_config
 from app.core.token_estimator import estimate_cost, estimate_tokens
-from app.models.requests import WebhookRequest
+from app.models.requests import FunctionWebhookRequest, WebhookRequest
 from app.models.usage import UsageEntry
 
 router = APIRouter()
@@ -344,6 +344,30 @@ async def webhook(body: WebhookRequest, request: Request):
             "cost_est_usd": cost_usd,
         },
     }
+
+
+@router.post("/webhook/functions/{function_id}")
+async def webhook_function(function_id: str, body: FunctionWebhookRequest, request: Request):
+    """Dedicated per-function webhook — URL carries the function ID, no need for it in the body."""
+    sub_monitor = getattr(request.app.state, "subscription_monitor", None)
+    if sub_monitor and sub_monitor.is_paused:
+        return JSONResponse(
+            status_code=503,
+            content={"error": True, "error_message": "Service temporarily paused due to subscription limits", "retry_after": 120},
+        )
+
+    full_body = WebhookRequest(
+        function=function_id,
+        data=body.data,
+        instructions=body.instructions,
+        model=body.model,
+        output_format=body.output_format,
+        callback_url=body.callback_url,
+        row_id=body.row_id,
+        max_retries=body.max_retries,
+        priority=body.priority,
+    )
+    return await _run_function(full_body, request)
 
 
 async def _run_function(body: WebhookRequest, request: Request) -> dict:

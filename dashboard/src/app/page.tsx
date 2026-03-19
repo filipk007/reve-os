@@ -106,11 +106,10 @@ export default function FunctionsPage() {
 
   const handleCopyClayConfig = (func: FunctionDefinition) => {
     const config = {
-      url: `{{API_URL}}/webhook`,
+      url: `{{API_URL}}/webhook/functions/${func.id}`,
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": "{{API_KEY}}" },
       body: {
-        function: func.id,
         data: Object.fromEntries(func.inputs.map(i => [i.name, `{{${i.name}}}`])),
       },
     };
