@@ -369,6 +369,7 @@ export default function FunctionsPage() {
       {/* Builder slide-out panel (Phase 4 — placeholder) */}
       {builderOpen && (
         <FunctionBuilderPanel
+          folders={folders}
           onClose={() => setBuilderOpen(false)}
           onCreated={() => { setBuilderOpen(false); load(); }}
         />
@@ -378,9 +379,11 @@ export default function FunctionsPage() {
 }
 
 function FunctionBuilderPanel({
+  folders: availableFolders,
   onClose,
   onCreated,
 }: {
+  folders: FolderDefinition[];
   onClose: () => void;
   onCreated: () => void;
 }) {
@@ -475,12 +478,15 @@ function FunctionBuilderPanel({
 
             <div>
               <label className="text-xs font-medium text-clay-300 mb-1 block">Folder (optional)</label>
-              <Input
+              <select
                 value={folder}
                 onChange={(e) => setFolder(e.target.value)}
-                placeholder="Uncategorized"
-                className="bg-clay-900 border-clay-600 text-clay-100"
-              />
+                className="w-full h-9 rounded-md bg-clay-900 border border-clay-600 text-clay-100 text-sm px-3 focus:outline-none focus:ring-1 focus:ring-kiln-teal"
+              >
+                {availableFolders.map(f => (
+                  <option key={f.name} value={f.name}>{f.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className="border-t border-clay-700 pt-3">
