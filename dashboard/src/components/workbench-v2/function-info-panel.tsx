@@ -3,53 +3,15 @@
 import type { FunctionDefinition } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  ArrowRightLeft,
-  Layers,
-  FolderOpen,
-  CircleDot,
-  ArrowDownRight,
-} from "lucide-react";
 
 interface FunctionInfoPanelProps {
   func: FunctionDefinition;
 }
 
 export function FunctionInfoPanel({ func }: FunctionInfoPanelProps) {
-  const requiredInputs = func.inputs.filter((i) => i.required);
-
   return (
     <Card className="bg-clay-900/50 border-clay-700">
       <CardContent className="p-4 space-y-4">
-        {/* Description */}
-        {func.description && (
-          <p className="text-sm text-clay-200">{func.description}</p>
-        )}
-
-        {/* Stats row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <StatCard
-            icon={<ArrowRightLeft className="h-3.5 w-3.5 text-kiln-teal" />}
-            label="Inputs"
-            value={`${requiredInputs.length} required / ${func.inputs.length} total`}
-          />
-          <StatCard
-            icon={<ArrowDownRight className="h-3.5 w-3.5 text-kiln-teal" />}
-            label="Outputs"
-            value={String(func.outputs.length)}
-          />
-          <StatCard
-            icon={<Layers className="h-3.5 w-3.5 text-kiln-teal" />}
-            label="Steps"
-            value={String(func.steps.length)}
-          />
-          <StatCard
-            icon={<FolderOpen className="h-3.5 w-3.5 text-kiln-teal" />}
-            label="Folder"
-            value={func.folder || "—"}
-          />
-        </div>
-
         {/* Inputs */}
         <div className="border-t border-clay-700/50 pt-4">
           <h4 className="text-xs font-medium text-clay-400 uppercase tracking-wider mb-2">
@@ -195,28 +157,6 @@ export function FunctionInfoPanel({ func }: FunctionInfoPanelProps) {
         )}
       </CardContent>
     </Card>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="bg-clay-800/60 rounded-lg px-3 py-2">
-      <div className="flex items-center gap-1.5 mb-0.5">
-        {icon}
-        <span className="text-[10px] text-clay-400 uppercase tracking-wider">
-          {label}
-        </span>
-      </div>
-      <div className="text-sm font-medium text-clay-100">{value}</div>
-    </div>
   );
 }
 
