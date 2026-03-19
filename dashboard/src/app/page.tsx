@@ -14,8 +14,9 @@ import {
   moveFunction,
   createFolder,
   deleteFolder,
+  assembleFunction,
 } from "@/lib/api";
-import type { FunctionDefinition, FolderDefinition } from "@/lib/types";
+import type { FunctionDefinition, FolderDefinition, FunctionInput, FunctionOutput, FunctionStep } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
   Plus,
@@ -383,10 +384,40 @@ function FunctionBuilderPanel({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const [step, setStep] = useState<"describe" | "review">("describe");
+  const [prompt, setPrompt] = useState("");
+  const [assembling, setAssembling] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Editable suggestion fields
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [folder, setFolder] = useState("Uncategorized");
-  const [saving, setSaving] = useState(false);
+  const [inputs, setInputs] = useState<FunctionInput[]>([]);
+  const [outputs, setOutputs] = useState<FunctionOutput[]>([]);
+  const [steps, setSteps] = useState<FunctionStep[]>([]);
+
+  const handleAssemble = async () => {
+    if (!prompt.trim()) {
+      toast.error("Describe what you want the function to do");
+      return;
+    }
+    setAssembling(true);
+    try {
+      const res = await assembleFunction({ description: prompt });
+      const s = res.suggestion as Record<string, unknown>;
+      setName(String(s.name || ""));
+      setDescription(String(s.description || ""));
+      setInputs((s.inputs as FunctionInput[]) || []);
+      setOutputs((s.outputs as FunctionOutput[]) || []);
+      setSteps((s.steps as FunctionStep[]) || []);
+      setStep("review");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI assembly failed");
+    } finally {
+      setAssembling(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -395,7 +426,7 @@ function FunctionBuilderPanel({
     }
     setSaving(true);
     try {
-      await createFunction({ name, description, folder });
+      await createFunction({ name, description, folder, inputs, outputs, steps });
       toast.success(`Function "${name}" created`);
       onCreated();
     } catch (e) {
@@ -405,8 +436,12 @@ function FunctionBuilderPanel({
     }
   };
 
+  const handleRegenerate = () => {
+    setStep("describe");
+  };
+
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-clay-800 border-l border-clay-600 z-50 flex flex-col shadow-2xl">
+    <div className="fixed inset-y-0 right-0 w-full sm:w-[520px] bg-clay-800 border-l border-clay-600 z-50 flex flex-col shadow-2xl">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-clay-600">
         <h2 className="text-lg font-semibold text-clay-100">New Function</h2>
@@ -415,57 +450,159 @@ function FunctionBuilderPanel({
         </Button>
       </div>
 
-      {/* Body */}
-      <div className="flex-1 overflow-auto p-4 space-y-4">
-        <div>
-          <label className="text-xs font-medium text-clay-300 mb-1 block">Name</label>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Enrich Company Data"
-            className="bg-clay-900 border-clay-600 text-clay-100"
-          />
-        </div>
+      {/* Step 1: Describe */}
+      {step === "describe" && (
+        <>
+          <div className="flex-1 overflow-auto p-4 space-y-4">
+            <div className="bg-clay-900/50 border border-clay-700 rounded-lg p-4">
+              <div className="text-sm font-medium text-clay-100 mb-1">Describe your function</div>
+              <p className="text-xs text-clay-400 mb-3">
+                Tell me what data you want in and what results you want out. I'll suggest the right tools and build the function for you.
+              </p>
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder={"e.g., Given a company name, find their domain, look up their tech stack, find the VP of Sales email, and verify the email is valid."}
+                rows={5}
+                autoFocus
+                className="w-full rounded-md bg-clay-900 border border-clay-600 text-clay-100 text-sm p-3 placeholder:text-clay-500 focus:outline-none focus:ring-1 focus:ring-kiln-teal resize-none"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleAssemble();
+                }}
+              />
+              <div className="text-[10px] text-clay-500 mt-1">Press Cmd+Enter to submit</div>
+            </div>
 
-        <div>
-          <label className="text-xs font-medium text-clay-300 mb-1 block">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="What does this function do?"
-            rows={3}
-            className="w-full rounded-md bg-clay-900 border border-clay-600 text-clay-100 text-sm p-2.5 placeholder:text-clay-500 focus:outline-none focus:ring-1 focus:ring-kiln-teal"
-          />
-        </div>
+            <div>
+              <label className="text-xs font-medium text-clay-300 mb-1 block">Folder (optional)</label>
+              <Input
+                value={folder}
+                onChange={(e) => setFolder(e.target.value)}
+                placeholder="Uncategorized"
+                className="bg-clay-900 border-clay-600 text-clay-100"
+              />
+            </div>
 
-        <div>
-          <label className="text-xs font-medium text-clay-300 mb-1 block">Folder</label>
-          <Input
-            value={folder}
-            onChange={(e) => setFolder(e.target.value)}
-            placeholder="Uncategorized"
-            className="bg-clay-900 border-clay-600 text-clay-100"
-          />
-        </div>
+            <div className="border-t border-clay-700 pt-3">
+              <button
+                onClick={() => { setName(""); setDescription(""); setStep("review"); }}
+                className="text-xs text-clay-400 hover:text-clay-200 underline"
+              >
+                Skip AI — build manually instead
+              </button>
+            </div>
+          </div>
 
-        <div className="pt-2 text-xs text-clay-400">
-          After creating, you can add inputs, outputs, and steps from the function detail view or use the AI builder to describe what you want.
-        </div>
-      </div>
+          <div className="p-4 border-t border-clay-600 flex items-center gap-2 justify-end">
+            <Button variant="outline" onClick={onClose} className="border-clay-600 text-clay-300">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssemble}
+              disabled={assembling || !prompt.trim()}
+              className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold"
+            >
+              {assembling ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-3 w-3 border-2 border-clay-950/30 border-t-clay-950 rounded-full animate-spin" />
+                  Building...
+                </span>
+              ) : (
+                "Build Function"
+              )}
+            </Button>
+          </div>
+        </>
+      )}
 
-      {/* Footer */}
-      <div className="p-4 border-t border-clay-600 flex items-center gap-2 justify-end">
-        <Button variant="outline" onClick={onClose} className="border-clay-600 text-clay-300">
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSave}
-          disabled={saving || !name.trim()}
-          className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold"
-        >
-          {saving ? "Creating..." : "Create Function"}
-        </Button>
-      </div>
+      {/* Step 2: Review & Edit */}
+      {step === "review" && (
+        <>
+          <div className="flex-1 overflow-auto p-4 space-y-4">
+            {/* Name & Description */}
+            <div>
+              <label className="text-xs font-medium text-clay-300 mb-1 block">Name</label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Enrich Company Data"
+                className="bg-clay-900 border-clay-600 text-clay-100"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-clay-300 mb-1 block">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="What does this function do?"
+                rows={2}
+                className="w-full rounded-md bg-clay-900 border border-clay-600 text-clay-100 text-sm p-2.5 placeholder:text-clay-500 focus:outline-none focus:ring-1 focus:ring-kiln-teal"
+              />
+            </div>
+
+            {/* Inputs */}
+            <div>
+              <div className="text-xs font-medium text-clay-300 mb-1">Inputs ({inputs.length})</div>
+              <div className="space-y-1">
+                {inputs.map((inp, i) => (
+                  <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded bg-clay-900/50 border border-clay-700 text-xs">
+                    <span className="font-medium text-clay-100 flex-1">{inp.name}</span>
+                    <span className="text-clay-400">({inp.type})</span>
+                    {inp.required && <span className="text-red-400 text-[10px]">required</span>}
+                  </div>
+                ))}
+                {inputs.length === 0 && <div className="text-xs text-clay-500 py-1">No inputs — add them after creation</div>}
+              </div>
+            </div>
+
+            {/* Outputs */}
+            <div>
+              <div className="text-xs font-medium text-clay-300 mb-1">Outputs ({outputs.length})</div>
+              <div className="space-y-1">
+                {outputs.map((out, i) => (
+                  <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded bg-clay-900/50 border border-clay-700 text-xs">
+                    <span className="font-medium text-kiln-teal flex-1">{out.key}</span>
+                    <span className="text-clay-400">({out.type})</span>
+                  </div>
+                ))}
+                {outputs.length === 0 && <div className="text-xs text-clay-500 py-1">No outputs — add them after creation</div>}
+              </div>
+            </div>
+
+            {/* Steps */}
+            <div>
+              <div className="text-xs font-medium text-clay-300 mb-1">Steps ({steps.length})</div>
+              <div className="space-y-1">
+                {steps.map((s, i) => (
+                  <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded bg-clay-900/50 border border-clay-700 text-xs">
+                    <span className="text-clay-500 w-4">{i + 1}</span>
+                    <span className="font-medium text-clay-100">{s.tool}</span>
+                  </div>
+                ))}
+                {steps.length === 0 && <div className="text-xs text-clay-500 py-1">No steps — add tools after creation</div>}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-clay-600 flex items-center justify-between">
+            <Button variant="ghost" size="sm" onClick={handleRegenerate} className="text-clay-400 text-xs">
+              Regenerate
+            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={onClose} className="border-clay-600 text-clay-300">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={saving || !name.trim()}
+                className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold"
+              >
+                {saving ? "Creating..." : "Create Function"}
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

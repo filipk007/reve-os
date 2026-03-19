@@ -457,22 +457,62 @@ export default function FunctionDetailPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm text-clay-200">Clay Config</CardTitle>
               </CardHeader>
-              <CardContent>
-                <pre className="text-[10px] text-clay-300 bg-clay-900 p-2 rounded overflow-auto max-h-40">
-                  {JSON.stringify({
-                    function: func.id,
-                    data: Object.fromEntries(inputs.map(i => [i.name, `{{${i.name}}}`])),
-                  }, null, 2)}
-                </pre>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyClayConfig}
-                  className="w-full mt-2 border-clay-600 text-clay-300 text-xs"
-                >
-                  <Copy className="h-3 w-3 mr-1" />
-                  Copy Config
-                </Button>
+              <CardContent className="space-y-3">
+                {/* Webhook URL */}
+                <div>
+                  <div className="text-[10px] text-clay-400 uppercase tracking-wider mb-1">Webhook URL</div>
+                  <div className="flex items-center gap-1">
+                    <code className="flex-1 text-xs text-kiln-teal bg-clay-900 px-2 py-1.5 rounded border border-clay-700 truncate">
+                      https://clay.nomynoms.com/webhook
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { navigator.clipboard.writeText("https://clay.nomynoms.com/webhook"); toast.success("URL copied"); }}
+                      className="h-7 w-7 p-0 text-clay-400 hover:text-clay-200 shrink-0"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Method */}
+                <div>
+                  <div className="text-[10px] text-clay-400 uppercase tracking-wider mb-1">Method</div>
+                  <code className="text-xs text-clay-200 bg-clay-900 px-2 py-1 rounded border border-clay-700">POST</code>
+                </div>
+
+                {/* Body template */}
+                <div>
+                  <div className="text-[10px] text-clay-400 uppercase tracking-wider mb-1">Body Template</div>
+                  <pre className="text-[10px] text-clay-300 bg-clay-900 p-2 rounded border border-clay-700 overflow-auto max-h-32">
+                    {JSON.stringify({
+                      function: func.id,
+                      data: Object.fromEntries(inputs.map(i => [i.name, `{{${i.name}}}`])),
+                    }, null, 2)}
+                  </pre>
+                </div>
+
+                {/* Copy buttons */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyClayConfig}
+                    className="flex-1 border-clay-600 text-clay-300 text-xs"
+                  >
+                    <Copy className="h-3 w-3 mr-1" />
+                    Copy Full Config
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openClayWizard}
+                    className="flex-1 border-clay-600 text-clay-300 text-xs"
+                  >
+                    Setup Wizard
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
