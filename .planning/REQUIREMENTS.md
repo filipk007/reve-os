@@ -106,54 +106,54 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FUNC-01 | — | Pending |
-| FUNC-02 | — | Pending |
-| FUNC-03 | — | Pending |
-| FUNC-04 | — | Pending |
-| FUNC-05 | — | Pending |
-| FUNC-06 | — | Pending |
-| FUNC-07 | — | Pending |
-| FUNC-08 | — | Pending |
-| NAV-01 | — | Pending |
-| NAV-02 | — | Pending |
-| NAV-03 | — | Pending |
-| FPAGE-01 | — | Pending |
-| FPAGE-02 | — | Pending |
-| FPAGE-03 | — | Pending |
-| FPAGE-04 | — | Pending |
-| FPAGE-05 | — | Pending |
-| FPAGE-06 | — | Pending |
-| FPAGE-07 | — | Pending |
-| FPAGE-08 | — | Pending |
-| FPAGE-09 | — | Pending |
-| FPAGE-10 | — | Pending |
-| WORK-01 | — | Pending |
-| WORK-02 | — | Pending |
-| WORK-03 | — | Pending |
-| WORK-04 | — | Pending |
-| WORK-05 | — | Pending |
-| WORK-06 | — | Pending |
-| WORK-07 | — | Pending |
-| WORK-08 | — | Pending |
-| WORK-09 | — | Pending |
-| WORK-10 | — | Pending |
-| WORK-11 | — | Pending |
-| WORK-12 | — | Pending |
-| WORK-13 | — | Pending |
-| OUT-01 | — | Pending |
-| OUT-02 | — | Pending |
-| OUT-03 | — | Pending |
-| CTX-01 | — | Pending |
-| CTX-02 | — | Pending |
-| CLAY-01 | — | Pending |
-| CLAY-02 | — | Pending |
-| CLAY-03 | — | Pending |
+| FUNC-01 | Phase 1 | Pending |
+| FUNC-02 | Phase 1 | Pending |
+| FUNC-03 | Phase 1 | Pending |
+| FUNC-04 | Phase 1 | Pending |
+| FUNC-05 | Phase 4 | Pending |
+| FUNC-06 | Phase 1 | Pending |
+| FUNC-07 | Phase 5 | Pending |
+| FUNC-08 | Phase 5 | Pending |
+| NAV-01 | Phase 2 | Pending |
+| NAV-02 | Phase 2 | Pending |
+| NAV-03 | Phase 2 | Pending |
+| FPAGE-01 | Phase 3 | Pending |
+| FPAGE-02 | Phase 3 | Pending |
+| FPAGE-03 | Phase 4 | Pending |
+| FPAGE-04 | Phase 4 | Pending |
+| FPAGE-05 | Phase 4 | Pending |
+| FPAGE-06 | Phase 4 | Pending |
+| FPAGE-07 | Phase 4 | Pending |
+| FPAGE-08 | Phase 3 | Pending |
+| FPAGE-09 | Phase 3 | Pending |
+| FPAGE-10 | Phase 3 | Pending |
+| WORK-01 | Phase 5 | Pending |
+| WORK-02 | Phase 5 | Pending |
+| WORK-03 | Phase 5 | Pending |
+| WORK-04 | Phase 5 | Pending |
+| WORK-05 | Phase 5 | Pending |
+| WORK-06 | Phase 5 | Pending |
+| WORK-07 | Phase 5 | Pending |
+| WORK-08 | Phase 5 | Pending |
+| WORK-09 | Phase 5 | Pending |
+| WORK-10 | Phase 5 | Pending |
+| WORK-11 | Phase 5 | Pending |
+| WORK-12 | Phase 5 | Pending |
+| WORK-13 | Phase 5 | Pending |
+| OUT-01 | Phase 2 | Pending |
+| OUT-02 | Phase 2 | Pending |
+| OUT-03 | Phase 2 | Pending |
+| CTX-01 | Phase 2 | Pending |
+| CTX-02 | Phase 2 | Pending |
+| CLAY-01 | Phase 6 | Pending |
+| CLAY-02 | Phase 6 | Pending |
+| CLAY-03 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 42 total
-- Mapped to phases: 0
-- Unmapped: 42 ⚠️
+- Mapped to phases: 42
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 after roadmap creation*
