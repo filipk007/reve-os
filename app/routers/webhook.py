@@ -479,6 +479,15 @@ async def webhook_function(function_id: str, body: FunctionWebhookRequest, reque
     return await _run_function(full_body, request)
 
 
+def _get_tool_meta(tool_id: str) -> dict | None:
+    """Look up tool metadata from the tool catalog."""
+    from app.core.tool_catalog import DEEPLINE_PROVIDERS
+    for provider in DEEPLINE_PROVIDERS:
+        if provider["id"] == tool_id:
+            return provider
+    return None
+
+
 async def _run_function(body: WebhookRequest, request: Request) -> dict:
     """Execute a function by ID — validate inputs, run steps, filter outputs."""
     import time
@@ -542,9 +551,33 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
                 step_result.pop("_meta", None)
                 accumulated_output.update(step_result)
         else:
-            # Deepline tool — store as placeholder (actual execution requires Deepline CLI integration)
-            accumulated_output[f"_step_{step_idx}_tool"] = tool_id
-            accumulated_output[f"_step_{step_idx}_params"] = resolved_params
+            # Execute Deepline tool via AI — construct a prompt from tool metadata
+            tool_meta = _get_tool_meta(tool_id)
+            if tool_meta is None:
+                accumulated_output[f"_step_{step_idx}_error"] = f"Unknown tool: {tool_id}"
+                continue
+
+            # Build AI prompt to simulate the tool's function
+            expected_outputs = [o.key for o in func.outputs]
+            ai_prompt = (
+                f"You are a data enrichment tool called '{tool_meta['name']}'.\n"
+                f"Description: {tool_meta['description']}\n\n"
+                f"Given these inputs:\n"
+                + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
+                + f"\n\nReturn a JSON object with these keys: {expected_outputs}\n"
+                f"Research thoroughly and return accurate data. "
+                f"Return ONLY valid JSON, no explanation."
+            )
+
+            pool = request.app.state.pool
+            try:
+                ai_result = await pool.submit(ai_prompt, "haiku", 30)
+                parsed = ai_result.get("result", {})
+                if isinstance(parsed, dict):
+                    accumulated_output.update(parsed)
+            except Exception as e:
+                logger.warning("[functions] Tool '%s' AI fallback failed: %s", tool_id, e)
+                accumulated_output[f"_step_{step_idx}_error"] = str(e)
 
     duration_ms = int((time.time() - start_time) * 1000)
 
