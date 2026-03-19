@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   Blocks,
+  Bug,
   FlaskConical,
   Send,
   FolderTree,
