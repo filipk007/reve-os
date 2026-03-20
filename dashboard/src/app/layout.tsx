@@ -42,12 +42,12 @@ export default function RootLayout({
           <KeyboardShortcutsDialog />
         </TooltipProvider>
         <Toaster
-          position="top-right"
+          position="bottom-right"
           toastOptions={{
             classNames: {
-              success: "!bg-status-success/10 !border-status-success/25 !text-status-success",
-              error: "!bg-kiln-coral/10 !border-kiln-coral/25 !text-kiln-coral",
-              info: "!bg-kiln-mustard/10 !border-kiln-mustard/25 !text-kiln-mustard",
+              success: "!bg-status-success/90 !border-status-success/50 !text-clay-100",
+              error: "!bg-kiln-coral/90 !border-kiln-coral/50 !text-clay-100",
+              info: "!bg-kiln-mustard/90 !border-kiln-mustard/50 !text-clay-950",
             },
           }}
         />

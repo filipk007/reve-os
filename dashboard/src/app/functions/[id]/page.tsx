@@ -9,6 +9,7 @@ import {
   fetchFunction,
   updateFunction,
   deleteFunction,
+  duplicateFunction,
   fetchToolCategories,
   generateFunctionClayConfig,
   streamFunctionExecution,
@@ -225,6 +226,17 @@ export default function FunctionDetailPage() {
     }
   };
 
+  const handleDuplicate = async () => {
+    if (!func) return;
+    try {
+      const copy = await duplicateFunction(func.id);
+      toast.success(`Duplicated as "${copy.name}"`);
+      router.push(`/functions/${copy.id}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to duplicate");
+    }
+  };
+
   const handleCopyClayConfig = () => {
     if (!func) return;
     // Use the full config from the API (includes real API key, curl, etc.)
@@ -350,6 +362,7 @@ export default function FunctionDetailPage() {
             onCancelEdit={() => { setEditing(false); setEditingStepIdx(null); load(); }}
             onSave={handleSave}
             onDelete={handleDelete}
+            onDuplicate={handleDuplicate}
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -406,7 +419,7 @@ export default function FunctionDetailPage() {
             <div className="mt-6">
               <ErrorBoundary>
                 <FunctionPlayground
-                  inputs={func.inputs}
+                  inputs={inputs}
                   testInputs={testInputs}
                   setTestInputs={setTestInputs}
                   testResult={testResult}

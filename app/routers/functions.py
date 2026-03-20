@@ -228,6 +228,29 @@ async def move_function(request: Request, func_id: str, body: MoveFunctionReques
     return func.model_dump()
 
 
+@router.post("/functions/{func_id}/duplicate")
+async def duplicate_function(request: Request, func_id: str):
+    """Clone a function with '(Copy)' suffix."""
+    store = request.app.state.function_store
+    func = store.get(func_id)
+    if func is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Function '{func_id}' not found"},
+        )
+    from app.models.functions import CreateFunctionRequest
+    clone = store.create(CreateFunctionRequest(
+        name=f"{func.name} (Copy)",
+        description=func.description,
+        folder=func.folder,
+        inputs=func.inputs,
+        outputs=func.outputs,
+        steps=func.steps,
+    ))
+    logger.info("[functions] Duplicated '%s' → '%s'", func_id, clone.id)
+    return clone.model_dump()
+
+
 @router.post("/functions/{func_id}/clay-config")
 async def generate_clay_config(request: Request, func_id: str):
     """Auto-generate Clay HTTP Action JSON for a function (CLAY-02)."""

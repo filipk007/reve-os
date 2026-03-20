@@ -13,6 +13,7 @@ import {
   fetchFolders,
   createFunction,
   deleteFunction,
+  duplicateFunction,
   moveFunction,
   createFolder,
   deleteFolder,
@@ -28,6 +29,7 @@ import {
   GripVertical,
   Play,
   Copy,
+  CopyPlus,
   Trash2,
   ChevronRight,
   Blocks,
@@ -115,6 +117,16 @@ export default function FunctionsPage() {
       load();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to delete function");
+    }
+  };
+
+  const handleDuplicateFunction = async (func: FunctionDefinition) => {
+    try {
+      const copy = await duplicateFunction(func.id);
+      toast.success(`Duplicated as "${copy.name}"`);
+      router.push(`/functions/${copy.id}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to duplicate");
     }
   };
 
@@ -359,7 +371,17 @@ export default function FunctionsPage() {
                               variant="ghost"
                               size="sm"
                               className="h-6 w-6 p-0 text-clay-300 hover:text-clay-200"
+                              onClick={(e) => { e.stopPropagation(); handleDuplicateFunction(func); }}
+                              title="Duplicate"
+                            >
+                              <CopyPlus className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 text-clay-300 hover:text-clay-200"
                               onClick={(e) => { e.stopPropagation(); handleCopyClayConfig(func); }}
+                              title="Copy Clay config"
                             >
                               <Copy className="h-3 w-3" />
                             </Button>

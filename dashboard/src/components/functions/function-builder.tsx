@@ -1,5 +1,21 @@
 "use client";
 
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +39,7 @@ import {
   ChevronDown,
   ChevronRight,
   Blocks,
+  GripVertical,
   Settings,
   Wrench,
 } from "lucide-react";
@@ -150,7 +167,16 @@ export function FunctionBuilder({
   };
 
   const addStep = (tool?: string) => {
-    setSteps([...steps, { tool: tool || "", params: {} }]);
+    const toolId = tool || "";
+    const toolDef = toolMap[toolId];
+    // Auto-populate params from tool catalog inputs
+    const params: Record<string, string> = {};
+    if (toolDef?.inputs) {
+      for (const inp of toolDef.inputs) {
+        params[inp.name] = "";
+      }
+    }
+    setSteps([...steps, { tool: toolId, params }]);
     setCatalogOpen(false);
   };
 
@@ -201,6 +227,64 @@ export function FunctionBuilder({
     updated[stepIdx] = { ...updated[stepIdx], params };
     setSteps(updated);
   };
+
+  // Stable drag IDs for steps — generate once, extend on add
+  const stepIdCounter = useRef(0);
+  const [stepIds, setStepIds] = useState<string[]>(() =>
+    steps.map(() => `step-${stepIdCounter.current++}`)
+  );
+
+  // Keep stepIds in sync when steps array length changes externally (load/save)
+  const prevStepsLen = useRef(steps.length);
+  if (steps.length !== prevStepsLen.current) {
+    if (steps.length > stepIds.length) {
+      const newIds = [...stepIds];
+      while (newIds.length < steps.length) {
+        newIds.push(`step-${stepIdCounter.current++}`);
+      }
+      setStepIds(newIds);
+    } else if (steps.length < stepIds.length) {
+      setStepIds(stepIds.slice(0, steps.length));
+    }
+    prevStepsLen.current = steps.length;
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = stepIds.indexOf(String(active.id));
+      const newIndex = stepIds.indexOf(String(over.id));
+      if (oldIndex === -1 || newIndex === -1) return;
+      setSteps(arrayMove(steps, oldIndex, newIndex));
+      setStepIds(arrayMove(stepIds, oldIndex, newIndex));
+    },
+    [steps, stepIds, setSteps]
+  );
+
+  // Collect output keys from prior steps for step output references
+  const getOutputKeysFromPriorSteps = useCallback(
+    (stepIdx: number) => {
+      const keys: { stepIdx: number; stepLabel: string; outputKeys: string[] }[] = [];
+      for (let i = 0; i < stepIdx; i++) {
+        const s = steps[i];
+        const td = toolMap[s.tool];
+        if (td?.outputs) {
+          keys.push({
+            stepIdx: i,
+            stepLabel: td.name || s.tool,
+            outputKeys: td.outputs.map((o) => o.key),
+          });
+        }
+      }
+      return keys;
+    },
+    [steps, toolMap]
+  );
 
   return (
     <div className="lg:col-span-2 space-y-6">
@@ -490,6 +574,41 @@ export function FunctionBuilder({
             <div className="text-xs text-clay-300 py-2">
               No steps defined. Add tools to build this function.
             </div>
+          ) : editing ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={stepIds}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2">
+                  {steps.map((step, i) => (
+                    <SortableStepItem
+                      key={stepIds[i]}
+                      id={stepIds[i]}
+                      step={step}
+                      index={i}
+                      editing={editing}
+                      toolMap={toolMap}
+                      inputs={inputs}
+                      steps={steps}
+                      setSteps={setSteps}
+                      editingStepIdx={editingStepIdx}
+                      setEditingStepIdx={setEditingStepIdx}
+                      updateStepTool={updateStepTool}
+                      updateStepParam={updateStepParam}
+                      removeStepParam={removeStepParam}
+                      addStepParam={addStepParam}
+                      removeStep={removeStep}
+                      priorStepOutputs={getOutputKeysFromPriorSteps(i)}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           ) : (
             <div className="space-y-2">
               {steps.map((step, i) => {
@@ -497,7 +616,6 @@ export function FunctionBuilder({
                 const hasParams =
                   step.params && Object.keys(step.params).length > 0;
                 const isExpanded = expandedSteps.has(i);
-                const isEditingParams = editing && editingStepIdx === i;
                 const wiredInputs = stepInputMap[i] || [];
 
                 return (
@@ -509,153 +627,119 @@ export function FunctionBuilder({
                       <span className="text-[10px] text-clay-300 w-4">
                         {i + 1}
                       </span>
-                      {editing ? (
-                        <>
-                          <Input
-                            value={step.tool}
-                            onChange={(e) => updateStepTool(i, e.target.value)}
-                            placeholder="Tool ID"
-                            className="bg-clay-900 border-clay-600 text-clay-100 text-xs h-7 flex-1"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setEditingStepIdx(isEditingParams ? null : i)
-                            }
-                            className={cn(
-                              "h-6 px-1.5 text-clay-300",
-                              isEditingParams && "text-kiln-teal"
-                            )}
-                          >
-                            <Settings className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeStep(i)}
-                            className="h-6 w-6 p-0 text-red-400"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </>
+                      {hasParams ? (
+                        <button
+                          onClick={() => toggleStepExpanded(i)}
+                          className="text-clay-300 hover:text-clay-200"
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="h-3 w-3" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3" />
+                          )}
+                        </button>
                       ) : (
-                        <>
-                          {hasParams ? (
-                            <button
-                              onClick={() => toggleStepExpanded(i)}
-                              className="text-clay-300 hover:text-clay-200"
-                            >
-                              {isExpanded ? (
-                                <ChevronDown className="h-3 w-3" />
-                              ) : (
-                                <ChevronRight className="h-3 w-3" />
-                              )}
-                            </button>
-                          ) : (
-                            <span className="w-3" />
-                          )}
-                          {toolDef ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="text-xs font-medium text-clay-100 border-b border-dotted border-clay-500 cursor-help">
-                                  {toolDef.name}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <div className="space-y-1">
-                                  <div className="font-medium">
-                                    {toolDef.name}
-                                  </div>
-                                  <div className="text-clay-300 text-[10px]">
-                                    {toolDef.category} &middot; {step.tool}
-                                  </div>
-                                  {toolDef.description && (
-                                    <div className="text-clay-300 text-[10px]">
-                                      {toolDef.description}
-                                    </div>
-                                  )}
-                                  {toolDef.execution_mode && (
-                                    <div className="text-clay-300 text-[10px]">
-                                      Executor: {toolDef.execution_mode === "native" ? "Native API" : toolDef.execution_mode === "ai_agent" ? "AI Agent (web search)" : "AI Single-turn"}
-                                    </div>
-                                  )}
-                                  {toolDef.ai_fallback_description && (
-                                    <div className="text-clay-300 text-[10px] italic">
-                                      {toolDef.ai_fallback_description}
-                                    </div>
-                                  )}
+                        <span className="w-3" />
+                      )}
+                      {toolDef ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-xs font-medium text-clay-100 border-b border-dotted border-clay-500 cursor-help">
+                              {toolDef.name}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <div className="space-y-1">
+                              <div className="font-medium">
+                                {toolDef.name}
+                              </div>
+                              <div className="text-clay-300 text-[10px]">
+                                {toolDef.category} &middot; {step.tool}
+                              </div>
+                              {toolDef.description && (
+                                <div className="text-clay-300 text-[10px]">
+                                  {toolDef.description}
                                 </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            <span className="text-xs font-medium text-clay-100">
-                              {step.tool}
-                            </span>
-                          )}
-                          {/* Executor badge */}
-                          {toolDef && (
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "text-[9px] px-1.5 py-0 h-4 shrink-0 border",
-                                toolDef.has_native_api
-                                  ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                                  : toolDef.execution_mode === "ai_agent"
-                                    ? "bg-purple-500/15 text-purple-400 border-purple-500/30"
-                                    : "bg-amber-500/15 text-amber-400 border-amber-500/30"
                               )}
-                            >
-                              {toolDef.has_native_api
-                                ? `API: ${toolDef.native_api_provider || "Native"}`
-                                : toolDef.execution_mode === "ai_agent"
-                                  ? "AI Agent"
-                                  : "AI Powered"}
-                            </Badge>
+                              {toolDef.execution_mode && (
+                                <div className="text-clay-300 text-[10px]">
+                                  Executor: {toolDef.execution_mode === "native" ? "Native API" : toolDef.execution_mode === "ai_agent" ? "AI Agent (web search)" : "AI Single-turn"}
+                                </div>
+                              )}
+                              {toolDef.ai_fallback_description && (
+                                <div className="text-clay-300 text-[10px] italic">
+                                  {toolDef.ai_fallback_description}
+                                </div>
+                              )}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <span className="text-xs font-medium text-clay-100">
+                          {step.tool}
+                        </span>
+                      )}
+                      {/* Executor badge */}
+                      {toolDef && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[9px] px-1.5 py-0 h-4 shrink-0 border",
+                            toolDef.has_native_api
+                              ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                              : toolDef.execution_mode === "ai_agent"
+                                ? "bg-purple-500/15 text-purple-400 border-purple-500/30"
+                                : "bg-amber-500/15 text-amber-400 border-amber-500/30"
                           )}
-                          {step.tool === "call_ai" && !toolDef && (
+                        >
+                          {toolDef.has_native_api
+                            ? `API: ${toolDef.native_api_provider || "Native"}`
+                            : toolDef.execution_mode === "ai_agent"
+                              ? "AI Agent"
+                              : "AI Powered"}
+                        </Badge>
+                      )}
+                      {step.tool === "call_ai" && !toolDef && (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] px-1.5 py-0 h-4 bg-blue-500/15 text-blue-400 border-blue-500/30"
+                        >
+                          AI Analysis
+                        </Badge>
+                      )}
+                      {step.tool.startsWith("skill:") && !toolDef && (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] px-1.5 py-0 h-4 bg-blue-500/15 text-blue-400 border-blue-500/30"
+                        >
+                          Skill
+                        </Badge>
+                      )}
+                      {wiredInputs.length > 0 && (
+                        <span className="flex items-center gap-1 ml-1">
+                          {wiredInputs.map((wiredName) => (
                             <Badge
+                              key={wiredName}
                               variant="outline"
-                              className="text-[9px] px-1.5 py-0 h-4 bg-blue-500/15 text-blue-400 border-blue-500/30"
+                              className="text-[9px] px-1.5 py-0 h-4 text-kiln-teal border-kiln-teal/30"
                             >
-                              AI Analysis
+                              {`{{${wiredName}}}`}
                             </Badge>
-                          )}
-                          {step.tool.startsWith("skill:") && !toolDef && (
-                            <Badge
-                              variant="outline"
-                              className="text-[9px] px-1.5 py-0 h-4 bg-blue-500/15 text-blue-400 border-blue-500/30"
-                            >
-                              Skill
-                            </Badge>
-                          )}
-                          {wiredInputs.length > 0 && (
-                            <span className="flex items-center gap-1 ml-1">
-                              {wiredInputs.map((wiredName) => (
-                                <Badge
-                                  key={wiredName}
-                                  variant="outline"
-                                  className="text-[9px] px-1.5 py-0 h-4 text-kiln-teal border-kiln-teal/30"
-                                >
-                                  {`{{${wiredName}}}`}
-                                </Badge>
-                              ))}
-                            </span>
-                          )}
-                          {hasParams && (
-                            <span className="text-[10px] text-clay-300 ml-auto">
-                              {Object.keys(step.params).length} param
-                              {Object.keys(step.params).length !== 1
-                                ? "s"
-                                : ""}
-                            </span>
-                          )}
-                        </>
+                          ))}
+                        </span>
+                      )}
+                      {hasParams && (
+                        <span className="text-[10px] text-clay-300 ml-auto">
+                          {Object.keys(step.params).length} param
+                          {Object.keys(step.params).length !== 1
+                            ? "s"
+                            : ""}
+                        </span>
                       )}
                     </div>
 
                     {/* Expanded params view */}
-                    {!editing && isExpanded && hasParams && (
+                    {isExpanded && hasParams && (
                       <div className="border-t border-clay-700 px-4 py-2 space-y-1">
                         {Object.entries(step.params).map(([key, val]) => (
                           <div
@@ -673,98 +757,6 @@ export function FunctionBuilder({
                         ))}
                       </div>
                     )}
-
-                    {/* Step param editor in edit mode */}
-                    {isEditingParams && (
-                      <div className="border-t border-clay-700 px-4 py-3 space-y-2">
-                        {Object.entries(step.params).map(([key, val]) => (
-                          <div key={key} className="flex items-center gap-2">
-                            <Input
-                              value={key}
-                              onChange={(e) =>
-                                updateStepParam(
-                                  i,
-                                  e.target.value,
-                                  val,
-                                  key
-                                )
-                              }
-                              className="bg-clay-900 border-clay-600 text-clay-100 text-xs h-7 w-28 font-mono"
-                              placeholder="key"
-                            />
-                            <span className="text-clay-300 text-xs">=</span>
-                            <Input
-                              value={val}
-                              onChange={(e) =>
-                                updateStepParam(i, key, e.target.value)
-                              }
-                              className="bg-clay-900 border-clay-600 text-clay-100 text-xs h-7 flex-1"
-                              placeholder="value"
-                            />
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeStepParam(i, key)}
-                              className="h-6 w-6 p-0 text-red-400"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
-                        <div className="flex items-center gap-2 pt-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => addStepParam(i)}
-                            className="text-clay-300 h-6 text-[10px]"
-                          >
-                            <Plus className="h-3 w-3 mr-1" /> Add param
-                          </Button>
-                          {inputs.length > 0 && (
-                            <div className="flex items-center gap-1 ml-2">
-                              <span className="text-[10px] text-clay-300">
-                                Insert:
-                              </span>
-                              {inputs.map((inp) => (
-                                <button
-                                  key={inp.name}
-                                  onClick={() => {
-                                    const paramKeys = Object.keys(step.params);
-                                    if (paramKeys.length > 0) {
-                                      const lastKey =
-                                        paramKeys[paramKeys.length - 1];
-                                      updateStepParam(
-                                        i,
-                                        lastKey,
-                                        step.params[lastKey] +
-                                          `{{${inp.name}}}`
-                                      );
-                                    } else {
-                                      addStepParam(i);
-                                      const updated = [...steps];
-                                      const params = {
-                                        ...updated[i].params,
-                                      };
-                                      const newKey =
-                                        Object.keys(params).pop() || "param";
-                                      params[newKey] = `{{${inp.name}}}`;
-                                      updated[i] = {
-                                        ...updated[i],
-                                        params,
-                                      };
-                                      setSteps(updated);
-                                    }
-                                  }}
-                                  className="text-[10px] px-1.5 py-0.5 rounded bg-kiln-teal/10 text-kiln-teal hover:bg-kiln-teal/20 transition-colors"
-                                >
-                                  {`{{${inp.name}}}`}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -772,6 +764,248 @@ export function FunctionBuilder({
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+/** Sortable step item for drag-to-reorder in edit mode */
+function SortableStepItem({
+  id,
+  step,
+  index: i,
+  editing,
+  toolMap,
+  inputs,
+  steps,
+  setSteps,
+  editingStepIdx,
+  setEditingStepIdx,
+  updateStepTool,
+  updateStepParam,
+  removeStepParam,
+  addStepParam,
+  removeStep,
+  priorStepOutputs,
+}: {
+  id: string;
+  step: FunctionStep;
+  index: number;
+  editing: boolean;
+  toolMap: Record<string, ToolDefinition>;
+  inputs: FunctionInput[];
+  steps: FunctionStep[];
+  setSteps: (v: FunctionStep[]) => void;
+  editingStepIdx: number | null;
+  setEditingStepIdx: (v: number | null) => void;
+  updateStepTool: (i: number, tool: string) => void;
+  updateStepParam: (stepIdx: number, key: string, value: string, oldKey?: string) => void;
+  removeStepParam: (stepIdx: number, key: string) => void;
+  addStepParam: (stepIdx: number) => void;
+  removeStep: (i: number) => void;
+  priorStepOutputs: { stepIdx: number; stepLabel: string; outputKeys: string[] }[];
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const isEditingParams = editing && editingStepIdx === i;
+  const isPromptParam = step.tool === "call_ai";
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "rounded bg-clay-900/50 border border-clay-700",
+        isDragging && "opacity-50 z-50"
+      )}
+    >
+      <div className="flex items-center gap-2 p-2">
+        <button
+          className="cursor-grab text-clay-300 hover:text-clay-200 touch-none"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
+        <span className="text-[10px] text-clay-300 w-4">
+          {i + 1}
+        </span>
+        <Input
+          value={step.tool}
+          onChange={(e) => updateStepTool(i, e.target.value)}
+          placeholder="Tool ID"
+          className="bg-clay-900 border-clay-600 text-clay-100 text-xs h-7 flex-1"
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            setEditingStepIdx(isEditingParams ? null : i)
+          }
+          className={cn(
+            "h-6 px-1.5 text-clay-300",
+            isEditingParams && "text-kiln-teal"
+          )}
+        >
+          <Settings className="h-3 w-3" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => removeStep(i)}
+          className="h-6 w-6 p-0 text-red-400"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+
+      {/* Step param editor */}
+      {isEditingParams && (
+        <div className="border-t border-clay-700 px-4 py-3 space-y-2">
+          {Object.entries(step.params).map(([key, val]) => (
+            <div key={key} className="flex items-start gap-2">
+              <Input
+                value={key}
+                onChange={(e) =>
+                  updateStepParam(i, e.target.value, val, key)
+                }
+                className="bg-clay-900 border-clay-600 text-clay-100 text-xs h-7 w-28 font-mono shrink-0"
+                placeholder="key"
+              />
+              <span className="text-clay-300 text-xs mt-1.5">=</span>
+              {/* Multi-line textarea for call_ai prompt param */}
+              {isPromptParam && key === "prompt" ? (
+                <div className="flex-1 space-y-1">
+                  <Textarea
+                    value={val}
+                    onChange={(e) =>
+                      updateStepParam(i, key, e.target.value)
+                    }
+                    rows={6}
+                    className="bg-clay-900 border-clay-600 text-clay-100 text-xs font-mono resize-y"
+                    placeholder="Enter your AI prompt..."
+                  />
+                  {val && (
+                    <div className="text-[10px] text-clay-300 leading-relaxed px-1">
+                      {highlightTemplateVars(val)}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Input
+                  value={val}
+                  onChange={(e) =>
+                    updateStepParam(i, key, e.target.value)
+                  }
+                  className="bg-clay-900 border-clay-600 text-clay-100 text-xs h-7 flex-1"
+                  placeholder="value"
+                />
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeStepParam(i, key)}
+                className="h-6 w-6 p-0 text-red-400 shrink-0"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          ))}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => addStepParam(i)}
+              className="text-clay-300 h-6 text-[10px]"
+            >
+              <Plus className="h-3 w-3 mr-1" /> Add param
+            </Button>
+            {inputs.length > 0 && (
+              <div className="flex items-center gap-1 ml-2">
+                <span className="text-[10px] text-clay-300">
+                  Insert:
+                </span>
+                {inputs.map((inp) => (
+                  <button
+                    key={inp.name}
+                    onClick={() => {
+                      const paramKeys = Object.keys(step.params);
+                      if (paramKeys.length > 0) {
+                        const lastKey = paramKeys[paramKeys.length - 1];
+                        updateStepParam(
+                          i,
+                          lastKey,
+                          step.params[lastKey] + `{{${inp.name}}}`
+                        );
+                      } else {
+                        addStepParam(i);
+                        const updated = [...steps];
+                        const params = { ...updated[i].params };
+                        const newKey = Object.keys(params).pop() || "param";
+                        params[newKey] = `{{${inp.name}}}`;
+                        updated[i] = { ...updated[i], params };
+                        setSteps(updated);
+                      }
+                    }}
+                    className="text-[10px] px-1.5 py-0.5 rounded bg-kiln-teal/10 text-kiln-teal hover:bg-kiln-teal/20 transition-colors"
+                  >
+                    {`{{${inp.name}}}`}
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* Step output references from prior steps */}
+            {priorStepOutputs.length > 0 && (
+              <div className="flex items-center gap-1 ml-2">
+                <span className="text-[10px] text-clay-300">
+                  Prior outputs:
+                </span>
+                {priorStepOutputs.flatMap((ps) =>
+                  ps.outputKeys.map((outKey) => (
+                    <button
+                      key={`${ps.stepIdx}-${outKey}`}
+                      onClick={() => {
+                        const paramKeys = Object.keys(step.params);
+                        if (paramKeys.length > 0) {
+                          const lastKey = paramKeys[paramKeys.length - 1];
+                          updateStepParam(
+                            i,
+                            lastKey,
+                            step.params[lastKey] + `{{${outKey}}}`
+                          );
+                        } else {
+                          addStepParam(i);
+                          const updated = [...steps];
+                          const params = { ...updated[i].params };
+                          const newKey = Object.keys(params).pop() || "param";
+                          params[newKey] = `{{${outKey}}}`;
+                          updated[i] = { ...updated[i], params };
+                          setSteps(updated);
+                        }
+                      }}
+                      className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-colors"
+                      title={`From step ${ps.stepIdx + 1}: ${ps.stepLabel}`}
+                    >
+                      {`{{${outKey}}}`}
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

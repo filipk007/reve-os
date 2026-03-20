@@ -885,6 +885,10 @@ export function deleteFunction(id: string): Promise<{ ok: boolean }> {
   return apiFetch(`/functions/${id}`, { method: "DELETE" });
 }
 
+export function duplicateFunction(id: string): Promise<FunctionDefinition> {
+  return apiFetch(`/functions/${id}/duplicate`, { method: "POST" });
+}
+
 export function moveFunction(
   id: string,
   folder: string

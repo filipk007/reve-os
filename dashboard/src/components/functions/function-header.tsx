@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import {
   ArrowLeft,
+  CopyPlus,
   FlaskConical,
   Play,
   Save,
@@ -28,6 +29,7 @@ interface FunctionHeaderProps {
   onCancelEdit: () => void;
   onSave: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
 }
 
 export function FunctionHeader({
@@ -40,6 +42,7 @@ export function FunctionHeader({
   onCancelEdit,
   onSave,
   onDelete,
+  onDuplicate,
 }: FunctionHeaderProps) {
   const router = useRouter();
 
@@ -112,6 +115,15 @@ export function FunctionHeader({
           </>
         ) : (
           <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDuplicate}
+              className="border-clay-600 text-clay-300"
+            >
+              <CopyPlus className="h-3.5 w-3.5 mr-1.5" />
+              Duplicate
+            </Button>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
