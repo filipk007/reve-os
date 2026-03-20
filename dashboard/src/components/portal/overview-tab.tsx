@@ -26,11 +26,18 @@ export function OverviewTab({ portal, onPortalUpdated }: { portal: PortalDetail;
   return (
     <div className="space-y-6">
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard icon={FileText} label="SOPs" value={portal.sops.length} />
-        <StatCard icon={MessageSquare} label="Updates" value={portal.recent_updates.length} />
-        <StatCard icon={Image} label="Media Files" value={portal.media.length} />
-        <StatCard icon={CheckSquare} label="Actions" value={portal.actions.filter((a) => a.status !== "done").length} />
+      <div className="flex items-start gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
+          <StatCard icon={FileText} label="SOPs" value={portal.sops.length} />
+          <StatCard icon={MessageSquare} label="Updates" value={portal.recent_updates.length} />
+          <StatCard icon={Image} label="Media Files" value={portal.media.length} />
+          <StatCard icon={CheckSquare} label="Actions" value={portal.actions.filter((a) => a.status !== "done").length} />
+        </div>
+        <NotificationSettings
+          slug={portal.slug}
+          slackWebhookUrl={portal.meta.slack_webhook_url ?? null}
+          onSaved={() => onPortalUpdated?.()}
+        />
       </div>
 
       {/* Waiting on Client */}
@@ -137,12 +144,6 @@ export function OverviewTab({ portal, onPortalUpdated }: { portal: PortalDetail;
         </div>
       )}
 
-      {/* Slack Notifications */}
-      <NotificationSettings
-        slug={portal.slug}
-        slackWebhookUrl={portal.meta.slack_webhook_url ?? null}
-        onSaved={() => onPortalUpdated?.()}
-      />
     </div>
   );
 }
