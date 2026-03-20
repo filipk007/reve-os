@@ -144,6 +144,8 @@ export interface BatchStatus {
     input_tokens_est: number;
     output_tokens_est: number;
     cost_est_usd: number;
+    error: string | null;
+    result: Record<string, unknown> | null;
   }[];
 }
 

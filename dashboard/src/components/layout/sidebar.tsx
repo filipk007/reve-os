@@ -16,6 +16,7 @@ import {
   Blocks,
   Bug,
   FlaskConical,
+  Layers,
   Send,
   FolderTree,
   ShieldCheck,
@@ -54,6 +55,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/context", label: "Context", icon: FolderTree, shortcut: "4" },
       { href: "/quality", label: "Quality", icon: ShieldCheck, shortcut: "5" },
       { href: "/debugger", label: "Debugger", icon: Bug, shortcut: "6" },
+      { href: "/batch", label: "Batch", icon: Layers, shortcut: "7" },
     ],
   },
 ];
@@ -190,6 +192,7 @@ export function Sidebar() {
     { href: "/context", label: "Context", icon: FolderTree },
     { href: "/quality", label: "Quality", icon: ShieldCheck },
     { href: "/debugger", label: "Debugger", icon: Bug },
+    { href: "/batch", label: "Batch", icon: Layers },
   ];
 
   return (

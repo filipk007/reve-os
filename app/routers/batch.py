@@ -238,7 +238,88 @@ async def batch_status(batch_id: str, request: Request):
                 "input_tokens_est": j.input_tokens_est,
                 "output_tokens_est": j.output_tokens_est,
                 "cost_est_usd": j.cost_est_usd,
+                "error": j.error,
+                "result": j.result,
             }
             for j in jobs
         ],
     }
+
+
+@router.post("/queue/pause")
+async def pause_queue(request: Request):
+    queue = request.app.state.job_queue
+    queue.pause()
+    return {"ok": True}
+
+
+@router.post("/queue/resume")
+async def resume_queue(request: Request):
+    queue = request.app.state.job_queue
+    queue.resume()
+    return {"ok": True}
+
+
+@router.get("/queue/status")
+async def queue_status(request: Request):
+    queue = request.app.state.job_queue
+    return {
+        "paused": queue.is_paused,
+        "pending": queue.pending,
+        "total": queue.total,
+    }
+
+
+@router.post("/batch/{batch_id}/retry")
+async def retry_batch(batch_id: str, request: Request):
+    queue = request.app.state.job_queue
+    jobs = queue.get_batch_jobs(batch_id)
+    if jobs is None:
+        return {"error": True, "error_message": f"Batch {batch_id} not found"}
+
+    body = await request.json() if request.headers.get("content-length", "0") != "0" else {}
+    row_patches = body.get("rows", {})
+
+    dead_jobs = [j for j in jobs if j.status in ("failed", "dead_letter")]
+    if not dead_jobs:
+        return {"error": True, "error_message": "No failed jobs to retry"}
+
+    new_job_ids = []
+    for j in dead_jobs:
+        data = dict(j.data)
+        if j.id in row_patches:
+            data.update(row_patches[j.id])
+        job_id = await queue.enqueue(
+            skill=j.skill,
+            data=data,
+            instructions=j.instructions,
+            model=j.model,
+            callback_url=j.callback_url,
+            row_id=j.row_id,
+            priority=j.priority,
+            batch_id=batch_id,
+        )
+        new_job_ids.append(job_id)
+
+    return {
+        "batch_id": batch_id,
+        "retried": len(new_job_ids),
+        "job_ids": new_job_ids,
+    }
+
+
+@router.post("/scheduled/{batch_id}/cancel")
+async def cancel_scheduled_batch(batch_id: str, request: Request):
+    scheduler = request.app.state.scheduler
+    batches = scheduler.get_scheduled()
+    target = next((b for b in batches if b["id"] == batch_id), None)
+    if target is None:
+        return {"error": True, "error_message": f"Scheduled batch {batch_id} not found"}
+    if target["status"] != "scheduled":
+        return {"error": True, "error_message": f"Batch {batch_id} is already {target['status']}"}
+
+    # Access the internal batch object to set status
+    sb = scheduler._batches.get(batch_id)
+    if sb:
+        sb.status = "cancelled"
+    return {"ok": True}

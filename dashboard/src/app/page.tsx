@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -446,7 +447,9 @@ function FunctionBuilderPanel({
     }
     setSaving(true);
     try {
-      await createFunction({ name, description, folder, inputs, outputs, steps });
+      const cleanInputs = inputs.filter(inp => inp.name.trim());
+      const cleanOutputs = outputs.filter(out => out.key.trim());
+      await createFunction({ name, description, folder, inputs: cleanInputs, outputs: cleanOutputs, steps });
       toast.success(`Function "${name}" created`);
       onCreated();
     } catch (e) {
@@ -459,6 +462,18 @@ function FunctionBuilderPanel({
   const handleRegenerate = () => {
     setStep("describe");
   };
+
+  // Input CRUD
+  const handleAddInput = () => setInputs([...inputs, { name: "", type: "string", required: false, description: "" }]);
+  const handleRemoveInput = (i: number) => setInputs(inputs.filter((_, idx) => idx !== i));
+  const handleUpdateInput = (i: number, field: keyof FunctionInput, value: string | boolean) =>
+    setInputs(inputs.map((inp, idx) => idx === i ? { ...inp, [field]: value } : inp));
+
+  // Output CRUD
+  const handleAddOutput = () => setOutputs([...outputs, { key: "", type: "string", description: "" }]);
+  const handleRemoveOutput = (i: number) => setOutputs(outputs.filter((_, idx) => idx !== i));
+  const handleUpdateOutput = (i: number, field: keyof FunctionOutput, value: string) =>
+    setOutputs(outputs.map((out, idx) => idx === i ? { ...out, [field]: value } : out));
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -562,30 +577,85 @@ function FunctionBuilderPanel({
 
             {/* Inputs */}
             <div>
-              <div className="text-xs font-medium text-clay-300 mb-1">Inputs ({inputs.length})</div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-xs font-medium text-clay-300">Inputs ({inputs.length})</div>
+                <button onClick={handleAddInput} className="flex items-center gap-1 text-[10px] text-clay-300 hover:text-clay-100">
+                  <Plus className="h-3 w-3" /> Add
+                </button>
+              </div>
               <div className="space-y-1">
                 {inputs.map((inp, i) => (
-                  <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded bg-clay-900/50 border border-clay-700 text-xs">
-                    <span className="font-medium text-clay-100 flex-1">{inp.name}</span>
-                    <span className="text-clay-300">({inp.type})</span>
-                    {inp.required && <span className="text-red-400 text-[10px]">required</span>}
+                  <div key={i} className="group flex items-center gap-1.5 px-2 py-1 rounded bg-clay-900/50 border border-clay-700 text-xs">
+                    <Input
+                      value={inp.name}
+                      onChange={(e) => handleUpdateInput(i, "name", e.target.value)}
+                      placeholder="field_name"
+                      className="h-6 flex-1 bg-transparent border-0 px-1 text-xs text-clay-100 focus-visible:ring-0"
+                    />
+                    <Select value={inp.type} onValueChange={(v) => handleUpdateInput(i, "type", v)}>
+                      <SelectTrigger className="h-6 w-[72px] bg-transparent border-0 px-1 text-[10px] text-clay-300 focus:ring-0">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {["string", "number", "url", "email", "boolean"].map(t => (
+                          <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Checkbox
+                      checked={inp.required}
+                      onCheckedChange={(v) => handleUpdateInput(i, "required", !!v)}
+                      className="h-3.5 w-3.5"
+                    />
+                    <span className="text-[10px] text-clay-300">req</span>
+                    <button
+                      onClick={() => handleRemoveInput(i)}
+                      className="opacity-0 group-hover:opacity-100 text-clay-300 hover:text-red-400 transition-opacity"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
                   </div>
                 ))}
-                {inputs.length === 0 && <div className="text-xs text-clay-300 py-1">No inputs — add them after creation</div>}
+                {inputs.length === 0 && <div className="text-xs text-clay-300 py-1">No inputs yet</div>}
               </div>
             </div>
 
             {/* Outputs */}
             <div>
-              <div className="text-xs font-medium text-clay-300 mb-1">Outputs ({outputs.length})</div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-xs font-medium text-clay-300">Outputs ({outputs.length})</div>
+                <button onClick={handleAddOutput} className="flex items-center gap-1 text-[10px] text-clay-300 hover:text-clay-100">
+                  <Plus className="h-3 w-3" /> Add
+                </button>
+              </div>
               <div className="space-y-1">
                 {outputs.map((out, i) => (
-                  <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded bg-clay-900/50 border border-clay-700 text-xs">
-                    <span className="font-medium text-kiln-teal flex-1">{out.key}</span>
-                    <span className="text-clay-300">({out.type})</span>
+                  <div key={i} className="group flex items-center gap-1.5 px-2 py-1 rounded bg-clay-900/50 border border-clay-700 text-xs">
+                    <Input
+                      value={out.key}
+                      onChange={(e) => handleUpdateOutput(i, "key", e.target.value)}
+                      placeholder="output_key"
+                      className="h-6 flex-1 bg-transparent border-0 px-1 text-xs text-kiln-teal focus-visible:ring-0"
+                    />
+                    <Select value={out.type} onValueChange={(v) => handleUpdateOutput(i, "type", v)}>
+                      <SelectTrigger className="h-6 w-[72px] bg-transparent border-0 px-1 text-[10px] text-clay-300 focus:ring-0">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {["string", "number", "boolean", "json"].map(t => (
+                          <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <button
+                      onClick={() => handleRemoveOutput(i)}
+                      className="opacity-0 group-hover:opacity-100 text-clay-300 hover:text-red-400 transition-opacity"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
                   </div>
                 ))}
-                {outputs.length === 0 && <div className="text-xs text-clay-300 py-1">No outputs — add them after creation</div>}
+                {outputs.length === 0 && <div className="text-xs text-clay-300 py-1">No outputs yet</div>}
               </div>
             </div>
 

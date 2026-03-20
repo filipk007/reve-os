@@ -169,6 +169,32 @@ export function fetchScheduledBatches(): Promise<{
   return apiFetch("/scheduled");
 }
 
+export function pauseQueue(): Promise<{ ok: boolean }> {
+  return apiFetch("/queue/pause", { method: "POST" });
+}
+
+export function resumeQueue(): Promise<{ ok: boolean }> {
+  return apiFetch("/queue/resume", { method: "POST" });
+}
+
+export function fetchQueueStatus(): Promise<{ paused: boolean; pending: number; total: number }> {
+  return apiFetch("/queue/status");
+}
+
+export function retryBatch(
+  batchId: string,
+  rows?: Record<string, Record<string, unknown>>
+): Promise<{ batch_id: string; retried: number; job_ids: string[] }> {
+  return apiFetch(`/batch/${batchId}/retry`, {
+    method: "POST",
+    body: JSON.stringify(rows ? { rows } : {}),
+  });
+}
+
+export function cancelScheduledBatch(batchId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/scheduled/${batchId}/cancel`, { method: "POST" });
+}
+
 // Destinations
 export function fetchDestinations(): Promise<{ destinations: Destination[] }> {
   return apiFetch("/destinations");
