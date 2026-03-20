@@ -47,6 +47,8 @@ from app.routers import (
     pipeline,
     pipelines,
     plays,
+    portal,
+    sheets,
     usage,
     webhook,
 )
@@ -92,6 +94,8 @@ app.include_router(enrichment.router)
 app.include_router(datasets.router)
 app.include_router(functions.router)
 app.include_router(evals.router)
+app.include_router(sheets.router)
+app.include_router(portal.router)
 
 
 @app.on_event("startup")
@@ -154,6 +158,28 @@ async def startup():
 
     # Execution history (function run records)
     app.state.execution_history = ExecutionHistory(data_dir=settings.data_dir)
+
+    # Portal store (client engagement hubs)
+    from app.core.portal_store import PortalStore
+    app.state.portal_store = PortalStore(
+        clients_dir=settings.clients_dir,
+        data_dir=settings.data_dir,
+    )
+
+    # Google Sheets integration (graceful degradation if gws not installed)
+    from app.core.sheets_client import SheetsClient
+    from app.core.drive_sync import DriveSync
+    sheets_client = SheetsClient()
+    if sheets_client.available:
+        app.state.drive_sync = DriveSync(sheets_client)
+        # Portal sync (pushes portal content to Google Docs)
+        from app.core.portal_sync import PortalSync
+        app.state.portal_sync = PortalSync(sheets_client, app.state.portal_store)
+        logger.info("  Google Sheets: enabled")
+    else:
+        app.state.drive_sync = None
+        app.state.portal_sync = None
+        logger.info("  Google Sheets: disabled (gws CLI not found)")
 
     # Skill version store
     app.state.skill_version_store = SkillVersionStore(

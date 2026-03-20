@@ -41,6 +41,20 @@ class ExecutionHistory:
             logger.warning("[execution_history] Failed to save %s: %s", exec_id, e)
         return exec_id
 
+    def update(self, function_id: str, exec_id: str, updates: dict) -> dict | None:
+        """Update fields on an existing execution record. Returns updated record or None."""
+        path = self._base_dir / function_id / f"{exec_id}.json"
+        if not path.exists():
+            return None
+        try:
+            record = json.loads(path.read_text())
+            record.update(updates)
+            atomic_write_json(path, record)
+            return record
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning("[execution_history] Failed to update %s: %s", exec_id, e)
+            return None
+
     def list(self, function_id: str, limit: int = 20) -> list[dict]:
         """List recent executions for a function, sorted by mtime desc."""
         func_dir = self._base_dir / function_id

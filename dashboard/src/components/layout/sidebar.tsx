@@ -19,6 +19,7 @@ import {
   Send,
   FolderTree,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -54,6 +55,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/context", label: "Context", icon: FolderTree, shortcut: "4" },
       { href: "/quality", label: "Quality", icon: ShieldCheck, shortcut: "5" },
       { href: "/debugger", label: "Debugger", icon: Bug, shortcut: "6" },
+      { href: "/clients", label: "Clients", icon: Users, shortcut: "7" },
     ],
   },
 ];
@@ -84,6 +86,9 @@ const ACCENT_CLASSES: Record<string, { active: string; text: string }> = {
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Hide sidebar on public portal view pages
+  if (pathname.startsWith("/portal-view/")) return null;
 
   useEffect(() => {
     const handleToggle = () => setMobileOpen((prev) => !prev);
@@ -190,6 +195,7 @@ export function Sidebar() {
     { href: "/context", label: "Context", icon: FolderTree },
     { href: "/quality", label: "Quality", icon: ShieldCheck },
     { href: "/debugger", label: "Debugger", icon: Bug },
+    { href: "/clients", label: "Clients", icon: Users },
   ];
 
   return (

@@ -1,0 +1,118 @@
+from pydantic import BaseModel, Field
+
+
+# ── SOP Models ────────────────────────────────────────────
+
+class CreateSOPRequest(BaseModel):
+    title: str = Field(..., description="SOP title")
+    category: str = Field("general", description="Category: onboarding, reporting, communication, approval, general")
+    content: str = Field("", description="Markdown content")
+
+
+class UpdateSOPRequest(BaseModel):
+    title: str | None = Field(None, description="Updated title")
+    category: str | None = Field(None, description="Updated category")
+    content: str | None = Field(None, description="Updated content")
+
+
+class SOPResponse(BaseModel):
+    id: str
+    title: str
+    category: str
+    content: str
+    created_at: float
+    updated_at: float
+
+
+# ── Update Models ─────────────────────────────────────────
+
+class CreateUpdateRequest(BaseModel):
+    type: str = Field("update", description="Type: update, milestone, deliverable, note")
+    title: str = Field(..., description="Update title")
+    body: str = Field("", description="Markdown body")
+    media_ids: list[str] = Field(default_factory=list, description="Attached media IDs")
+    create_action: bool = Field(False, description="Auto-create client review action for deliverables")
+
+
+class UpdateResponse(BaseModel):
+    id: str
+    type: str
+    title: str
+    body: str
+    pinned: bool
+    media_ids: list[str]
+    created_at: float
+
+
+# ── Action Item Models ────────────────────────────────────
+
+class CreateActionRequest(BaseModel):
+    title: str = Field(..., description="Action item title")
+    description: str = Field("", description="Optional details")
+    owner: str = Field("internal", description="Owner: internal or client")
+    due_date: str | None = Field(None, description="ISO date YYYY-MM-DD")
+    priority: str = Field("normal", description="Priority: high, normal, low")
+
+
+class UpdateActionRequest(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    owner: str | None = None
+    due_date: str | None = None
+    priority: str | None = None
+    status: str | None = None
+
+
+# ── Media Models ──────────────────────────────────────────
+
+class MediaResponse(BaseModel):
+    id: str
+    filename: str
+    original_name: str
+    mime_type: str
+    size_bytes: int
+    caption: str
+    url: str
+    created_at: float
+
+
+# ── Portal Metadata ───────────────────────────────────────
+
+class UpdatePortalRequest(BaseModel):
+    status: str | None = Field(None, description="Client status: active, onboarding, paused, churned")
+    notes: str | None = Field(None, description="Internal notes")
+
+
+class PortalMeta(BaseModel):
+    slug: str
+    status: str = "active"
+    notes: str = ""
+    gws_folder_id: str | None = None
+    gws_doc_id: str | None = None
+    last_synced_at: float | None = None
+    share_token: str | None = None
+    share_token_created_at: float | None = None
+    created_at: float = 0.0
+    updated_at: float = 0.0
+
+
+# ── Onboarding ───────────────────────────────────────────
+
+class OnboardRequest(BaseModel):
+    slug: str = Field(..., description="URL-safe lowercase slug")
+    name: str = Field(..., description="Client display name")
+
+
+# ── Overview (composite) ─────────────────────────────────
+
+class PortalOverview(BaseModel):
+    slug: str
+    name: str
+    status: str
+    sop_count: int
+    update_count: int
+    media_count: int
+    action_count: int = 0
+    open_client_actions: int = 0
+    last_activity: float | None
+    has_gws_sync: bool

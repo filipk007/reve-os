@@ -10,10 +10,13 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  FileSpreadsheet,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import type { ExecutionRecord } from "@/lib/types";
-import { fetchExecutions } from "@/lib/api";
+import { fetchExecutions, exportExecutionToSheets, fetchSheetsStatus } from "@/lib/api";
 import { ExecutionTrace } from "./execution-trace";
 
 const STATUS_CONFIG = {
@@ -44,6 +47,8 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showInputs, setShowInputs] = useState<Set<string>>(new Set());
   const [showOutputs, setShowOutputs] = useState<Set<string>>(new Set());
+  const [sheetsAvailable, setSheetsAvailable] = useState(false);
+  const [exportingId, setExportingId] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -51,7 +56,30 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
       .then((res) => setRecords(res.executions))
       .catch(() => setRecords([]))
       .finally(() => setLoading(false));
+    fetchSheetsStatus()
+      .then((res) => setSheetsAvailable(res.available))
+      .catch(() => setSheetsAvailable(false));
   }, [functionId]);
+
+  const handleExportToSheet = async (rec: ExecutionRecord) => {
+    setExportingId(rec.id);
+    try {
+      const result = await exportExecutionToSheets(functionId, rec.id);
+      setRecords((prev) =>
+        prev.map((r) => (r.id === rec.id ? { ...r, sheet_url: result.url } : r))
+      );
+      toast.success("Sheet created", {
+        action: {
+          label: "Open",
+          onClick: () => window.open(result.url, "_blank"),
+        },
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExportingId(null);
+    }
+  };
 
   const toggleInputs = (id: string) => {
     setShowInputs((prev) => {
@@ -202,6 +230,39 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
                       {JSON.stringify(rec.outputs, null, 2)}
                     </pre>
                   )}
+                </div>
+
+                {/* Google Sheets export */}
+                <div className="flex items-center gap-2">
+                  {rec.sheet_url ? (
+                    <a
+                      href={rec.sheet_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                    >
+                      <FileSpreadsheet className="h-3.5 w-3.5" />
+                      View Sheet
+                    </a>
+                  ) : sheetsAvailable ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={exportingId === rec.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleExportToSheet(rec);
+                      }}
+                      className="h-6 px-1.5 text-xs text-clay-400 hover:text-clay-200"
+                    >
+                      {exportingId === rec.id ? (
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      ) : (
+                        <FileSpreadsheet className="h-3 w-3 mr-1" />
+                      )}
+                      Export to Sheet
+                    </Button>
+                  ) : null}
                 </div>
 
                 {/* Execution trace */}

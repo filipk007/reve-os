@@ -26,6 +26,10 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
         if request.method == "GET" and path.startswith(self.PUBLIC_GET_PREFIXES):
             return await call_next(request)
 
+        # Allow public portal view (token-validated in endpoint)
+        if request.method == "GET" and path.endswith("/view"):
+            return await call_next(request)
+
         # Everything else requires the API key
         provided = request.headers.get("x-api-key", "")
         if not hmac.compare_digest(provided, settings.webhook_api_key):

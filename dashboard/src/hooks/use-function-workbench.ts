@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import {
   fetchFunctions,
   fetchFunction,
+  fetchSheetsStatus,
+  exportRunToSheets,
   runFunction,
 } from "@/lib/api";
 import type { FunctionDefinition } from "@/lib/types";
@@ -50,6 +52,8 @@ export interface UseFunctionWorkbenchReturn {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   autoMapConfidence: Record<string, MatchConfidence>;
   spreadsheetRows: SpreadsheetRow[];
+  sheetsAvailable: boolean;
+  exportingSheet: boolean;
 
   // Actions
   handleFileUpload: (file: File) => void;
@@ -61,6 +65,7 @@ export interface UseFunctionWorkbenchReturn {
   handleRetryFailed: () => Promise<void>;
   handleRetrySelected: (rowIds: string[]) => Promise<void>;
   handleExport: (selectedOnly?: boolean) => void;
+  handleExportToSheets: () => Promise<void>;
   detectColumnType: (header: string, values: string[]) => string;
   resetWorkbench: () => void;
   canRun: boolean;
@@ -85,13 +90,18 @@ export function useFunctionWorkbench(): UseFunctionWorkbenchReturn {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [autoMapConfidence, setAutoMapConfidence] = useState<Record<string, MatchConfidence>>({});
+  const [sheetsAvailable, setSheetsAvailable] = useState(false);
+  const [exportingSheet, setExportingSheet] = useState(false);
 
-  // Load functions
+  // Load functions + check sheets availability
   useEffect(() => {
     fetchFunctions().then(res => {
       setFunctions(res.functions);
       setFunctionsByFolder(res.by_folder);
     }).catch(() => {});
+    fetchSheetsStatus()
+      .then(res => setSheetsAvailable(res.available))
+      .catch(() => setSheetsAvailable(false));
   }, []);
 
   // Pre-select function from URL param
@@ -418,6 +428,37 @@ export function useFunctionWorkbench(): UseFunctionWorkbenchReturn {
     setRunning(false);
   }, [csvData, selectedFunction, mappings]);
 
+  const handleExportToSheets = useCallback(async () => {
+    if (!selectedFunction || results.length === 0) return;
+
+    const doneRows = results.filter(r => r.status === "done" && r.output);
+    if (doneRows.length === 0) {
+      toast.error("No successful rows to export");
+      return;
+    }
+
+    setExportingSheet(true);
+    try {
+      const inputs = doneRows.map(r => r.input);
+      const outputs = doneRows.map(r => r.output as Record<string, unknown>);
+      const res = await exportRunToSheets(selectedFunction.id, {
+        inputs,
+        outputs,
+        description: `Batch run: ${doneRows.length} rows`,
+      });
+      toast.success("Sheet created", {
+        action: {
+          label: "Open",
+          onClick: () => window.open(res.url, "_blank"),
+        },
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to export to Google Sheets");
+    } finally {
+      setExportingSheet(false);
+    }
+  }, [selectedFunction, results]);
+
   const detectColumnType = useCallback((header: string, values: string[]) => {
     const sample = values.filter(v => v).slice(0, 10);
     if (sample.every(v => /^[\w.+-]+@[\w.-]+\.\w+$/.test(v))) return "email";
@@ -455,6 +496,8 @@ export function useFunctionWorkbench(): UseFunctionWorkbenchReturn {
     fileInputRef,
     autoMapConfidence,
     spreadsheetRows,
+    sheetsAvailable,
+    exportingSheet,
     handleFileUpload,
     handleDrop,
     handleSelectFunction,
@@ -464,6 +507,7 @@ export function useFunctionWorkbench(): UseFunctionWorkbenchReturn {
     handleRetryFailed,
     handleRetrySelected,
     handleExport,
+    handleExportToSheets,
     detectColumnType,
     resetWorkbench,
     canRun,

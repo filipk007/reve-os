@@ -541,6 +541,31 @@ export interface ExecutionRecord {
   status: "success" | "error" | "partial";
   warnings: string[];
   step_count: number;
+  sheet_url?: string;
+}
+
+// Google Sheets integration types
+export interface SheetExportResult {
+  spreadsheet_id: string;
+  url: string;
+  title: string;
+}
+
+export interface SheetInfo {
+  id: string;
+  title: string;
+  created_at: string;
+  url: string;
+}
+
+export interface FolderSheetList {
+  folder: string;
+  sheets: SheetInfo[];
+  total: number;
+}
+
+export interface SheetsStatus {
+  available: boolean;
 }
 
 export interface AssemblyReasoning {
@@ -600,4 +625,131 @@ export interface AnalysisResult {
   error_message: string | null;
   created_at: number;
   completed_at: number | null;
+}
+
+// ── Portal types ─────────────────────────────────────────
+
+export interface PortalOverview {
+  slug: string;
+  name: string;
+  status: string;
+  sop_count: number;
+  update_count: number;
+  media_count: number;
+  action_count: number;
+  open_client_actions: number;
+  last_activity: number | null;
+  has_gws_sync: boolean;
+}
+
+export interface PortalMeta {
+  slug: string;
+  status: string;
+  notes: string;
+  gws_folder_id: string | null;
+  gws_doc_id: string | null;
+  last_synced_at: number | null;
+  share_token: string | null;
+  share_token_created_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface PortalSOP {
+  id: string;
+  title: string;
+  category: string;
+  content: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface PortalUpdate {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  pinned: boolean;
+  media_ids: string[];
+  created_at: number;
+}
+
+export interface PortalMedia {
+  id: string;
+  filename: string;
+  original_name: string;
+  mime_type: string;
+  size_bytes: number;
+  caption: string;
+  url: string;
+  created_at: number;
+}
+
+export interface PortalDetail {
+  slug: string;
+  name: string;
+  meta: PortalMeta;
+  sops: PortalSOP[];
+  recent_updates: PortalUpdate[];
+  media: PortalMedia[];
+  actions: PortalAction[];
+}
+
+// Action Items
+export type ActionOwner = "internal" | "client";
+export type ActionStatus = "open" | "in_progress" | "done";
+export type ActionPriority = "high" | "normal" | "low";
+
+export interface PortalAction {
+  id: string;
+  title: string;
+  description: string;
+  owner: ActionOwner;
+  due_date: string | null;
+  status: ActionStatus;
+  priority: ActionPriority;
+  created_at: number;
+  updated_at: number;
+}
+
+// SOP Templates
+export interface SOPTemplate {
+  id: string;
+  title: string;
+  category: string;
+  content: string;
+  is_template: boolean;
+}
+
+export interface OnboardResult {
+  slug: string;
+  name: string;
+  status: string;
+  sops_created: number;
+  sop_ids: string[];
+}
+
+// Share Links
+export interface ShareToken {
+  token: string;
+  url: string;
+  created_at: number;
+}
+
+export interface PublicPortalView {
+  slug: string;
+  name: string;
+  status: string;
+  sops: PortalSOP[];
+  recent_updates: PortalUpdate[];
+  actions: PortalAction[];
+}
+
+export interface PortalSyncStatus {
+  slug: string;
+  synced: boolean;
+  available: boolean;
+  last_synced_at: number | null;
+  doc_id: string | null;
+  url: string | null;
 }

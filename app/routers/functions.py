@@ -348,6 +348,139 @@ async def get_tool_detail(request: Request, tool_id: str):
     )
 
 
+@router.post("/functions/{func_id}/export-sheet")
+async def export_to_sheet(request: Request, func_id: str):
+    """Export function run results to a Google Sheet."""
+    drive_sync = getattr(request.app.state, "drive_sync", None)
+    if not drive_sync or not drive_sync.available:
+        return JSONResponse(
+            status_code=503,
+            content={"error": True, "error_message": "Google Sheets integration not available"},
+        )
+
+    store = request.app.state.function_store
+    func = store.get(func_id)
+    if func is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Function '{func_id}' not found"},
+        )
+
+    body = await request.json()
+    inputs = body.get("inputs", [])
+    outputs = body.get("outputs", [])
+    description = body.get("description", "")
+    run_metadata = body.get("metadata", {})
+
+    if not inputs or not outputs:
+        return JSONResponse(
+            status_code=400,
+            content={"error": True, "error_message": "inputs and outputs are required"},
+        )
+
+    try:
+        result = await drive_sync.export_run(
+            folder_name=func.folder,
+            function_name=func.name,
+            description=description,
+            inputs=inputs,
+            outputs=outputs,
+            run_metadata=run_metadata,
+        )
+        logger.info("[functions] Exported sheet for '%s': %s", func_id, result["url"])
+        return result
+    except Exception as e:
+        logger.error("[functions] Sheet export failed for '%s': %s", func_id, e)
+        return JSONResponse(
+            status_code=500,
+            content={"error": True, "error_message": f"Sheet export failed: {e}"},
+        )
+
+
+@router.post("/functions/{func_id}/executions/{exec_id}/export-sheet")
+async def export_execution_to_sheet(request: Request, func_id: str, exec_id: str):
+    """Export a past execution record to a Google Sheet."""
+    drive_sync = getattr(request.app.state, "drive_sync", None)
+    if not drive_sync or not drive_sync.available:
+        return JSONResponse(
+            status_code=503,
+            content={"error": True, "error_message": "Google Sheets integration not available"},
+        )
+
+    store = request.app.state.function_store
+    func = store.get(func_id)
+    if func is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Function '{func_id}' not found"},
+        )
+
+    execution_history = getattr(request.app.state, "execution_history", None)
+    if execution_history is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": "Execution history not available"},
+        )
+
+    record = execution_history.get(func_id, exec_id)
+    if record is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Execution '{exec_id}' not found"},
+        )
+
+    inputs = record.get("inputs", {})
+    outputs = record.get("outputs", {})
+    # Single execution: wrap as single-element lists
+    inputs_list = [inputs] if isinstance(inputs, dict) else inputs
+    outputs_list = [outputs] if isinstance(outputs, dict) else outputs
+
+    try:
+        result = await drive_sync.export_run(
+            folder_name=func.folder,
+            function_name=func.name,
+            description=f"Execution {exec_id}",
+            inputs=inputs_list,
+            outputs=outputs_list,
+            run_metadata={
+                "execution_id": exec_id,
+                "duration_ms": record.get("duration_ms", 0),
+                "status": record.get("status", "unknown"),
+            },
+        )
+        # Store sheet URL back on the execution record
+        execution_history.update(func_id, exec_id, {"sheet_url": result["url"]})
+        logger.info("[functions] Exported execution '%s' to sheet: %s", exec_id, result["url"])
+        return result
+    except Exception as e:
+        logger.error("[functions] Execution sheet export failed: %s", e)
+        return JSONResponse(
+            status_code=500,
+            content={"error": True, "error_message": f"Sheet export failed: {e}"},
+        )
+
+
+@router.get("/functions/folders/{name}/sheets")
+async def list_folder_sheets(request: Request, name: str):
+    """List all Google Sheets in a function folder's Drive folder."""
+    drive_sync = getattr(request.app.state, "drive_sync", None)
+    if not drive_sync or not drive_sync.available:
+        return JSONResponse(
+            status_code=503,
+            content={"error": True, "error_message": "Google Sheets integration not available"},
+        )
+
+    try:
+        sheets = await drive_sync.list_folder_sheets(name)
+        return {"folder": name, "sheets": sheets, "total": len(sheets)}
+    except Exception as e:
+        logger.error("[functions] Failed to list sheets for folder '%s': %s", name, e)
+        return JSONResponse(
+            status_code=500,
+            content={"error": True, "error_message": str(e)},
+        )
+
+
 @router.get("/functions/{func_id}/executions")
 async def list_executions(request: Request, func_id: str, limit: int = 20):
     """List recent execution records for a function."""

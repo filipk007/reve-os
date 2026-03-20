@@ -13,6 +13,7 @@ import type {
   FeedbackEntry,
   FeedbackSummary,
   FolderDefinition,
+  FolderSheetList,
   FunctionDefinition,
   FunctionInput,
   FunctionOutput,
@@ -24,14 +25,28 @@ import type {
   JobListItem,
   KnowledgeBaseFile,
   LeadListResult,
+  OnboardResult,
   PipelineDefinition,
   PipelineStepConfig,
   PipelineTestResult,
   PlayDefinition,
+  PortalAction,
+  PortalDetail,
+  PortalMedia,
+  PortalMeta,
+  PortalOverview,
+  PortalSOP,
+  PortalSyncStatus,
+  PortalUpdate,
   PromptPreview,
+  PublicPortalView,
   PushResult,
   QualityAlert,
   RunStageRequest,
+  ShareToken,
+  SheetExportResult,
+  SheetsStatus,
+  SOPTemplate,
   StageStatus,
   Stats,
   ToolCategory,
@@ -1131,4 +1146,238 @@ export function generateFunctionClayConfig(
     method: "POST",
     body: JSON.stringify(body || {}),
   });
+}
+
+// ── Google Sheets Integration ────────────────────────────
+
+export function fetchSheetsStatus(): Promise<SheetsStatus> {
+  return apiFetch("/sheets/status");
+}
+
+export function exportRunToSheets(
+  functionId: string,
+  body: {
+    inputs: Record<string, unknown>[];
+    outputs: Record<string, unknown>[];
+    description?: string;
+    metadata?: Record<string, unknown>;
+  },
+): Promise<SheetExportResult> {
+  return apiFetch(`/functions/${functionId}/export-sheet`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function exportExecutionToSheets(
+  functionId: string,
+  execId: string,
+): Promise<SheetExportResult> {
+  return apiFetch(`/functions/${functionId}/executions/${execId}/export-sheet`, {
+    method: "POST",
+  });
+}
+
+export function listFolderSheets(folderName: string): Promise<FolderSheetList> {
+  return apiFetch(`/functions/folders/${encodeURIComponent(folderName)}/sheets`);
+}
+
+export function listDriveFolders(): Promise<{
+  folders: { name: string; id: string; created_at: string }[];
+}> {
+  return apiFetch("/sheets/folders");
+}
+
+// ── Portal (Client Engagement Hub) ──────────────────────
+
+export function fetchPortals(): Promise<{ portals: PortalOverview[]; total: number }> {
+  return apiFetch("/portal");
+}
+
+export function fetchPortal(slug: string): Promise<PortalDetail> {
+  return apiFetch(`/portal/${slug}`);
+}
+
+export function updatePortal(
+  slug: string,
+  body: { status?: string; notes?: string }
+): Promise<PortalMeta> {
+  return apiFetch(`/portal/${slug}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+// SOPs
+export function fetchSOPs(slug: string): Promise<{ sops: PortalSOP[]; total: number }> {
+  return apiFetch(`/portal/${slug}/sops`);
+}
+
+export function createSOP(
+  slug: string,
+  body: { title: string; category?: string; content?: string }
+): Promise<PortalSOP> {
+  return apiFetch(`/portal/${slug}/sops`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchSOP(slug: string, sopId: string): Promise<PortalSOP> {
+  return apiFetch(`/portal/${slug}/sops/${sopId}`);
+}
+
+export function updateSOP(
+  slug: string,
+  sopId: string,
+  body: { title?: string; category?: string; content?: string }
+): Promise<PortalSOP> {
+  return apiFetch(`/portal/${slug}/sops/${sopId}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteSOP(slug: string, sopId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/portal/${slug}/sops/${sopId}`, { method: "DELETE" });
+}
+
+// Updates
+export function fetchPortalUpdates(
+  slug: string,
+  params?: { limit?: number; offset?: number }
+): Promise<{ updates: PortalUpdate[]; total: number }> {
+  const qs = new URLSearchParams();
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.offset) qs.set("offset", String(params.offset));
+  const q = qs.toString();
+  return apiFetch(`/portal/${slug}/updates${q ? `?${q}` : ""}`);
+}
+
+export function createPortalUpdate(
+  slug: string,
+  body: { type?: string; title: string; body?: string; media_ids?: string[]; create_action?: boolean }
+): Promise<PortalUpdate> {
+  return apiFetch(`/portal/${slug}/updates`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function toggleUpdatePin(slug: string, updateId: string): Promise<PortalUpdate> {
+  return apiFetch(`/portal/${slug}/updates/${updateId}/pin`, { method: "PUT" });
+}
+
+export function deletePortalUpdate(slug: string, updateId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/portal/${slug}/updates/${updateId}`, { method: "DELETE" });
+}
+
+// Media
+export function fetchPortalMedia(slug: string): Promise<{ media: PortalMedia[]; total: number }> {
+  return apiFetch(`/portal/${slug}/media`);
+}
+
+export function uploadPortalMedia(
+  slug: string,
+  formData: FormData
+): Promise<PortalMedia> {
+  return apiFetch(`/portal/${slug}/media`, {
+    method: "POST",
+    body: formData,
+    headers: { "X-API-Key": API_KEY },
+  });
+}
+
+export function deletePortalMedia(slug: string, mediaId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/portal/${slug}/media/${mediaId}`, { method: "DELETE" });
+}
+
+// Actions
+export function fetchActions(slug: string): Promise<{ actions: PortalAction[]; total: number }> {
+  return apiFetch(`/portal/${slug}/actions`);
+}
+
+export function createAction(
+  slug: string,
+  body: { title: string; description?: string; owner?: string; due_date?: string | null; priority?: string }
+): Promise<PortalAction> {
+  return apiFetch(`/portal/${slug}/actions`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateAction(
+  slug: string,
+  actionId: string,
+  body: Record<string, unknown>
+): Promise<PortalAction> {
+  return apiFetch(`/portal/${slug}/actions/${actionId}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function toggleAction(slug: string, actionId: string): Promise<PortalAction> {
+  return apiFetch(`/portal/${slug}/actions/${actionId}/toggle`, { method: "PUT" });
+}
+
+export function deleteAction(slug: string, actionId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/portal/${slug}/actions/${actionId}`, { method: "DELETE" });
+}
+
+// SOP Templates
+export function fetchSOPTemplates(): Promise<{ templates: SOPTemplate[]; total: number }> {
+  return apiFetch("/portal/templates/sops");
+}
+
+export function cloneSOPTemplates(
+  slug: string,
+  templateIds: string[]
+): Promise<{ cloned: number; sops: PortalSOP[] }> {
+  return apiFetch(`/portal/${slug}/sops/from-template`, {
+    method: "POST",
+    body: JSON.stringify({ template_ids: templateIds }),
+  });
+}
+
+// Onboarding
+export function onboardClient(body: { slug: string; name: string }): Promise<OnboardResult> {
+  return apiFetch("/portal/onboard", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+// Share Links
+export function createShareLink(slug: string): Promise<ShareToken> {
+  return apiFetch(`/portal/${slug}/share`, { method: "POST" });
+}
+
+export function revokeShareLink(slug: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/portal/${slug}/share`, { method: "DELETE" });
+}
+
+export async function fetchPublicPortal(slug: string, token: string): Promise<PublicPortalView> {
+  const res = await fetch(`${API_URL}/portal/${slug}/view?token=${encodeURIComponent(token)}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error_message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// GWS Sync
+export function syncPortal(slug: string): Promise<{
+  ok: boolean;
+  slug: string;
+  doc_id: string;
+  url: string;
+  synced_at: number;
+}> {
+  return apiFetch(`/portal/${slug}/sync`, { method: "POST" });
+}
+
+export function fetchSyncStatus(slug: string): Promise<PortalSyncStatus> {
+  return apiFetch(`/portal/${slug}/sync/status`);
 }

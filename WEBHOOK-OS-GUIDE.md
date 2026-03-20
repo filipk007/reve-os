@@ -1160,7 +1160,7 @@ related_concepts: ["[[writing-style]]", "[[b2b-outbound-patterns]]"]
 
 ### GTM Knowledge Available for Porting
 
-The Mangu GTM workspace (`gtm-workspace/operations/knowledge/`) contains 28 knowledge files across 5 domains that can be ported into the Webhook OS:
+The following knowledge files across 5 domains can be ported into the Webhook OS:
 
 #### Outbound Domain (5 files)
 | File | What It Contains | Useful For Skills |
