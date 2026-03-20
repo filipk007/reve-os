@@ -3,7 +3,7 @@
 import { useRef, useCallback } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import Papa from "papaparse";
-import type { Job } from "@/lib/types";
+import type { SpreadsheetRow } from "./types";
 import { useSpreadsheet } from "./use-spreadsheet";
 import { SpreadsheetToolbar } from "./spreadsheet-toolbar";
 import { SpreadsheetHeaderCell } from "./spreadsheet-header";
@@ -11,52 +11,46 @@ import { SpreadsheetRowComponent } from "./spreadsheet-row";
 import { SpreadsheetFooter } from "./spreadsheet-footer";
 
 export function SpreadsheetView({
-  jobs,
-  originalRows,
-  csvHeaders,
+  rows,
+  inputHeaders,
   onRetrySelected,
-  onPushSelected,
-  onRowClick,
+  onNewRun,
 }: {
-  jobs: Job[];
-  originalRows: Record<string, string>[];
-  csvHeaders: string[];
-  onRetrySelected?: (jobIds: string[]) => void;
-  onPushSelected?: (jobIds: string[]) => void;
-  onRowClick?: (job: Job) => void;
+  rows: SpreadsheetRow[];
+  inputHeaders: string[];
+  onRetrySelected?: (rowIds: string[]) => void;
+  onNewRun?: () => void;
 }) {
   const {
     table,
     stats,
-    selectedJobIds,
+    selectedRowIds,
     statusFilter,
     setStatusFilter,
     globalFilter,
     setGlobalFilter,
     selectAllFailed,
     clearSelection,
-  } = useSpreadsheet(jobs, originalRows, csvHeaders);
+  } = useSpreadsheet(rows, inputHeaders);
 
   const parentRef = useRef<HTMLDivElement>(null);
 
-  const { rows } = table.getRowModel();
+  const { rows: tableRows } = table.getRowModel();
 
   const virtualizer = useVirtualizer({
-    count: rows.length,
+    count: tableRows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 40,
     overscan: 15,
   });
 
   const downloadCsv = useCallback(() => {
-    const csvRows = jobs.map((job, i) => {
-      const original = originalRows[i] || {};
-      const result = job.result || {};
+    const csvRows = rows.map((row) => {
+      const result = row._result || {};
       return {
-        ...original,
-        _status: job.status,
-        _duration_ms: job.duration_ms,
-        _error: job.error || "",
+        ...row._original,
+        _status: row._status,
+        _error: row._error || "",
         ...Object.fromEntries(
           Object.entries(result).map(([k, v]) => [
             `_result_${k}`,
@@ -70,22 +64,19 @@ export function SpreadsheetView({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `batch-results-${Date.now()}.csv`;
+    a.download = `results-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [jobs, originalRows]);
+  }, [rows]);
 
   const exportSelected = useCallback(() => {
-    const selectedJobs = jobs.filter((j) => selectedJobIds.includes(j.id));
-    const csvRows = selectedJobs.map((job) => {
-      const idx = jobs.indexOf(job);
-      const original = originalRows[idx] || {};
-      const result = job.result || {};
+    const selected = rows.filter((r) => selectedRowIds.includes(r._id));
+    const csvRows = selected.map((row) => {
+      const result = row._result || {};
       return {
-        ...original,
-        _status: job.status,
-        _duration_ms: job.duration_ms,
-        _error: job.error || "",
+        ...row._original,
+        _status: row._status,
+        _error: row._error || "",
         ...Object.fromEntries(
           Object.entries(result).map(([k, v]) => [
             `_result_${k}`,
@@ -99,31 +90,26 @@ export function SpreadsheetView({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `batch-selected-${Date.now()}.csv`;
+    a.download = `results-selected-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [jobs, originalRows, selectedJobIds]);
+  }, [rows, selectedRowIds]);
 
   return (
-    <div className="rounded-xl border border-clay-500  overflow-hidden">
+    <div className="rounded-xl border border-clay-500 overflow-hidden">
       <SpreadsheetToolbar
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         globalFilter={globalFilter}
         onGlobalFilterChange={setGlobalFilter}
-        selectedCount={selectedJobIds.length}
+        selectedCount={selectedRowIds.length}
         failedCount={stats.failed}
         onRetrySelected={
-          onRetrySelected && selectedJobIds.length > 0
-            ? () => onRetrySelected(selectedJobIds)
+          onRetrySelected && selectedRowIds.length > 0
+            ? () => onRetrySelected(selectedRowIds)
             : undefined
         }
-        onPushSelected={
-          onPushSelected && selectedJobIds.length > 0
-            ? () => onPushSelected(selectedJobIds)
-            : undefined
-        }
-        onExportSelected={selectedJobIds.length > 0 ? exportSelected : undefined}
+        onExportSelected={selectedRowIds.length > 0 ? exportSelected : undefined}
         onSelectAllFailed={stats.failed > 0 ? selectAllFailed : undefined}
         onClearSelection={clearSelection}
         onDownloadAll={downloadCsv}
@@ -154,14 +140,10 @@ export function SpreadsheetView({
               </tr>
             ) : (
               virtualizer.getVirtualItems().map((virtualRow) => {
-                const row = rows[virtualRow.index];
+                const row = tableRows[virtualRow.index];
                 if (!row) return null;
                 return (
-                  <SpreadsheetRowComponent
-                    key={row.id}
-                    row={row}
-                    onRowClick={onRowClick}
-                  />
+                  <SpreadsheetRowComponent key={row.id} row={row} />
                 );
               })
             )}

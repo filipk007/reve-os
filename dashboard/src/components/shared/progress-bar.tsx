@@ -2,27 +2,23 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
-import { formatCost, formatTokens } from "@/lib/utils";
-import type { BatchStatus } from "@/lib/types";
 
-export function BatchProgress({
+export function ProgressBar({
   total,
   completed,
   failed,
   done = false,
-  costSummary,
 }: {
   total: number;
   completed: number;
   failed: number;
   done?: boolean;
-  costSummary?: Pick<BatchStatus, "tokens" | "cost"> | null;
 }) {
   const processed = completed + failed;
   const pct = total > 0 ? Math.round((processed / total) * 100) : 0;
 
   return (
-    <Card className="border-clay-500 ">
+    <Card className="border-clay-500">
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-clay-300 font-[family-name:var(--font-sans)]">
@@ -59,37 +55,6 @@ export function BatchProgress({
             <span className="text-clay-200">{total - processed}</span>
           </span>
         </div>
-        {costSummary && (
-          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 pt-3 border-t border-clay-500 text-xs text-clay-200">
-            <span>
-              Tokens:{" "}
-              <span className="text-clay-200 font-medium">
-                {formatTokens(costSummary.tokens.total_est)}
-              </span>
-            </span>
-            <span>
-              API would cost:{" "}
-              <span className="text-clay-200 font-medium">
-                {formatCost(costSummary.cost.equivalent_api_usd)}
-              </span>
-            </span>
-            <span>
-              Subscription:{" "}
-              <span className="text-clay-200 font-medium">
-                {formatCost(costSummary.cost.subscription_usd)}
-              </span>
-            </span>
-            <span>
-              You saved:{" "}
-              <span className="text-kiln-teal font-semibold">
-                {formatCost(costSummary.cost.net_savings_usd)}
-              </span>
-            </span>
-            {!done && (
-              <span className="text-clay-300 italic">(running estimate)</span>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );

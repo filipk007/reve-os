@@ -3,7 +3,7 @@
 import type { Header } from "@tanstack/react-table";
 import { flexRender } from "@tanstack/react-table";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
-import type { SpreadsheetRow } from "./column-utils";
+import type { SpreadsheetRow } from "./types";
 
 function renderHeaderContent(header: Header<SpreadsheetRow, unknown>) {
   if (header.isPlaceholder) return null;
@@ -11,14 +11,23 @@ function renderHeaderContent(header: Header<SpreadsheetRow, unknown>) {
   // Select column: render a checkbox from the header function's return value
   if (header.column.id === "select") {
     const val = flexRender(header.column.columnDef.header, header.getContext());
-    // The header function returns { checked, indeterminate, onChange }
-    if (val && typeof val === "object" && "checked" in (val as unknown as Record<string, unknown>)) {
-      const v = val as unknown as { checked: boolean; indeterminate: boolean; onChange: (e: unknown) => void };
+    if (
+      val &&
+      typeof val === "object" &&
+      "checked" in (val as unknown as Record<string, unknown>)
+    ) {
+      const v = val as unknown as {
+        checked: boolean;
+        indeterminate: boolean;
+        onChange: (e: unknown) => void;
+      };
       return (
         <input
           type="checkbox"
           checked={v.checked}
-          ref={(el) => { if (el) el.indeterminate = v.indeterminate; }}
+          ref={(el) => {
+            if (el) el.indeterminate = v.indeterminate;
+          }}
           onChange={v.onChange}
           className="h-3.5 w-3.5 rounded border-clay-600 bg-clay-800 text-kiln-teal focus:ring-kiln-teal/50 cursor-pointer"
         />
@@ -27,7 +36,6 @@ function renderHeaderContent(header: Header<SpreadsheetRow, unknown>) {
     return null;
   }
 
-  // All other columns: render string header
   if (typeof header.column.columnDef.header === "string") {
     return header.column.columnDef.header;
   }
@@ -67,7 +75,6 @@ export function SpreadsheetHeaderCell({
           </span>
         )}
       </div>
-      {/* Resize handle */}
       {canResize && (
         <div
           onMouseDown={header.getResizeHandler()}

@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     from app.core.job_queue import JobQueue
     from app.core.prompt_cache import PromptCache
     from app.core.retry_worker import RetryWorker
-    from app.core.scheduler import BatchScheduler
     from app.core.usage_store import UsageStore
 
 logger = logging.getLogger("clay-webhook-os")
@@ -75,7 +74,6 @@ class DataCleanupWorker:
         self,
         cache: "ResultCache",
         job_queue: "JobQueue",
-        scheduler: "BatchScheduler",
         usage_store: "UsageStore",
         feedback_store: "FeedbackStore",
         prompt_cache: "PromptCache | None" = None,
@@ -90,7 +88,6 @@ class DataCleanupWorker:
         self._cache = cache
         self._prompt_cache = prompt_cache
         self._job_queue = job_queue
-        self._scheduler = scheduler
         self._usage_store = usage_store
         self._feedback_store = feedback_store
         self._feedback_loop = feedback_loop

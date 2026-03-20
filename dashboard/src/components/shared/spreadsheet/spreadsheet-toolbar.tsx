@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RotateCcw, Send, Download, X, AlertCircle } from "lucide-react";
+import { RotateCcw, Download, X, AlertCircle } from "lucide-react";
 
 export function SpreadsheetToolbar({
   statusFilter,
@@ -19,7 +19,6 @@ export function SpreadsheetToolbar({
   selectedCount,
   failedCount,
   onRetrySelected,
-  onPushSelected,
   onExportSelected,
   onSelectAllFailed,
   onClearSelection,
@@ -34,7 +33,6 @@ export function SpreadsheetToolbar({
   selectedCount: number;
   failedCount: number;
   onRetrySelected?: () => void;
-  onPushSelected?: () => void;
   onExportSelected?: () => void;
   onSelectAllFailed?: () => void;
   onClearSelection: () => void;
@@ -73,17 +71,6 @@ export function SpreadsheetToolbar({
               Retry
             </Button>
           )}
-          {onPushSelected && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onPushSelected}
-              className="h-7 bg-kiln-mustard/10 text-kiln-mustard border-kiln-mustard/30 hover:bg-kiln-mustard/20"
-            >
-              <Send className="h-3 w-3 mr-1" />
-              Push
-            </Button>
-          )}
           {onExportSelected && (
             <Button
               variant="outline"
@@ -105,10 +92,10 @@ export function SpreadsheetToolbar({
             </SelectTrigger>
             <SelectContent className="border-clay-700 bg-clay-800">
               <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="queued">Queued</SelectItem>
+              <SelectItem value="done">Done</SelectItem>
+              <SelectItem value="error">Error</SelectItem>
+              <SelectItem value="running">Running</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
             </SelectContent>
           </Select>
 

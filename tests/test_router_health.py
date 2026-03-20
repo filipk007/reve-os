@@ -42,14 +42,11 @@ def _make_app(**state_overrides) -> FastAPI:
     analytics.by_skill = []
     analytics.model_dump.return_value = {"overall_approval_rate": 0.9, "by_skill": []}
     feedback_store.get_analytics.return_value = analytics
-    scheduler = MagicMock()
-    scheduler.get_scheduled.return_value = []
     app.state.pool = pool
     app.state.cache = cache
     app.state.job_queue = job_queue
     app.state.event_bus = event_bus
     app.state.feedback_store = feedback_store
-    app.state.scheduler = scheduler
     for key, value in state_overrides.items():
         setattr(app.state, key, value)
 
@@ -335,16 +332,6 @@ class TestDeadLetter:
 # ---------------------------------------------------------------------------
 # GET /scheduled
 # ---------------------------------------------------------------------------
-
-
-class TestScheduled:
-    def test_scheduled_batches(self):
-        scheduler = MagicMock()
-        scheduler.get_scheduled.return_value = [{"id": "b1", "status": "scheduled"}]
-        app = _make_app(scheduler=scheduler)
-        client = TestClient(app)
-        body = client.get("/scheduled").json()
-        assert len(body["batches"]) == 1
 
 
 # ---------------------------------------------------------------------------

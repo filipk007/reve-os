@@ -3,8 +3,7 @@
 import { useState } from "react";
 import type { Row } from "@tanstack/react-table";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Job } from "@/lib/types";
-import type { SpreadsheetRow } from "./column-utils";
+import type { SpreadsheetRow } from "./types";
 import { SpreadsheetCell } from "./spreadsheet-cell";
 import { RowDetailPanel } from "./row-detail-panel";
 
@@ -18,21 +17,19 @@ function getConfidenceColor(score: number | undefined): string {
 export function SpreadsheetRowComponent({
   row,
   style,
-  onRowClick,
 }: {
   row: Row<SpreadsheetRow>;
   style?: React.CSSProperties;
-  onRowClick?: (job: Job) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const isSelected = row.getIsSelected();
-  const job = row.original._job;
+  const data = row.original;
 
   const confidence =
-    typeof job.result?.confidence_score === "number"
-      ? job.result.confidence_score
-      : typeof job.result?.overall_confidence_score === "number"
-        ? (job.result.overall_confidence_score as number)
+    typeof data._result?.confidence_score === "number"
+      ? data._result.confidence_score
+      : typeof data._result?.overall_confidence_score === "number"
+        ? (data._result.overall_confidence_score as number)
         : undefined;
   const confidenceClass = getConfidenceColor(confidence);
 
@@ -40,13 +37,7 @@ export function SpreadsheetRowComponent({
     <>
       <tr
         style={style}
-        onClick={() => {
-          if (onRowClick) {
-            onRowClick(job);
-          } else {
-            setExpanded(!expanded);
-          }
-        }}
+        onClick={() => setExpanded(!expanded)}
         className={`border-b border-clay-500 cursor-pointer transition-colors ${
           isSelected
             ? "bg-kiln-teal/5 hover:bg-kiln-teal/10"
@@ -59,7 +50,6 @@ export function SpreadsheetRowComponent({
             className="px-3 py-2"
             style={{ width: cell.column.getSize() }}
             onClick={(e) => {
-              // Don't toggle expansion when clicking checkbox
               if (cell.column.id === "select") {
                 e.stopPropagation();
               }
@@ -84,10 +74,7 @@ export function SpreadsheetRowComponent({
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <RowDetailPanel
-                  job={job}
-                  originalData={row.original._original}
-                />
+                <RowDetailPanel row={data} />
               </motion.div>
             </td>
           </tr>

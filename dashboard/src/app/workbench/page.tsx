@@ -9,11 +9,11 @@ import {
   FunctionSelector,
   FunctionInfoPanel,
   ColumnMappingPanel,
-  ResultsPanel,
   CsvUploadZone,
   CsvPreviewTable,
-  RunProgress,
 } from "@/components/workbench-v2";
+import { ProgressBar } from "@/components/shared/progress-bar";
+import { SpreadsheetView } from "@/components/shared/spreadsheet";
 
 export default function WorkbenchPageWrapper() {
   return (
@@ -94,38 +94,51 @@ function WorkbenchPage() {
           </div>
         )}
 
-        {/* Running phase */}
+        {/* Running phase — progress bar + live spreadsheet */}
         {wb.step === "run" && wb.running && (
-          <RunProgress done={wb.progress.done} total={wb.progress.total} />
+          <div className="space-y-4">
+            <ProgressBar
+              total={wb.progress.total}
+              completed={wb.doneCount}
+              failed={wb.errorCount}
+            />
+            {wb.spreadsheetRows.length > 0 && wb.csvData && (
+              <SpreadsheetView
+                rows={wb.spreadsheetRows}
+                inputHeaders={wb.csvData.headers}
+              />
+            )}
+          </div>
         )}
 
-        {/* Results phase */}
+        {/* Results phase — spreadsheet with toolbar */}
         {(wb.step === "results" || (wb.step === "run" && !wb.running)) &&
-          wb.results.length > 0 &&
-          wb.selectedFunction && (
-            <ResultsPanel
-              results={wb.results}
-              displayResults={wb.getDisplayResults()}
-              selectedFunction={wb.selectedFunction}
-              mappings={wb.mappings}
-              running={wb.running}
-              statusFilter={wb.statusFilter}
-              sortColumn={wb.sortColumn}
-              sortDir={wb.sortDir}
-              expandedCell={wb.expandedCell}
-              expandedError={wb.expandedError}
-              successRate={wb.successRate}
-              doneCount={wb.doneCount}
-              errorCount={wb.errorCount}
-              onStatusFilterChange={wb.setStatusFilter}
-              onSortColumnChange={wb.setSortColumn}
-              onSortDirChange={wb.setSortDir}
-              onExpandedCellChange={wb.setExpandedCell}
-              onExpandedErrorChange={wb.setExpandedError}
-              onRetryFailed={wb.handleRetryFailed}
-              onExport={wb.handleExport}
-              onNewRun={wb.resetWorkbench}
-            />
+          wb.spreadsheetRows.length > 0 &&
+          wb.csvData && (
+            <div className="space-y-4">
+              <ProgressBar
+                total={wb.progress.total}
+                completed={wb.doneCount}
+                failed={wb.errorCount}
+                done
+              />
+              <SpreadsheetView
+                rows={wb.spreadsheetRows}
+                inputHeaders={wb.csvData.headers}
+                onRetrySelected={wb.handleRetrySelected}
+                onNewRun={wb.resetWorkbench}
+              />
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={wb.resetWorkbench}
+                  className="border-clay-600 text-clay-300 text-xs"
+                >
+                  New Run
+                </Button>
+              </div>
+            </div>
           )}
       </div>
     </div>

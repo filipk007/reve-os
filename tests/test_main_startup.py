@@ -27,7 +27,6 @@ def _build_startup_patches():
         "ResultCache": {},
         "EventBus": {},
         "JobQueue": {"has_start": False},
-        "BatchScheduler": {"has_start": True},
         "DestinationStore": {"has_load": True},
         "ContextStore": {},
         "FeedbackStore": {"has_load": True},
@@ -76,7 +75,6 @@ class TestAppSetup:
         assert "/health" in routes
         assert "/webhook" in routes
         assert "/pipeline" in routes
-        assert "/batch" in routes
         assert "/jobs" in routes
         assert "/stats" in routes
         assert "/usage" in routes
@@ -162,10 +160,6 @@ class TestRouteMethods:
         methods = self._get_route_methods()
         assert "GET" in methods.get("/health", set())
 
-    def test_batch_accepts_post(self):
-        methods = self._get_route_methods()
-        assert "POST" in methods.get("/batch", set())
-
     def test_cleanup_accepts_post(self):
         methods = self._get_route_methods()
         assert "POST" in methods.get("/cleanup", set())
@@ -198,7 +192,6 @@ class TestStartup:
                 assert hasattr(app.state, "cache")
                 assert hasattr(app.state, "event_bus")
                 assert hasattr(app.state, "job_queue")
-                assert hasattr(app.state, "scheduler")
                 assert hasattr(app.state, "destination_store")
                 assert hasattr(app.state, "feedback_store")
                 assert hasattr(app.state, "pipeline_store")
@@ -211,7 +204,6 @@ class TestStartup:
 
                 # Verify async starts were called
                 app.state.job_queue.start_workers.assert_called_once()
-                app.state.scheduler.start.assert_called_once()
                 app.state.retry_worker.start.assert_called_once()
                 app.state.subscription_monitor.start.assert_called_once()
                 app.state.cleanup_worker.start.assert_called_once()
@@ -424,18 +416,3 @@ class TestStartupConstructorArgs:
                 for p in patches.values():
                     p.stop()
 
-    async def test_scheduler_start_receives_job_queue(self):
-        """scheduler.start() is called with job_queue as argument."""
-        import app.main as main_module
-        patches, instances, constructors = _build_startup_patches()
-
-        with patch("app.main.list_skills", return_value=[]):
-            for p in patches.values():
-                p.start()
-            try:
-                await main_module.startup()
-                app = main_module.app
-                app.state.scheduler.start.assert_called_once_with(app.state.job_queue)
-            finally:
-                for p in patches.values():
-                    p.stop()

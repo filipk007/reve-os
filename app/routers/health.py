@@ -260,12 +260,6 @@ async def dead_letter_jobs(request: Request):
     return {"total": len(dl_jobs), "jobs": dl_jobs}
 
 
-@router.get("/scheduled")
-async def scheduled_batches(request: Request):
-    scheduler = request.app.state.scheduler
-    return {"batches": scheduler.get_scheduled()}
-
-
 @router.get("/skills")
 async def skills():
     return {"skills": list_skills()}

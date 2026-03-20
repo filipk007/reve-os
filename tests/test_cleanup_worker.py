@@ -14,21 +14,19 @@ def deps():
     cache.evict_expired.return_value = 0
     job_queue = MagicMock()
     job_queue.prune_completed.return_value = 0
-    scheduler = MagicMock()
     usage_store = MagicMock()
     usage_store.compact.return_value = (0, 0)
     feedback_store = MagicMock()
     feedback_store.compact.return_value = 0
-    return cache, job_queue, scheduler, usage_store, feedback_store
+    return cache, job_queue, usage_store, feedback_store
 
 
 @pytest.fixture
 def worker(deps):
-    cache, jq, sched, us, fs = deps
+    cache, jq, us, fs = deps
     return DataCleanupWorker(
         cache=cache,
         job_queue=jq,
-        scheduler=sched,
         usage_store=us,
         feedback_store=fs,
         interval_seconds=3600,
@@ -65,9 +63,9 @@ class TestInit:
         assert worker.last_report is None
 
     def test_custom_intervals(self, deps):
-        cache, jq, sched, us, fs = deps
+        cache, jq, us, fs = deps
         w = DataCleanupWorker(
-            cache=cache, job_queue=jq, scheduler=sched,
+            cache=cache, job_queue=jq,
             usage_store=us, feedback_store=fs,
             interval_seconds=60,
             job_retention_hours=1,
@@ -324,9 +322,9 @@ class TestCleanupReportEdges:
 
 class TestInitDefaults:
     def test_default_interval(self, deps):
-        cache, jq, sched, us, fs = deps
+        cache, jq, us, fs = deps
         w = DataCleanupWorker(
-            cache=cache, job_queue=jq, scheduler=sched,
+            cache=cache, job_queue=jq,
             usage_store=us, feedback_store=fs,
         )
         assert w._interval == 3600
@@ -366,9 +364,9 @@ class TestRunOnceEdges:
 
 class TestCutoffCustomRetention:
     def test_jobs_cutoff_1_hour(self, deps):
-        cache, jq, sched, us, fs = deps
+        cache, jq, us, fs = deps
         w = DataCleanupWorker(
-            cache=cache, job_queue=jq, scheduler=sched,
+            cache=cache, job_queue=jq,
             usage_store=us, feedback_store=fs,
             job_retention_hours=1,
         )
@@ -379,9 +377,9 @@ class TestCutoffCustomRetention:
         assert abs(cutoff - expected) < 2
 
     def test_feedback_cutoff_7_days(self, deps):
-        cache, jq, sched, us, fs = deps
+        cache, jq, us, fs = deps
         w = DataCleanupWorker(
-            cache=cache, job_queue=jq, scheduler=sched,
+            cache=cache, job_queue=jq,
             usage_store=us, feedback_store=fs,
             feedback_retention_days=7,
         )
@@ -392,9 +390,9 @@ class TestCutoffCustomRetention:
         assert abs(cutoff - expected) < 2
 
     def test_usage_cutoff_14_days(self, deps):
-        cache, jq, sched, us, fs = deps
+        cache, jq, us, fs = deps
         w = DataCleanupWorker(
-            cache=cache, job_queue=jq, scheduler=sched,
+            cache=cache, job_queue=jq,
             usage_store=us, feedback_store=fs,
             usage_retention_days=14,
         )
@@ -435,9 +433,9 @@ class TestCleanupFailedCallbacksEdges:
 
     def test_custom_failed_callback_days(self, deps, tmp_path):
         """1-day retention prunes entries older than 1 day."""
-        cache, jq, sched, us, fs = deps
+        cache, jq, us, fs = deps
         w = DataCleanupWorker(
-            cache=cache, job_queue=jq, scheduler=sched,
+            cache=cache, job_queue=jq,
             usage_store=us, feedback_store=fs,
             failed_callback_days=1,
         )

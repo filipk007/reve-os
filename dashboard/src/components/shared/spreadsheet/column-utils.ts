@@ -1,24 +1,17 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Job } from "@/lib/types";
-
-export interface SpreadsheetRow {
-  _index: number;
-  _job: Job;
-  _original: Record<string, string>;
-  [key: string]: unknown;
-}
+import type { SpreadsheetRow } from "./types";
 
 /**
- * Auto-detect columns from CSV headers + result JSON shape.
- * Three groups: fixed, input (from CSV), output (from results).
+ * Auto-detect columns from input headers + result JSON shape.
+ * Three groups: fixed (select, #, status), input (from CSV), output (from results).
  */
 export function buildColumns(
-  csvHeaders: string[],
-  jobs: Job[]
+  inputHeaders: string[],
+  rows: SpreadsheetRow[]
 ): ColumnDef<SpreadsheetRow, unknown>[] {
   const columns: ColumnDef<SpreadsheetRow, unknown>[] = [];
 
-  // Fixed columns: select, #, status, duration
+  // Fixed columns: select, #, status
   columns.push({
     id: "select",
     header: ({ table }) => {
@@ -42,7 +35,7 @@ export function buildColumns(
   columns.push({
     id: "_index",
     header: "#",
-    accessorFn: (row) => row._index + 1,
+    accessorFn: (_row, index) => index + 1,
     size: 50,
     enableResizing: false,
   });
@@ -50,19 +43,12 @@ export function buildColumns(
   columns.push({
     id: "_status",
     header: "Status",
-    accessorFn: (row) => row._job.status,
+    accessorFn: (row) => row._status,
     size: 100,
   });
 
-  columns.push({
-    id: "_duration",
-    header: "Duration",
-    accessorFn: (row) => row._job.duration_ms,
-    size: 90,
-  });
-
-  // Input columns from CSV headers
-  for (const header of csvHeaders) {
+  // Input columns from headers
+  for (const header of inputHeaders) {
     columns.push({
       id: `input_${header}`,
       header: header,
@@ -72,12 +58,12 @@ export function buildColumns(
     });
   }
 
-  // Output columns from first 10 completed jobs' result keys
+  // Output columns from first 10 completed rows' result keys
   const outputKeys = new Set<string>();
-  const completedJobs = jobs.filter((j) => j.status === "completed" && j.result);
-  for (const job of completedJobs.slice(0, 10)) {
-    if (job.result) {
-      for (const key of Object.keys(job.result)) {
+  const completedRows = rows.filter((r) => r._status === "done" && r._result);
+  for (const row of completedRows.slice(0, 10)) {
+    if (row._result) {
+      for (const key of Object.keys(row._result)) {
         if (!key.startsWith("_")) {
           outputKeys.add(key);
         }
@@ -90,7 +76,7 @@ export function buildColumns(
       id: `output_${key}`,
       header: key,
       accessorFn: (row) => {
-        const val = row._job.result?.[key];
+        const val = row._result?.[key];
         if (val === undefined || val === null) return "";
         if (typeof val === "string") return val;
         return JSON.stringify(val);
@@ -101,18 +87,4 @@ export function buildColumns(
   }
 
   return columns;
-}
-
-/**
- * Build spreadsheet rows from jobs + original CSV rows
- */
-export function buildRows(
-  jobs: Job[],
-  originalRows: Record<string, string>[]
-): SpreadsheetRow[] {
-  return jobs.map((job, i) => ({
-    _index: i,
-    _job: job,
-    _original: originalRows[i] || {},
-  }));
 }

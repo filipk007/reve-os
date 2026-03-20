@@ -25,7 +25,6 @@ from app.core.pipeline_store import PipelineStore
 from app.core.play_store import PlayStore
 from app.core.prompt_cache import PromptCache
 from app.core.retry_worker import RetryWorker
-from app.core.scheduler import BatchScheduler
 from app.core.skill_loader import list_skills
 from app.core.skill_version_store import SkillVersionStore
 from app.core.subscription_monitor import SubscriptionMonitor
@@ -36,7 +35,6 @@ from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.security_headers import SecurityHeadersMiddleware
 from app.routers import (
-    batch,
     context,
     datasets,
     destinations,
@@ -83,7 +81,6 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(webhook.router)
 app.include_router(pipeline.router)
-app.include_router(batch.router)
 app.include_router(destinations.router)
 app.include_router(context.router)
 app.include_router(feedback.router)
@@ -107,7 +104,6 @@ async def startup():
         cache=app.state.cache,
         event_bus=app.state.event_bus,
     )
-    app.state.scheduler = BatchScheduler()
     app.state.destination_store = DestinationStore(data_dir=settings.data_dir)
     app.state.destination_store.load()
     app.state.context_store = ContextStore(
@@ -220,7 +216,6 @@ async def startup():
     app.state.cleanup_worker = DataCleanupWorker(
         cache=app.state.cache,
         job_queue=app.state.job_queue,
-        scheduler=app.state.scheduler,
         usage_store=app.state.usage_store,
         feedback_store=app.state.feedback_store,
         prompt_cache=app.state.prompt_cache,
@@ -234,7 +229,6 @@ async def startup():
     )
 
     await app.state.job_queue.start_workers(num_workers=settings.max_workers)
-    await app.state.scheduler.start(app.state.job_queue)
     await app.state.retry_worker.start()
     await app.state.subscription_monitor.start()
     await app.state.cleanup_worker.start()
@@ -254,10 +248,6 @@ async def shutdown():
     if hasattr(app.state, "job_queue"):
         await app.state.job_queue.stop()
         logger.info("  Job queue stopped")
-
-    if hasattr(app.state, "scheduler"):
-        await app.state.scheduler.stop()
-        logger.info("  Scheduler stopped")
 
     if hasattr(app.state, "retry_worker"):
         await app.state.retry_worker.stop()

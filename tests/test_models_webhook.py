@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.models.requests import BatchRequest, PipelineRequest, PipelineStep, WebhookRequest
+from app.models.requests import PipelineRequest, PipelineStep, WebhookRequest
 from app.models.responses import ErrorResponse, HealthResponse, Meta, PipelineResponse, PipelineStepResult
 
 # ---------------------------------------------------------------------------
@@ -66,42 +66,6 @@ class TestWebhookRequestValidation:
     def test_skill_none_with_skills_list(self):
         req = WebhookRequest(skills=["a"], data={})
         assert req.skill is None
-
-
-# ---------------------------------------------------------------------------
-# BatchRequest
-# ---------------------------------------------------------------------------
-
-
-class TestBatchRequest:
-    def test_valid_batch(self):
-        req = BatchRequest(skill="enrichment", rows=[{"name": "A"}, {"name": "B"}])
-        assert req.skill == "enrichment"
-        assert len(req.rows) == 2
-
-    def test_skill_required(self):
-        with pytest.raises(ValidationError):
-            BatchRequest(rows=[{}])
-
-    def test_rows_required(self):
-        with pytest.raises(ValidationError):
-            BatchRequest(skill="s")
-
-    def test_optional_fields(self):
-        req = BatchRequest(skill="s", rows=[{}])
-        assert req.model is None
-        assert req.instructions is None
-        assert req.priority is None
-        assert req.scheduled_at is None
-
-    def test_all_fields_set(self):
-        req = BatchRequest(
-            skill="s", rows=[{}],
-            model="sonnet", instructions="Go",
-            priority="low", scheduled_at="2026-03-08T10:00:00Z",
-        )
-        assert req.model == "sonnet"
-        assert req.scheduled_at == "2026-03-08T10:00:00Z"
 
 
 # ---------------------------------------------------------------------------

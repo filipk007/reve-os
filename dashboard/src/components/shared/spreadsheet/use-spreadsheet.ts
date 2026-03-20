@@ -11,13 +11,12 @@ import {
   type RowSelectionState,
   type ColumnSizingState,
 } from "@tanstack/react-table";
-import type { Job } from "@/lib/types";
-import { buildColumns, buildRows, type SpreadsheetRow } from "./column-utils";
+import type { SpreadsheetRow } from "./types";
+import { buildColumns } from "./column-utils";
 
 export function useSpreadsheet(
-  jobs: Job[],
-  originalRows: Record<string, string>[],
-  csvHeaders: string[]
+  rows: SpreadsheetRow[],
+  inputHeaders: string[]
 ) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -26,26 +25,25 @@ export function useSpreadsheet(
   const [globalFilter, setGlobalFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  // Persist selection across data refreshes using a ref keyed by job ID
+  // Persist selection across data refreshes using a ref keyed by row ID
   const selectionRef = useRef<Set<string>>(new Set());
 
-  // Sync ref -> state when jobs change (reconcile: keep IDs that still exist)
+  // Sync ref -> state when rows change (reconcile: keep IDs that still exist)
   useEffect(() => {
-    const jobIds = new Set(jobs.map((j) => j.id));
-    // Remove stale IDs from ref
+    const rowIds = new Set(rows.map((r) => r._id));
     for (const id of selectionRef.current) {
-      if (!jobIds.has(id)) selectionRef.current.delete(id);
+      if (!rowIds.has(id)) selectionRef.current.delete(id);
     }
-    // Build RowSelectionState from ref
     const newSelection: RowSelectionState = {};
     for (const id of selectionRef.current) {
       newSelection[id] = true;
     }
     setRowSelection(newSelection);
-  }, [jobs]);
+  }, [rows]);
 
-  // Keep ref in sync when user changes selection
-  const handleRowSelectionChange = (updater: RowSelectionState | ((prev: RowSelectionState) => RowSelectionState)) => {
+  const handleRowSelectionChange = (
+    updater: RowSelectionState | ((prev: RowSelectionState) => RowSelectionState)
+  ) => {
     setRowSelection((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       selectionRef.current = new Set(Object.keys(next).filter((id) => next[id]));
@@ -54,18 +52,17 @@ export function useSpreadsheet(
   };
 
   const columns = useMemo(
-    () => buildColumns(csvHeaders, jobs),
-    // Re-compute columns when result shape changes (check first completed job keys)
-    [csvHeaders, jobs.filter((j) => j.status === "completed").length > 0]
+    () => buildColumns(inputHeaders, rows),
+    // Re-compute columns when result shape changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [inputHeaders, rows.filter((r) => r._status === "done").length > 0]
   );
-
-  const data = useMemo(() => buildRows(jobs, originalRows), [jobs, originalRows]);
 
   // Pre-filter by status
   const filteredData = useMemo(() => {
-    if (statusFilter === "all") return data;
-    return data.filter((row) => row._job.status === statusFilter);
-  }, [data, statusFilter]);
+    if (statusFilter === "all") return rows;
+    return rows.filter((row) => row._status === statusFilter);
+  }, [rows, statusFilter]);
 
   const table = useReactTable({
     data: filteredData,
@@ -88,28 +85,30 @@ export function useSpreadsheet(
     enableRowSelection: true,
     enableColumnResizing: true,
     columnResizeMode: "onChange",
-    getRowId: (row) => row._job.id,
+    getRowId: (row) => row._id,
   });
 
   // Stats
   const stats = useMemo(() => {
-    const total = jobs.length;
-    const complete = jobs.filter((j) => j.status === "completed").length;
-    const failed = jobs.filter((j) => j.status === "failed" || j.status === "dead_letter").length;
-    const running = jobs.filter((j) => j.status === "processing" || j.status === "queued").length;
+    const total = rows.length;
+    const complete = rows.filter((r) => r._status === "done").length;
+    const failed = rows.filter((r) => r._status === "error").length;
+    const running = rows.filter(
+      (r) => r._status === "running" || r._status === "pending"
+    ).length;
     return { total, complete, failed, running };
-  }, [jobs]);
+  }, [rows]);
 
-  // Selected job IDs
-  const selectedJobIds = useMemo(() => {
+  // Selected row IDs
+  const selectedRowIds = useMemo(() => {
     return Object.keys(rowSelection).filter((id) => rowSelection[id]);
   }, [rowSelection]);
 
   const selectAllFailed = () => {
     const newSelection: RowSelectionState = {};
     for (const row of filteredData) {
-      if (row._job.status === "failed" || row._job.status === "dead_letter") {
-        newSelection[row._job.id] = true;
+      if (row._status === "error") {
+        newSelection[row._id] = true;
       }
     }
     selectionRef.current = new Set(Object.keys(newSelection));
@@ -124,7 +123,7 @@ export function useSpreadsheet(
   return {
     table,
     stats,
-    selectedJobIds,
+    selectedRowIds,
     statusFilter,
     setStatusFilter,
     globalFilter,

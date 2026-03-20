@@ -1,14 +1,26 @@
 "use client";
 
-import { StatusBadge } from "@/components/dashboard/status-badge";
-import { formatDuration } from "@/lib/utils";
-import type { JobStatus } from "@/lib/types";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { SpreadsheetStatus } from "./types";
+
+const STATUS_STYLES: Record<SpreadsheetStatus, string> = {
+  done: "bg-status-success/15 text-status-success",
+  error: "bg-kiln-coral/15 text-kiln-coral",
+  running: "bg-kiln-teal/15 text-kiln-teal",
+  pending: "bg-clay-500/20 text-clay-200",
+};
+
+const STATUS_LABELS: Record<SpreadsheetStatus, string> = {
+  done: "Done",
+  error: "Error",
+  running: "Running",
+  pending: "Pending",
+};
 
 export function SpreadsheetCell({
   columnId,
@@ -42,15 +54,15 @@ export function SpreadsheetCell({
 
   // Status column
   if (columnId === "_status") {
-    return <StatusBadge status={value as JobStatus} />;
-  }
-
-  // Duration column
-  if (columnId === "_duration") {
-    const ms = value as number;
+    const status = value as SpreadsheetStatus;
     return (
-      <span className="font-[family-name:var(--font-mono)] text-xs text-clay-200">
-        {ms ? formatDuration(ms) : "\u2014"}
+      <span
+        className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${STATUS_STYLES[status] || "text-clay-300"}`}
+      >
+        {status === "running" && (
+          <span className="mr-1 h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+        )}
+        {STATUS_LABELS[status] || status}
       </span>
     );
   }

@@ -2,7 +2,6 @@ import pytest
 from pydantic import ValidationError
 
 from app.models.requests import (
-    BatchRequest,
     PipelineRequest,
     PipelineStep,
     WebhookRequest,
@@ -58,28 +57,6 @@ class TestWebhookRequest:
         assert r.row_id == "row-123"
         assert r.max_retries == 5
         assert r.priority == "high"
-
-
-class TestBatchRequest:
-    def test_valid_batch(self):
-        b = BatchRequest(skill="enrich", rows=[{"name": "A"}, {"name": "B"}])
-        assert b.skill == "enrich"
-        assert len(b.rows) == 2
-
-    def test_skill_required(self):
-        with pytest.raises(ValidationError):
-            BatchRequest(rows=[{}])
-
-    def test_rows_required(self):
-        with pytest.raises(ValidationError):
-            BatchRequest(skill="x")
-
-    def test_optional_fields(self):
-        b = BatchRequest(skill="x", rows=[{}])
-        assert b.model is None
-        assert b.instructions is None
-        assert b.priority is None
-        assert b.scheduled_at is None
 
 
 class TestPipelineStep:
@@ -168,43 +145,6 @@ class TestWebhookRequestModelDump:
         r = WebhookRequest(skill="x", data=data)
         assert r.data["company"]["name"] == "Acme"
         assert r.data["tags"] == ["a", "b"]
-
-
-# ---------------------------------------------------------------------------
-# BatchRequest — edges
-# ---------------------------------------------------------------------------
-
-
-class TestBatchRequestEdges:
-    def test_all_optional_fields(self):
-        b = BatchRequest(
-            skill="enrich", rows=[{"a": 1}],
-            model="haiku", instructions="Focus on email",
-            priority="high", scheduled_at="2026-04-01T10:00:00Z",
-        )
-        assert b.model == "haiku"
-        assert b.instructions == "Focus on email"
-        assert b.priority == "high"
-        assert b.scheduled_at == "2026-04-01T10:00:00Z"
-
-    def test_model_dump(self):
-        b = BatchRequest(skill="x", rows=[{}, {}])
-        d = b.model_dump()
-        assert d["skill"] == "x"
-        assert len(d["rows"]) == 2
-        assert d["model"] is None
-        assert d["instructions"] is None
-        assert d["priority"] is None
-        assert d["scheduled_at"] is None
-
-    def test_empty_rows_list(self):
-        b = BatchRequest(skill="x", rows=[])
-        assert b.rows == []
-
-    def test_complex_row_data(self):
-        rows = [{"company": "Acme", "size": 100}, {"company": "Beta", "nested": {"a": 1}}]
-        b = BatchRequest(skill="x", rows=rows)
-        assert b.rows[1]["nested"]["a"] == 1
 
 
 # ---------------------------------------------------------------------------

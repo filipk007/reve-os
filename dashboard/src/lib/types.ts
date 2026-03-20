@@ -83,24 +83,6 @@ export interface HealthResponse {
   };
 }
 
-export interface BatchResponse {
-  batch_id: string;
-  total_rows: number;
-  job_ids?: string[];
-  scheduled_at?: string;
-  status?: string;
-}
-
-export interface ScheduledBatch {
-  id: string;
-  skill: string;
-  total_rows: number;
-  scheduled_at: number;
-  created_at: number;
-  status: "scheduled" | "enqueued" | "cancelled";
-  job_ids: string[];
-}
-
 export type DestinationType = "clay_webhook" | "generic_webhook";
 
 export interface Destination {
@@ -122,31 +104,6 @@ export interface PushResult {
   success: number;
   failed: number;
   errors: { job_id: string; error: string }[];
-}
-
-export interface BatchStatus {
-  batch_id: string;
-  total_rows: number;
-  completed: number;
-  failed: number;
-  processing: number;
-  queued: number;
-  done: boolean;
-  avg_duration_ms: number;
-  tokens: { input_est: number; output_est: number; total_est: number };
-  cost: { equivalent_api_usd: number; subscription_usd: number; net_savings_usd: number };
-  cache: { hits: number; hit_rate: number };
-  jobs: {
-    id: string;
-    row_id: string | null;
-    status: JobStatus;
-    duration_ms: number;
-    input_tokens_est: number;
-    output_tokens_est: number;
-    cost_est_usd: number;
-    error: string | null;
-    result: Record<string, unknown> | null;
-  }[];
 }
 
 // Context Hub types

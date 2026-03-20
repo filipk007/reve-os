@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   fetchFunctions,
@@ -8,6 +8,7 @@ import {
   runFunction,
 } from "@/lib/api";
 import type { FunctionDefinition } from "@/lib/types";
+import type { SpreadsheetRow } from "@/components/shared/spreadsheet";
 import { toast } from "sonner";
 import Papa from "papaparse";
 
@@ -46,13 +47,9 @@ export interface UseFunctionWorkbenchReturn {
   results: ResultRow[];
   running: boolean;
   progress: { done: number; total: number };
-  expandedCell: { row: number; col: string } | null;
-  sortColumn: string | null;
-  sortDir: "asc" | "desc";
-  statusFilter: RowStatus | "all";
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   autoMapConfidence: Record<string, MatchConfidence>;
-  expandedError: number | null;
+  spreadsheetRows: SpreadsheetRow[];
 
   // Actions
   handleFileUpload: (file: File) => void;
@@ -62,15 +59,10 @@ export interface UseFunctionWorkbenchReturn {
   handleClearMapping: (funcInput: string) => void;
   handleRun: () => Promise<void>;
   handleRetryFailed: () => Promise<void>;
+  handleRetrySelected: (rowIds: string[]) => Promise<void>;
   handleExport: (selectedOnly?: boolean) => void;
-  getDisplayResults: () => ResultRow[];
   detectColumnType: (header: string, values: string[]) => string;
   resetWorkbench: () => void;
-  setExpandedCell: (cell: { row: number; col: string } | null) => void;
-  setSortColumn: (col: string | null) => void;
-  setSortDir: (dir: "asc" | "desc") => void;
-  setStatusFilter: (filter: RowStatus | "all") => void;
-  setExpandedError: (row: number | null) => void;
   canRun: boolean;
   successRate: number;
   errorCount: number;
@@ -92,12 +84,7 @@ export function useFunctionWorkbench(): UseFunctionWorkbenchReturn {
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const [expandedCell, setExpandedCell] = useState<{ row: number; col: string } | null>(null);
-  const [sortColumn, setSortColumn] = useState<string | null>(null);
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [statusFilter, setStatusFilter] = useState<RowStatus | "all">("all");
   const [autoMapConfidence, setAutoMapConfidence] = useState<Record<string, MatchConfidence>>({});
-  const [expandedError, setExpandedError] = useState<number | null>(null);
 
   // Load functions
   useEffect(() => {
@@ -360,20 +347,76 @@ export function useFunctionWorkbench(): UseFunctionWorkbenchReturn {
     toast.success("Exported CSV");
   }, [results, csvData, selectedFunction]);
 
-  const getDisplayResults = useCallback(() => {
-    let display = [...results];
-    if (statusFilter !== "all") {
-      display = display.filter(r => r.status === statusFilter);
-    }
-    if (sortColumn) {
-      display.sort((a, b) => {
-        const aVal = String(a.output?.[sortColumn] ?? a.input?.[sortColumn] ?? "");
-        const bVal = String(b.output?.[sortColumn] ?? b.input?.[sortColumn] ?? "");
-        return sortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-      });
-    }
-    return display;
-  }, [results, statusFilter, sortColumn, sortDir]);
+  // Convert ResultRow[] → SpreadsheetRow[] for the shared spreadsheet component
+  const spreadsheetRows: SpreadsheetRow[] = useMemo(() => {
+    return results.map((r) => ({
+      _id: String(r.rowIndex),
+      _status: r.status,
+      _error: r.error,
+      _original: csvData?.rows[r.rowIndex] || {},
+      _result: r.output,
+    }));
+  }, [results, csvData]);
+
+  // Retry specific rows by their spreadsheet IDs (row indices as strings)
+  const handleRetrySelected = useCallback(async (rowIds: string[]) => {
+    if (!csvData || !selectedFunction) return;
+
+    const abort = new AbortController();
+    abortRef.current = abort;
+    setRunning(true);
+
+    const indices = rowIds.map(Number);
+    const MAX_CONCURRENT = 5;
+    let active = 0;
+    const waiting: (() => void)[] = [];
+    const limit = async <T,>(fn: () => Promise<T>): Promise<T> => {
+      if (active >= MAX_CONCURRENT) {
+        await new Promise<void>(resolve => waiting.push(resolve));
+      }
+      active++;
+      try { return await fn(); }
+      finally { active--; waiting.shift()?.(); }
+    };
+
+    const promises = indices.map(i =>
+      limit(async () => {
+        if (abort.signal.aborted) return;
+
+        const row = csvData.rows[i];
+        const input: Record<string, unknown> = {};
+        for (const mapping of mappings) {
+          input[mapping.functionInput] = row[mapping.csvColumn];
+        }
+
+        setResults(prev => prev.map((r, idx) =>
+          idx === i ? { ...r, status: "running" as RowStatus, input } : r
+        ));
+
+        try {
+          const result = await runFunction(selectedFunction.id, input, abort.signal);
+          if (result.error) {
+            setResults(prev => prev.map((r, idx) =>
+              idx === i ? { ...r, status: "error" as RowStatus, error: String(result.error_message || "Unknown error") } : r
+            ));
+          } else {
+            setResults(prev => prev.map((r, idx) =>
+              idx === i ? { ...r, status: "done" as RowStatus, output: result } : r
+            ));
+          }
+        } catch (e) {
+          if (abort.signal.aborted) return;
+          setResults(prev => prev.map((r, idx) =>
+            idx === i ? { ...r, status: "error" as RowStatus, error: e instanceof Error ? e.message : "Network error" } : r
+          ));
+        }
+      })
+    );
+
+    await Promise.all(promises);
+    abortRef.current = null;
+    setRunning(false);
+  }, [csvData, selectedFunction, mappings]);
 
   const detectColumnType = useCallback((header: string, values: string[]) => {
     const sample = values.filter(v => v).slice(0, 10);
@@ -393,7 +436,6 @@ export function useFunctionWorkbench(): UseFunctionWorkbenchReturn {
     setMappings([]);
     setSelectedFunction(null);
     setAutoMapConfidence({});
-    setExpandedError(null);
   }, []);
 
   const doneCount = results.filter(r => r.status === "done").length;
@@ -410,13 +452,9 @@ export function useFunctionWorkbench(): UseFunctionWorkbenchReturn {
     results,
     running,
     progress,
-    expandedCell,
-    sortColumn,
-    sortDir,
-    statusFilter,
     fileInputRef,
     autoMapConfidence,
-    expandedError,
+    spreadsheetRows,
     handleFileUpload,
     handleDrop,
     handleSelectFunction,
@@ -424,15 +462,10 @@ export function useFunctionWorkbench(): UseFunctionWorkbenchReturn {
     handleClearMapping,
     handleRun,
     handleRetryFailed,
+    handleRetrySelected,
     handleExport,
-    getDisplayResults,
     detectColumnType,
     resetWorkbench,
-    setExpandedCell,
-    setSortColumn,
-    setSortDir,
-    setStatusFilter,
-    setExpandedError,
     canRun,
     successRate,
     errorCount,
