@@ -651,6 +651,7 @@ export interface PortalMeta {
   last_synced_at: number | null;
   share_token: string | null;
   share_token_created_at: number | null;
+  slack_webhook_url: string | null;
   created_at: number;
   updated_at: number;
 }

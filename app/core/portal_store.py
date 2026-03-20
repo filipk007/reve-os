@@ -74,6 +74,7 @@ class PortalStore:
             "gws_folder_id": None,
             "gws_doc_id": None,
             "last_synced_at": None,
+            "slack_webhook_url": None,
             "created_at": now,
             "updated_at": now,
         }

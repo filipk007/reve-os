@@ -81,6 +81,7 @@ class MediaResponse(BaseModel):
 class UpdatePortalRequest(BaseModel):
     status: str | None = Field(None, description="Client status: active, onboarding, paused, churned")
     notes: str | None = Field(None, description="Internal notes")
+    slack_webhook_url: str | None = Field(None, description="Slack incoming webhook URL")
 
 
 class PortalMeta(BaseModel):

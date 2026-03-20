@@ -1200,7 +1200,7 @@ export function fetchPortal(slug: string): Promise<PortalDetail> {
 
 export function updatePortal(
   slug: string,
-  body: { status?: string; notes?: string }
+  body: { status?: string; notes?: string; slack_webhook_url?: string }
 ): Promise<PortalMeta> {
   return apiFetch(`/portal/${slug}`, {
     method: "PUT",
@@ -1365,6 +1365,11 @@ export async function fetchPublicPortal(slug: string, token: string): Promise<Pu
     throw new Error(body.error_message || `HTTP ${res.status}`);
   }
   return res.json();
+}
+
+// Notifications
+export function testPortalNotification(slug: string): Promise<{ ok: boolean; message: string }> {
+  return apiFetch(`/portal/${slug}/notifications/test`, { method: "POST" });
 }
 
 // GWS Sync

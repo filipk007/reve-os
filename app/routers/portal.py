@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from fastapi import APIRouter, File, Form, Query, Request, UploadFile
@@ -113,10 +114,13 @@ async def get_sop(request: Request, slug: str, sop_id: str):
 @router.put("/portal/{slug}/sops/{sop_id}")
 async def update_sop(request: Request, slug: str, sop_id: str, body: UpdateSOPRequest):
     store = request.app.state.portal_store
+    notifier = getattr(request.app.state, "portal_notifier", None)
     updates = body.model_dump(exclude_none=True)
     sop = store.update_sop(slug, sop_id, updates)
     if not sop:
         return JSONResponse(status_code=404, content={"error": True, "error_message": f"SOP '{sop_id}' not found"})
+    if notifier:
+        asyncio.create_task(notifier.notify_sop_updated(slug, sop["title"]))
     return sop
 
 
@@ -141,17 +145,27 @@ async def list_updates(request: Request, slug: str, limit: int = 50, offset: int
 @router.post("/portal/{slug}/updates")
 async def create_update(request: Request, slug: str, body: CreateUpdateRequest):
     store = request.app.state.portal_store
+    notifier = getattr(request.app.state, "portal_notifier", None)
     update = store.create_update(
         slug, type_=body.type, title=body.title, body=body.body, media_ids=body.media_ids
     )
     # Auto-create client review action for deliverables
     if body.type == "deliverable" and body.create_action:
-        store.create_action(
+        action = store.create_action(
             slug,
             title=f"Review & approve: {body.title}",
             owner="client",
             priority="high",
         )
+        if notifier:
+            asyncio.create_task(notifier.notify_action_assigned(slug, action))
+
+    # Fire Slack notifications
+    if notifier:
+        if body.type == "deliverable":
+            asyncio.create_task(notifier.notify_deliverable_posted(slug, body.title, body.body))
+        elif body.type in ("milestone", "update"):
+            asyncio.create_task(notifier.notify_update_posted(slug, body.type, body.title, body.body))
     return update
 
 
@@ -185,6 +199,7 @@ async def list_actions(request: Request, slug: str):
 @router.post("/portal/{slug}/actions")
 async def create_action(request: Request, slug: str, body: CreateActionRequest):
     store = request.app.state.portal_store
+    notifier = getattr(request.app.state, "portal_notifier", None)
     action = store.create_action(
         slug,
         title=body.title,
@@ -193,6 +208,8 @@ async def create_action(request: Request, slug: str, body: CreateActionRequest):
         due_date=body.due_date,
         priority=body.priority,
     )
+    if notifier and body.owner == "client":
+        asyncio.create_task(notifier.notify_action_assigned(slug, action))
     return action
 
 
@@ -304,6 +321,32 @@ async def public_portal_view(request: Request, slug: str, token: str = Query("")
     if not portal:
         return JSONResponse(status_code=404, content={"error": True, "error_message": f"Client '{slug}' not found"})
     return portal
+
+
+# ── Notifications ────────────────────────────────────────
+
+
+@router.post("/portal/{slug}/notifications/test")
+async def test_notification(request: Request, slug: str):
+    notifier = getattr(request.app.state, "portal_notifier", None)
+    if not notifier:
+        return JSONResponse(status_code=503, content={"error": True, "error_message": "Notifier not available"})
+    store = request.app.state.portal_store
+    meta = store.get_meta(slug)
+    if not meta.get("slack_webhook_url"):
+        return JSONResponse(status_code=400, content={"error": True, "error_message": "No Slack webhook URL configured"})
+
+    client_name = store._client_name(slug)
+    blocks = [
+        notifier._header(f"Test Notification — {client_name}"),
+        notifier._section(":white_check_mark: Slack notifications are working for this portal."),
+        notifier._portal_link(slug),
+    ]
+    try:
+        await notifier._send(slug, blocks, f"Test notification for {client_name}")
+        return {"ok": True, "message": "Test notification sent"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": True, "error_message": str(e)})
 
 
 # ── Google Workspace Sync ─────────────────────────────────

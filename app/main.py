@@ -166,6 +166,10 @@ async def startup():
         data_dir=settings.data_dir,
     )
 
+    # Portal notifier (Slack notifications for portal events)
+    from app.core.portal_notifier import PortalNotifier
+    app.state.portal_notifier = PortalNotifier(app.state.portal_store)
+
     # Google Sheets integration (graceful degradation if gws not installed)
     from app.core.sheets_client import SheetsClient
     from app.core.drive_sync import DriveSync
@@ -286,5 +290,9 @@ async def shutdown():
     if hasattr(app.state, "cleanup_worker"):
         await app.state.cleanup_worker.stop()
         logger.info("  Cleanup worker stopped")
+
+    if hasattr(app.state, "portal_notifier"):
+        await app.state.portal_notifier.close()
+        logger.info("  Portal notifier closed")
 
     logger.info("Shutdown complete")

@@ -177,7 +177,7 @@ export default function ClientPortalPage() {
       />
 
       <div className="min-h-[400px]">
-        {activeTab === "overview" && <OverviewTab portal={portal} />}
+        {activeTab === "overview" && <OverviewTab portal={portal} onPortalUpdated={loadPortal} />}
 
         {activeTab === "sops" && (
           <SOPList

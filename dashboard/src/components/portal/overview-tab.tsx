@@ -3,6 +3,7 @@
 import { FileText, MessageSquare, Image, Pin, Clock, CheckSquare, AlertCircle, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PortalDetail } from "@/lib/types";
+import { NotificationSettings } from "./notification-settings";
 
 function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: number }) {
   return (
@@ -16,7 +17,7 @@ function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label
   );
 }
 
-export function OverviewTab({ portal }: { portal: PortalDetail }) {
+export function OverviewTab({ portal, onPortalUpdated }: { portal: PortalDetail; onPortalUpdated?: () => void }) {
   const pinnedUpdates = portal.recent_updates.filter((u) => u.pinned);
   const clientActions = portal.actions.filter(
     (a) => a.owner === "client" && a.status !== "done"
@@ -135,6 +136,13 @@ export function OverviewTab({ portal }: { portal: PortalDetail }) {
           </div>
         </div>
       )}
+
+      {/* Slack Notifications */}
+      <NotificationSettings
+        slug={portal.slug}
+        slackWebhookUrl={portal.meta.slack_webhook_url ?? null}
+        onSaved={() => onPortalUpdated?.()}
+      />
     </div>
   );
 }
