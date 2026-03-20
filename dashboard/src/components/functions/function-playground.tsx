@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,19 @@ import {
   Code2,
   AlertTriangle,
   History,
+  CheckCircle2,
+  XCircle,
+  Copy,
+  Check,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { FunctionInput, StepTrace, PreviewStep, ExecutionRecord } from "@/lib/types";
 import { fetchExecutions } from "@/lib/api";
 import { ExecutionTrace } from "./execution-trace";
 import { ExecutionHistoryPanel } from "./execution-history";
+import { OutputView } from "./output-view";
 
 interface FunctionPlaygroundProps {
   inputs: FunctionInput[];
@@ -83,7 +90,15 @@ export function FunctionPlayground({
   streamingTrace,
   functionId,
 }: FunctionPlaygroundProps) {
-  const [activeTab, setActiveTab] = useState<"trace" | "raw" | "history">("trace");
+  const [activeTab, setActiveTab] = useState<"output" | "trace" | "raw" | "history">("output");
+  const [copied, setCopied] = useState(false);
+
+  // Auto-switch to output tab when result arrives
+  useEffect(() => {
+    if (testResult) {
+      setActiveTab("output");
+    }
+  }, [testResult]);
 
   // Extract trace from test result _meta
   const meta = testResult?._meta as Record<string, unknown> | undefined;
@@ -103,6 +118,29 @@ export function FunctionPlayground({
       warnings.push(`${nullKeys.length} output field${nullKeys.length > 1 ? "s" : ""} returned null: ${nullKeys.join(", ")}`);
     }
   }
+
+  // Clean output: strip _-prefixed keys for display & copy
+  const getCleanOutput = () => {
+    if (!testResult) return {};
+    return Object.fromEntries(
+      Object.entries(testResult).filter(([k]) => !k.startsWith("_"))
+    );
+  };
+
+  const cleanOutput = testResult ? getCleanOutput() : null;
+  const fieldCount = cleanOutput ? Object.keys(cleanOutput).length : 0;
+  const nullCount = cleanOutput
+    ? Object.values(cleanOutput).filter((v) => v === null).length
+    : 0;
+  const hasError = testResult?.error === true;
+
+  const handleCopy = async () => {
+    if (!cleanOutput) return;
+    await navigator.clipboard.writeText(JSON.stringify(cleanOutput, null, 2));
+    setCopied(true);
+    toast.success("Copied");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <Card className="border-clay-600 border-kiln-teal/30">
@@ -249,21 +287,93 @@ export function FunctionPlayground({
           </div>
         )}
 
-        {/* Live streaming trace (during execution) */}
+        {/* Compact streaming indicator (during execution) */}
         {testing && streamingTrace && streamingTrace.length > 0 && !testResult && (
-          <ExecutionTrace
-            trace={streamingTrace}
-            totalDurationMs={0}
-            stepsTotal={stepsTotal || streamingTrace.length + 1}
-            isStreaming
-          />
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs text-clay-300">
+              <Loader2 className="h-3.5 w-3.5 text-kiln-teal animate-spin" />
+              <span>
+                Running step {streamingTrace.length}
+                {stepsTotal > 0 ? `/${stepsTotal}` : ""}...
+              </span>
+              {streamingTrace[streamingTrace.length - 1] && (
+                <span className="text-clay-500 truncate">
+                  {streamingTrace[streamingTrace.length - 1].tool_name ||
+                    streamingTrace[streamingTrace.length - 1].tool}
+                </span>
+              )}
+            </div>
+            {stepsTotal > 0 && (
+              <div className="h-1 rounded-full bg-clay-800 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-kiln-teal transition-all duration-300"
+                  style={{
+                    width: `${Math.min((streamingTrace.length / stepsTotal) * 100, 100)}%`,
+                  }}
+                />
+              </div>
+            )}
+          </div>
         )}
 
         {/* Test result */}
         {testResult && (
           <div className="space-y-2">
-            {/* Tab toggle: Trace / Raw JSON / History */}
+            {/* Summary bar */}
+            <div className="flex items-center gap-2 text-xs">
+              {hasError ? (
+                <XCircle className="h-3.5 w-3.5 text-red-400 shrink-0" />
+              ) : (
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              )}
+              {hasError ? (
+                <span className="text-red-400">Error</span>
+              ) : (
+                <span className="text-clay-300">
+                  {fieldCount} field{fieldCount !== 1 ? "s" : ""}
+                  {nullCount > 0 && (
+                    <span className="text-amber-400"> &middot; {nullCount} null</span>
+                  )}
+                  {totalDurationMs > 0 && (
+                    <span className="text-clay-500">
+                      {" "}&middot; {(totalDurationMs / 1000).toFixed(1)}s
+                    </span>
+                  )}
+                  {stepsTotal > 0 && (
+                    <span className="text-clay-500">
+                      {" "}&middot; {stepsTotal} step{stepsTotal !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                </span>
+              )}
+              <button
+                onClick={handleCopy}
+                className="ml-auto text-clay-400 hover:text-clay-200 p-1 rounded hover:bg-clay-800 transition-colors"
+                title="Copy clean output"
+              >
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+              </button>
+            </div>
+
+            {/* Tab toggle: Output | Trace | Raw JSON | History */}
             <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveTab("output")}
+                className={cn(
+                  "h-6 text-[10px] px-2",
+                  activeTab === "output"
+                    ? "text-kiln-teal bg-kiln-teal/10"
+                    : "text-clay-400"
+                )}
+              >
+                Output
+              </Button>
               {hasTrace && (
                 <Button
                   variant="ghost"
@@ -311,7 +421,10 @@ export function FunctionPlayground({
               )}
             </div>
 
-            {activeTab === "trace" && hasTrace ? (
+            {/* Tab content */}
+            {activeTab === "output" ? (
+              <OutputView result={testResult} />
+            ) : activeTab === "trace" && hasTrace ? (
               <ExecutionTrace
                 trace={trace}
                 totalDurationMs={totalDurationMs}
