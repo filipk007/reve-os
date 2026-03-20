@@ -9,6 +9,8 @@ from urllib.parse import urlparse
 
 import httpx
 
+from app.core.atomic_writer import atomic_write_json
+
 from app.core.job_queue import Job, JobStatus
 from app.models.destinations import (
     CreateDestinationRequest,
@@ -68,9 +70,8 @@ class DestinationStore:
             logger.info("[destinations] Loaded %d destinations", len(self._destinations))
 
     def _save(self) -> None:
-        self._data_dir.mkdir(parents=True, exist_ok=True)
         raw = [d.model_dump() for d in self._destinations.values()]
-        self._file.write_text(json.dumps(raw, indent=2))
+        atomic_write_json(self._file, raw)
 
     def list_all(self) -> list[Destination]:
         return list(self._destinations.values())

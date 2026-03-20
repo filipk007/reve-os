@@ -4,6 +4,8 @@ from pathlib import Path
 
 import yaml
 
+from app.core.atomic_writer import atomic_write_text
+
 from app.models.plays import (
     ClayConfigRequest,
     CreatePlayRequest,
@@ -54,7 +56,7 @@ class PlayStore:
         if "category" in data:
             data["category"] = data["category"].value if hasattr(data["category"], "value") else str(data["category"])
         path = self._dir / f"{name}.yaml"
-        path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+        atomic_write_text(path, yaml.dump(data, default_flow_style=False, sort_keys=False))
 
     def list_all(self) -> list[PlayDefinition]:
         return list(self._plays.values())

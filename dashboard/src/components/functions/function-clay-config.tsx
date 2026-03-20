@@ -1,13 +1,16 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, ChevronRight, X, Terminal, Key, Clock, Globe } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Copy, ChevronRight, X, Terminal, Key, Clock, Globe, Search } from "lucide-react";
 import { toast } from "sonner";
 import type {
   FunctionDefinition,
   FunctionInput,
   ToolCategory,
+  ToolDefinition,
 } from "@/lib/types";
 
 interface FunctionClayConfigProps {
@@ -41,6 +44,115 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
     >
       <Copy className="h-3 w-3" />
     </Button>
+  );
+}
+
+function ToolCatalogPanel({
+  toolCategories,
+  onAddStep,
+}: {
+  toolCategories: ToolCategory[];
+  onAddStep: (tool: string) => void;
+}) {
+  const [catalogSearch, setCatalogSearch] = useState("");
+
+  const allTools = useMemo(
+    () => toolCategories.flatMap((cat) => cat.tools),
+    [toolCategories]
+  );
+
+  const filtered = useMemo(() => {
+    if (!catalogSearch.trim()) return null;
+    const q = catalogSearch.toLowerCase();
+    return allTools.filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q)
+    );
+  }, [catalogSearch, allTools]);
+
+  return (
+    <Card className="border-clay-600">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm text-clay-200">Tool Catalog</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {/* Search input */}
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-clay-500" />
+          <Input
+            value={catalogSearch}
+            onChange={(e) => setCatalogSearch(e.target.value)}
+            placeholder="Search tools..."
+            className="bg-clay-900 border-clay-600 text-clay-100 text-xs h-7 pl-7 pr-7"
+          />
+          {catalogSearch && (
+            <button
+              onClick={() => setCatalogSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-clay-500 hover:text-clay-300"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+
+        {filtered && (
+          <div className="text-[10px] text-clay-500">
+            {filtered.length} of {allTools.length} tools
+          </div>
+        )}
+
+        <div className="max-h-96 overflow-auto">
+          {filtered ? (
+            /* Flat filtered list */
+            <div className="space-y-1">
+              {filtered.map((tool) => (
+                <button
+                  key={tool.id}
+                  onClick={() => onAddStep(tool.id)}
+                  className="w-full text-left px-2 py-1.5 rounded text-xs hover:bg-clay-700 transition-colors"
+                >
+                  <div className="font-medium text-clay-100">{tool.name}</div>
+                  <div className="text-[10px] text-clay-400 line-clamp-1">
+                    {tool.description}
+                  </div>
+                </button>
+              ))}
+              {filtered.length === 0 && (
+                <div className="text-xs text-clay-500 py-2 text-center">
+                  No tools match &ldquo;{catalogSearch}&rdquo;
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Category-grouped list */
+            toolCategories.map((cat) => (
+              <div key={cat.category} className="mb-3">
+                <div className="text-[10px] text-clay-400 uppercase tracking-wider mb-1">
+                  {cat.category}
+                </div>
+                <div className="space-y-1">
+                  {cat.tools.map((tool) => (
+                    <button
+                      key={tool.id}
+                      onClick={() => onAddStep(tool.id)}
+                      className="w-full text-left px-2 py-1.5 rounded text-xs hover:bg-clay-700 transition-colors"
+                    >
+                      <div className="font-medium text-clay-100">
+                        {tool.name}
+                      </div>
+                      <div className="text-[10px] text-clay-400 line-clamp-1">
+                        {tool.description}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -189,38 +301,10 @@ export function FunctionClayConfig({
 
         {/* Tool catalog (when browsing) */}
         {editing && catalogOpen && (
-          <Card className="border-clay-600">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-clay-200">
-                Tool Catalog
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="max-h-96 overflow-auto">
-              {toolCategories.map((cat) => (
-                <div key={cat.category} className="mb-3">
-                  <div className="text-[10px] text-clay-400 uppercase tracking-wider mb-1">
-                    {cat.category}
-                  </div>
-                  <div className="space-y-1">
-                    {cat.tools.map((tool) => (
-                      <button
-                        key={tool.id}
-                        onClick={() => onAddStep(tool.id)}
-                        className="w-full text-left px-2 py-1.5 rounded text-xs hover:bg-clay-700 transition-colors"
-                      >
-                        <div className="font-medium text-clay-100">
-                          {tool.name}
-                        </div>
-                        <div className="text-[10px] text-clay-400 line-clamp-1">
-                          {tool.description}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <ToolCatalogPanel
+            toolCategories={toolCategories}
+            onAddStep={onAddStep}
+          />
         )}
 
         {/* Metadata */}

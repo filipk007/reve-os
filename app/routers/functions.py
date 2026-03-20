@@ -325,6 +325,34 @@ async def get_tool_detail(request: Request, tool_id: str):
     )
 
 
+@router.get("/functions/{func_id}/executions")
+async def list_executions(request: Request, func_id: str, limit: int = 20):
+    """List recent execution records for a function."""
+    execution_history = getattr(request.app.state, "execution_history", None)
+    if execution_history is None:
+        return {"executions": [], "total": 0}
+    records = execution_history.list(func_id, limit=limit)
+    return {"executions": records, "total": len(records)}
+
+
+@router.get("/functions/{func_id}/executions/{exec_id}")
+async def get_execution(request: Request, func_id: str, exec_id: str):
+    """Get a single execution record."""
+    execution_history = getattr(request.app.state, "execution_history", None)
+    if execution_history is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": "Execution history not available"},
+        )
+    record = execution_history.get(func_id, exec_id)
+    if record is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Execution '{exec_id}' not found"},
+        )
+    return record
+
+
 @router.post("/functions/{func_id}/preview")
 async def preview_function(request: Request, func_id: str, body: PreviewRequest):
     """Dry run — resolve template vars and show executor routing without executing."""

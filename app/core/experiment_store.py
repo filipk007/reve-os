@@ -4,6 +4,8 @@ import shutil
 import time
 from pathlib import Path
 
+from app.core.atomic_writer import atomic_write_json, atomic_write_text
+
 from app.models.experiments import (
     CreateExperimentRequest,
     CreateVariantRequest,
@@ -33,9 +35,8 @@ class ExperimentStore:
             logger.info("[experiments] Loaded %d experiments", len(self._experiments))
 
     def _save_experiments(self) -> None:
-        self._data_dir.mkdir(parents=True, exist_ok=True)
         raw = [e.model_dump() for e in self._experiments.values()]
-        self._experiments_file.write_text(json.dumps(raw, indent=2))
+        atomic_write_json(self._experiments_file, raw)
 
     # --- Variant CRUD ---
 
@@ -90,7 +91,7 @@ class ExperimentStore:
         variants_dir = self._skills_dir / skill / "variants"
         variants_dir.mkdir(parents=True, exist_ok=True)
         variant_file = variants_dir / f"{variant.id}.md"
-        variant_file.write_text(data.content)
+        atomic_write_text(variant_file, data.content)
         return variant
 
     def update_variant(self, skill: str, variant_id: str, data: CreateVariantRequest) -> VariantDef | None:
@@ -99,7 +100,7 @@ class ExperimentStore:
         variant_file = self._skills_dir / skill / "variants" / f"{variant_id}.md"
         if not variant_file.exists():
             return None
-        variant_file.write_text(data.content)
+        atomic_write_text(variant_file, data.content)
         return VariantDef(
             id=variant_id,
             skill=skill,
@@ -190,6 +191,6 @@ class ExperimentStore:
         backup = self._skills_dir / skill / f"skill.md.backup.{int(time.time())}"
         shutil.copy2(skill_file, backup)
         # Write variant as new default
-        skill_file.write_text(variant.content)
+        atomic_write_text(skill_file, variant.content)
         logger.info("[experiments] Promoted variant %s to default for skill %s", variant_id, skill)
         return True

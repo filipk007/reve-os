@@ -2,6 +2,8 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
+from app.core.atomic_writer import atomic_write_text
+
 logger = logging.getLogger("clay-webhook-os")
 
 
@@ -60,7 +62,7 @@ class SkillVersionStore:
 
         next_version = self.get_latest_version(skill_name) + 1
         version_file = skill_dir / f"v{next_version}.md"
-        version_file.write_text(content)
+        atomic_write_text(version_file, content)
 
         logger.info("[skill-versions] Saved %s v%d (%d bytes)", skill_name, next_version, len(content))
         return next_version
@@ -102,6 +104,6 @@ class SkillVersionStore:
             logger.warning("[skill-versions] Skill directory not found: %s", skill_name)
             return False
 
-        skill_file.write_text(content)
+        atomic_write_text(skill_file, content)
         logger.info("[skill-versions] Rolled back %s to v%d", skill_name, version_number)
         return True

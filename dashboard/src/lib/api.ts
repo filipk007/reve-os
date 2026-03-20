@@ -42,6 +42,8 @@ import type {
   UsageHealth,
   UsageSummary,
   VariantDef,
+  ExecutionRecord,
+  StepTrace,
   WebhookResponse,
 } from "./types";
 
@@ -917,6 +919,98 @@ export function runFunction(
     method: "POST",
     body: JSON.stringify({ function: functionId, data }),
   });
+}
+
+// Stream function execution via SSE
+export function streamFunctionExecution(
+  functionId: string,
+  data: Record<string, unknown>,
+  onStep: (trace: StepTrace) => void,
+  onResult: (result: Record<string, unknown>) => void,
+  onError: (error: string) => void,
+): AbortController {
+  const controller = new AbortController();
+
+  (async () => {
+    try {
+      const res = await fetch(`${API_URL}/webhook/functions/${functionId}/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": API_KEY,
+        },
+        body: JSON.stringify({ data }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        onError(`HTTP ${res.status}: ${text}`);
+        return;
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) {
+        onError("No response body");
+        return;
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        let currentEvent = "";
+        for (const line of lines) {
+          if (line.startsWith("event: ")) {
+            currentEvent = line.slice(7).trim();
+          } else if (line.startsWith("data: ") && currentEvent) {
+            try {
+              const payload = JSON.parse(line.slice(6));
+              if (currentEvent === "step") {
+                onStep(payload as StepTrace);
+              } else if (currentEvent === "result") {
+                onResult(payload as Record<string, unknown>);
+              } else if (currentEvent === "error") {
+                onError(payload.error_message || "Stream error");
+              }
+            } catch {
+              // skip malformed JSON
+            }
+            currentEvent = "";
+          }
+        }
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") {
+        onError(e instanceof Error ? e.message : "Stream failed");
+      }
+    }
+  })();
+
+  return controller;
+}
+
+// Execution history
+export function fetchExecutions(
+  functionId: string,
+  limit?: number,
+): Promise<{ executions: ExecutionRecord[]; total: number }> {
+  const qs = limit ? `?limit=${limit}` : "";
+  return apiFetch(`/functions/${functionId}/executions${qs}`);
+}
+
+export function fetchExecution(
+  functionId: string,
+  execId: string,
+): Promise<ExecutionRecord> {
+  return apiFetch(`/functions/${functionId}/executions/${execId}`);
 }
 
 // AI Function Assembly

@@ -212,8 +212,9 @@ def save_skill(name: str, content: str) -> bool | str:
     skill_file = settings.skills_dir / name / "skill.md"
     if not skill_file.exists():
         return False
+    from app.core.atomic_writer import atomic_write_text
     try:
-        skill_file.write_text(content)
+        atomic_write_text(skill_file, content)
     except PermissionError:
         return f"Permission denied writing to {skill_file}. Check file ownership on the server."
     except OSError as e:
@@ -230,9 +231,10 @@ def create_skill(name: str, content: str) -> bool | str:
     skill_dir = settings.skills_dir / name
     if skill_dir.exists():
         return False
+    from app.core.atomic_writer import atomic_write_text
     try:
         skill_dir.mkdir(parents=True)
-        (skill_dir / "skill.md").write_text(content)
+        atomic_write_text(skill_dir / "skill.md", content)
     except PermissionError:
         return f"Permission denied creating {skill_dir}. Check directory ownership on the server."
     except OSError as e:

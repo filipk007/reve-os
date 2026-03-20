@@ -3,6 +3,7 @@ import logging
 import time
 from pathlib import Path
 
+from app.core.atomic_writer import atomic_write_json
 from app.models.feedback import FeedbackEntry, FeedbackSummary, SkillAnalytics
 
 logger = logging.getLogger("clay-webhook-os")
@@ -141,10 +142,9 @@ class FeedbackStore:
 
     def _rewrite_entries(self) -> None:
         self._data_dir.mkdir(parents=True, exist_ok=True)
-        with open(self._entries_file, "w") as f:
-            for e in self._entries:
-                f.write(json.dumps(e.model_dump()) + "\n")
+        content = "".join(json.dumps(e.model_dump()) + "\n" for e in self._entries)
+        atomic_write_text(self._entries_file, content)
 
     def _rebuild_summary(self) -> None:
         summary = self.get_analytics()
-        self._summary_file.write_text(json.dumps(summary.model_dump(), indent=2))
+        atomic_write_json(self._summary_file, summary.model_dump())

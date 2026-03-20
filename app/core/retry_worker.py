@@ -10,12 +10,16 @@ from urllib.parse import urlparse
 
 import httpx
 
+from app.core.atomic_writer import atomic_write_json
+
 if TYPE_CHECKING:
     from app.core.event_bus import EventBus
 
 logger = logging.getLogger("clay-webhook-os")
 
 BACKOFF_SCHEDULE = [1, 5, 30, 120, 600]  # 1s, 5s, 30s, 2m, 10m
+MAX_PENDING = 500
+MAX_HOST_SEMAPHORES = 100
 
 
 @dataclass
@@ -97,6 +101,11 @@ class RetryWorker:
             next_retry_at=time.time() + delay,
             job_id=job_id,
         )
+        # Cap pending to prevent unbounded growth — dead-letter oldest if at cap
+        if len(self._pending) >= MAX_PENDING:
+            oldest = self._pending.pop(0)
+            self._dead_letter(oldest)
+            logger.warning("[retry-worker] Pending at cap (%d) — dead-lettered oldest %s", MAX_PENDING, oldest.id)
         self._pending.append(item)
         self._save_queue()
         logger.info("[retry-worker] Enqueued retry %s for job %s (url=%s)", item_id, job_id, url)
@@ -148,8 +157,22 @@ class RetryWorker:
         """Get or create a per-host semaphore for rate limiting deliveries."""
         host = urlparse(url).netloc
         if host not in self._host_semaphores:
+            # Evict stale host semaphores if at cap
+            if len(self._host_semaphores) >= MAX_HOST_SEMAPHORES:
+                active_hosts = {urlparse(item.url).netloc for item in self._pending}
+                stale = [h for h in self._host_semaphores if h not in active_hosts]
+                for h in stale:
+                    del self._host_semaphores[h]
             self._host_semaphores[host] = asyncio.Semaphore(self._max_concurrent_per_host)
         return self._host_semaphores[host]
+
+    def prune_host_semaphores(self) -> int:
+        """Remove semaphores for hosts with no pending items. Called by cleanup worker."""
+        active_hosts = {urlparse(item.url).netloc for item in self._pending}
+        stale = [h for h in self._host_semaphores if h not in active_hosts]
+        for h in stale:
+            del self._host_semaphores[h]
+        return len(stale)
 
     async def _attempt_delivery(self, item: RetryItem) -> None:
         self._total_retried += 1
@@ -209,7 +232,6 @@ class RetryWorker:
             self._event_bus.publish("retry_dead_letter", {"item_id": item.id, "job_id": item.job_id})
 
     def _save_queue(self) -> None:
-        self._data_dir.mkdir(parents=True, exist_ok=True)
         raw = [
             {
                 "id": item.id,
@@ -225,8 +247,7 @@ class RetryWorker:
             }
             for item in self._pending
         ]
-        self._queue_file.write_text(json.dumps(raw, indent=2))
+        atomic_write_json(self._queue_file, raw)
 
     def _save_dead_letters(self) -> None:
-        self._data_dir.mkdir(parents=True, exist_ok=True)
-        self._dead_file.write_text(json.dumps(self._dead_letters, indent=2))
+        atomic_write_json(self._dead_file, self._dead_letters)

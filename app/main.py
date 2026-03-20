@@ -13,6 +13,7 @@ from app.core.dataset_store import DatasetStore
 from app.core.dedup import RequestDeduplicator
 from app.core.destination_store import DestinationStore
 from app.core.event_bus import EventBus
+from app.core.execution_history import ExecutionHistory
 from app.core.experiment_store import ExperimentStore
 from app.core.feedback_loop import FeedbackLoop
 from app.core.feedback_store import FeedbackStore
@@ -155,6 +156,9 @@ async def startup():
     app.state.function_store = FunctionStore(functions_dir=settings.functions_dir)
     app.state.function_store.load()
 
+    # Execution history (function run records)
+    app.state.execution_history = ExecutionHistory(data_dir=settings.data_dir)
+
     # Skill version store
     app.state.skill_version_store = SkillVersionStore(
         data_dir=settings.data_dir, skills_dir=settings.skills_dir
@@ -220,6 +224,8 @@ async def startup():
         usage_store=app.state.usage_store,
         feedback_store=app.state.feedback_store,
         prompt_cache=app.state.prompt_cache,
+        feedback_loop=app.state.feedback_loop,
+        retry_worker=app.state.retry_worker,
         interval_seconds=settings.cleanup_interval_seconds,
         job_retention_hours=settings.cleanup_job_retention_hours,
         feedback_retention_days=settings.cleanup_feedback_retention_days,

@@ -3,6 +3,7 @@ import re
 import shutil
 from pathlib import Path
 
+from app.core.atomic_writer import atomic_write_text
 from app.core.context_assembler import build_prompt
 from app.core.skill_loader import list_skills, load_context_files, load_skill, load_skill_config, parse_context_refs
 from app.models.context import (
@@ -98,7 +99,7 @@ class ContextStore:
         profile.raw_markdown = md
         client_dir = self._clients_dir / data.slug
         client_dir.mkdir(parents=True, exist_ok=True)
-        (client_dir / "profile.md").write_text(md)
+        atomic_write_text(client_dir / "profile.md", md)
         logger.info("[context] Created client: %s", data.slug)
         return profile
 
@@ -112,7 +113,7 @@ class ContextStore:
         updated.raw_markdown = md
         client_dir = self._clients_dir / slug
         client_dir.mkdir(parents=True, exist_ok=True)
-        (client_dir / "profile.md").write_text(md)
+        atomic_write_text(client_dir / "profile.md", md)
         logger.info("[context] Updated client: %s", slug)
         return updated
 
@@ -168,7 +169,7 @@ class ContextStore:
         f = self._knowledge_dir / category / filename
         if not f.exists():
             return None
-        f.write_text(content)
+        atomic_write_text(f, content)
         logger.info("[context] Updated KB file: %s/%s", category, filename)
         return KnowledgeBaseFile(
             path=f"{category}/{filename}",
@@ -199,7 +200,7 @@ class ContextStore:
             raise ValueError("File already exists")
 
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
+        atomic_write_text(path, content)
         logger.info("[context] Created KB file: %s/%s", category, filename)
         return KnowledgeBaseFile(
             path=f"{category}/{filename}",

@@ -14,6 +14,8 @@ import re
 import time
 from pathlib import Path
 
+from app.core.atomic_writer import atomic_write_text
+
 logger = logging.getLogger("clay-webhook-os")
 
 MAX_LEARNINGS_IN_PROMPT = 10
@@ -159,7 +161,7 @@ class LearningEngine:
 
         if not path.exists():
             header = f"# Learnings — {slug}\n\nFeedback-driven corrections that improve future outputs.\n\n"
-            path.write_text(header)
+            atomic_write_text(path, header)
 
         content = path.read_text()
 
@@ -181,7 +183,7 @@ class LearningEngine:
             insert_at += 1
 
         content = content[:insert_at] + entry_line + content[insert_at:]
-        path.write_text(content)
+        atomic_write_text(path, content)
 
     def _parse_learnings(self, path: Path) -> list[dict]:
         """Parse a learnings markdown file into structured entries."""

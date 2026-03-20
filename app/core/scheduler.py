@@ -23,6 +23,7 @@ class ScheduledBatch:
     created_at: float = field(default_factory=time.time)
     status: str = "scheduled"  # scheduled | enqueued | cancelled
     job_ids: list[str] = field(default_factory=list)
+    total_rows: int = 0
 
 
 class BatchScheduler:
@@ -39,7 +40,7 @@ class BatchScheduler:
             {
                 "id": b.id,
                 "skill": b.skill,
-                "total_rows": len(b.rows),
+                "total_rows": b.total_rows or len(b.rows),
                 "scheduled_at": b.scheduled_at,
                 "created_at": b.created_at,
                 "status": b.status,
@@ -89,5 +90,7 @@ class BatchScheduler:
                 max_retries=batch.max_retries,
             )
             batch.job_ids.append(job_id)
+        batch.total_rows = len(batch.rows)
+        batch.rows = []  # Free duplicate row data — now tracked by individual jobs
         batch.status = "enqueued"
         logger.info("[scheduler] Batch %s enqueued (%d jobs)", batch.id, len(batch.job_ids))

@@ -1,15 +1,19 @@
 import asyncio
 import logging
-import resource
+import os
+import subprocess
+import sys
 import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.core.cache import ResultCache
+    from app.core.feedback_loop import FeedbackLoop
     from app.core.feedback_store import FeedbackStore
     from app.core.job_queue import JobQueue
     from app.core.prompt_cache import PromptCache
+    from app.core.retry_worker import RetryWorker
     from app.core.scheduler import BatchScheduler
     from app.core.usage_store import UsageStore
 
@@ -17,10 +21,32 @@ logger = logging.getLogger("clay-webhook-os")
 
 
 def _get_rss_mb() -> float:
-    """Return current process RSS in megabytes."""
+    """Return current process RSS in megabytes (not peak)."""
+    pid = os.getpid()
+    # Linux: read /proc/self/statm — field 1 is resident pages
+    try:
+        statm = f"/proc/{pid}/statm"
+        if os.path.exists(statm):
+            with open(statm) as f:
+                parts = f.read().split()
+            resident_pages = int(parts[1])
+            page_size = os.sysconf("SC_PAGE_SIZE")
+            return (resident_pages * page_size) / (1024 * 1024)
+    except Exception:
+        pass
+    # macOS: ps -o rss= returns KB
+    if sys.platform == "darwin":
+        try:
+            out = subprocess.check_output(
+                ["ps", "-o", "rss=", "-p", str(pid)],
+                text=True, timeout=5,
+            )
+            return int(out.strip()) / 1024
+        except Exception:
+            pass
+    # Fallback: ru_maxrss (peak, not ideal but better than 0)
+    import resource
     usage = resource.getrusage(resource.RUSAGE_SELF)
-    # ru_maxrss is in bytes on macOS, kilobytes on Linux
-    import sys
     if sys.platform == "darwin":
         return usage.ru_maxrss / (1024 * 1024)
     return usage.ru_maxrss / 1024
@@ -35,6 +61,8 @@ class CleanupReport:
     batches_pruned: int = 0
     usage_compacted: tuple[int, int] = (0, 0)
     feedback_archived: int = 0
+    reruns_pruned: int = 0
+    semaphores_pruned: int = 0
     rss_mb: float = 0.0
     duration_ms: int = 0
 
@@ -50,6 +78,8 @@ class DataCleanupWorker:
         usage_store: "UsageStore",
         feedback_store: "FeedbackStore",
         prompt_cache: "PromptCache | None" = None,
+        feedback_loop: "FeedbackLoop | None" = None,
+        retry_worker: "RetryWorker | None" = None,
         interval_seconds: int = 3600,
         job_retention_hours: int = 24,
         feedback_retention_days: int = 90,
@@ -62,6 +92,8 @@ class DataCleanupWorker:
         self._scheduler = scheduler
         self._usage_store = usage_store
         self._feedback_store = feedback_store
+        self._feedback_loop = feedback_loop
+        self._retry_worker = retry_worker
         self._interval = interval_seconds
         self._job_retention_hours = job_retention_hours
         self._feedback_retention_days = feedback_retention_days
@@ -115,6 +147,8 @@ class DataCleanupWorker:
         report.batches_pruned = self._cleanup_batches()
         report.usage_compacted = self._compact_usage()
         report.feedback_archived = self._cleanup_feedback()
+        report.reruns_pruned = self._cleanup_feedback_loop()
+        report.semaphores_pruned = self._cleanup_retry_semaphores()
         self._cleanup_failed_callbacks()
 
         report.rss_mb = _get_rss_mb()
@@ -122,7 +156,7 @@ class DataCleanupWorker:
         self._last_report = report
 
         logger.info(
-            "[cleanup] Cycle complete in %dms — cache=%d, prompt_cache=%d, jobs=%d, batches=%d, usage=%s, feedback=%d, rss=%.1fMB",
+            "[cleanup] Cycle complete in %dms — cache=%d, prompt_cache=%d, jobs=%d, batches=%d, usage=%s, feedback=%d, reruns=%d, semaphores=%d, rss=%.1fMB",
             report.duration_ms,
             report.cache_evicted,
             report.prompt_cache_evicted,
@@ -130,6 +164,8 @@ class DataCleanupWorker:
             report.batches_pruned,
             report.usage_compacted,
             report.feedback_archived,
+            report.reruns_pruned,
+            report.semaphores_pruned,
             report.rss_mb,
         )
         return report
@@ -157,18 +193,39 @@ class DataCleanupWorker:
         cutoff = time.time() - (self._feedback_retention_days * 86400)
         return self._feedback_store.compact(cutoff)
 
+    def _cleanup_feedback_loop(self) -> int:
+        if self._feedback_loop is None:
+            return 0
+        from app.core.feedback_loop import MAX_RERUNS
+        reruns = self._feedback_loop._reruns
+        if len(reruns) <= MAX_RERUNS:
+            return 0
+        oldest_keys = sorted(
+            reruns, key=lambda k: reruns[k].get("created_at", 0)
+        )[:len(reruns) - MAX_RERUNS]
+        for k in oldest_keys:
+            del reruns[k]
+        return len(oldest_keys)
+
+    def _cleanup_retry_semaphores(self) -> int:
+        if self._retry_worker is None:
+            return 0
+        return self._retry_worker.prune_host_semaphores()
+
     def _cleanup_failed_callbacks(self) -> None:
-        import json as _json
         from pathlib import Path
+
+        from app.core.atomic_writer import atomic_write_json
         failed_path = Path("data/failed_callbacks.json")
         if not failed_path.exists():
             return
         try:
+            import json as _json
             entries = _json.loads(failed_path.read_text())
             cutoff = time.time() - (self._failed_callback_days * 86400)
             kept = [e for e in entries if e.get("timestamp", 0) >= cutoff]
             if len(kept) < len(entries):
-                failed_path.write_text(_json.dumps(kept, indent=2))
+                atomic_write_json(failed_path, kept)
                 logger.info("[cleanup] Pruned %d old failed callbacks", len(entries) - len(kept))
         except Exception as e:
             logger.warning("[cleanup] Failed to clean failed_callbacks: %s", e)

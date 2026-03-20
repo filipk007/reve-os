@@ -4,6 +4,8 @@ import time
 
 logger = logging.getLogger("clay-webhook-os")
 
+MAX_RERUNS = 200
+
 
 class FeedbackLoop:
     """Automates the re-run cycle when thumbs-down feedback is received.
@@ -70,6 +72,13 @@ class FeedbackLoop:
                 "created_at": time.time(),
             }
             self._reruns[job_id] = rerun_record
+            # Cap reruns dict to prevent unbounded growth
+            if len(self._reruns) > MAX_RERUNS:
+                oldest_keys = sorted(
+                    self._reruns, key=lambda k: self._reruns[k].get("created_at", 0)
+                )[:len(self._reruns) - MAX_RERUNS]
+                for k in oldest_keys:
+                    del self._reruns[k]
             logger.info("[feedback-loop] Re-run completed for job %s (skill=%s)", job_id, skill)
             return rerun_record
 

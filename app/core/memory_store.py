@@ -13,6 +13,8 @@ import re
 import time
 from pathlib import Path
 
+from app.core.atomic_writer import atomic_write_json
+
 logger = logging.getLogger("clay-webhook-os")
 
 # TTL defaults (seconds)
@@ -234,6 +236,5 @@ class MemoryStore:
             return []
 
     def _save_entries(self, path: Path, entries: list[MemoryEntry]) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
         data = {"entries": [e.to_dict() for e in entries]}
-        path.write_text(json.dumps(data, indent=2))
+        atomic_write_json(path, data)

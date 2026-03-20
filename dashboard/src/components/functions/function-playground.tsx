@@ -12,10 +12,13 @@ import {
   Eye,
   Code2,
   AlertTriangle,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { FunctionInput, StepTrace, PreviewStep } from "@/lib/types";
+import type { FunctionInput, StepTrace, PreviewStep, ExecutionRecord } from "@/lib/types";
+import { fetchExecutions } from "@/lib/api";
 import { ExecutionTrace } from "./execution-trace";
+import { ExecutionHistoryPanel } from "./execution-history";
 
 interface FunctionPlaygroundProps {
   inputs: FunctionInput[];
@@ -33,6 +36,10 @@ interface FunctionPlaygroundProps {
   } | null;
   previewing: boolean;
   onPreview: () => void;
+  // Streaming support
+  streamingTrace?: StepTrace[];
+  // Execution history
+  functionId?: string;
 }
 
 const EXECUTOR_BADGE: Record<string, { label: string; color: string }> = {
@@ -73,8 +80,10 @@ export function FunctionPlayground({
   preview,
   previewing,
   onPreview,
+  streamingTrace,
+  functionId,
 }: FunctionPlaygroundProps) {
-  const [showRaw, setShowRaw] = useState(false);
+  const [activeTab, setActiveTab] = useState<"trace" | "raw" | "history">("trace");
 
   // Extract trace from test result _meta
   const meta = testResult?._meta as Record<string, unknown> | undefined;
@@ -82,6 +91,18 @@ export function FunctionPlayground({
   const totalDurationMs = (meta?.duration_ms as number) || 0;
   const stepsTotal = (meta?.steps as number) || 0;
   const hasTrace = trace && trace.length > 0;
+
+  // Extract warnings — from _warnings field or auto-detect null outputs
+  const rawWarnings = testResult?._warnings as string[] | undefined;
+  const warnings: string[] = rawWarnings ? [...rawWarnings] : [];
+  if (testResult && !rawWarnings) {
+    const nullKeys = Object.entries(testResult)
+      .filter(([k, v]) => v === null && !k.startsWith("_"))
+      .map(([k]) => k);
+    if (nullKeys.length > 0) {
+      warnings.push(`${nullKeys.length} output field${nullKeys.length > 1 ? "s" : ""} returned null: ${nullKeys.join(", ")}`);
+    }
+  }
 
   return (
     <Card className="border-clay-600 border-kiln-teal/30">
@@ -228,52 +249,104 @@ export function FunctionPlayground({
           </div>
         )}
 
+        {/* Live streaming trace (during execution) */}
+        {testing && streamingTrace && streamingTrace.length > 0 && !testResult && (
+          <ExecutionTrace
+            trace={streamingTrace}
+            totalDurationMs={0}
+            stepsTotal={stepsTotal || streamingTrace.length + 1}
+            isStreaming
+          />
+        )}
+
         {/* Test result */}
         {testResult && (
           <div className="space-y-2">
-            {/* Toggle between trace and raw */}
-            {hasTrace && (
-              <div className="flex items-center gap-1">
+            {/* Tab toggle: Trace / Raw JSON / History */}
+            <div className="flex items-center gap-1">
+              {hasTrace && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowRaw(false)}
+                  onClick={() => setActiveTab("trace")}
                   className={cn(
                     "h-6 text-[10px] px-2",
-                    !showRaw
+                    activeTab === "trace"
                       ? "text-kiln-teal bg-kiln-teal/10"
                       : "text-clay-400"
                   )}
                 >
                   Trace
                 </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveTab("raw")}
+                className={cn(
+                  "h-6 text-[10px] px-2",
+                  activeTab === "raw"
+                    ? "text-kiln-teal bg-kiln-teal/10"
+                    : "text-clay-400"
+                )}
+              >
+                <Code2 className="h-3 w-3 mr-1" />
+                Raw JSON
+              </Button>
+              {functionId && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowRaw(true)}
+                  onClick={() => setActiveTab("history")}
                   className={cn(
                     "h-6 text-[10px] px-2",
-                    showRaw
+                    activeTab === "history"
                       ? "text-kiln-teal bg-kiln-teal/10"
                       : "text-clay-400"
                   )}
                 >
-                  <Code2 className="h-3 w-3 mr-1" />
-                  Raw JSON
+                  <History className="h-3 w-3 mr-1" />
+                  History
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
 
-            {hasTrace && !showRaw ? (
+            {activeTab === "trace" && hasTrace ? (
               <ExecutionTrace
                 trace={trace}
                 totalDurationMs={totalDurationMs}
                 stepsTotal={stepsTotal}
+                warnings={warnings.length > 0 ? warnings : undefined}
               />
+            ) : activeTab === "history" && functionId ? (
+              <ExecutionHistoryPanel functionId={functionId} />
             ) : (
               <pre className="text-[11px] text-clay-300 bg-clay-900 p-3 rounded border border-clay-700 overflow-auto max-h-64 whitespace-pre-wrap">
                 {JSON.stringify(testResult, null, 2)}
               </pre>
+            )}
+          </div>
+        )}
+
+        {/* History tab when no result yet */}
+        {!testResult && !testing && !preview && functionId && (
+          <div className="space-y-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab(activeTab === "history" ? "trace" : "history")}
+              className={cn(
+                "h-6 text-[10px] px-2",
+                activeTab === "history"
+                  ? "text-kiln-teal bg-kiln-teal/10"
+                  : "text-clay-400"
+              )}
+            >
+              <History className="h-3 w-3 mr-1" />
+              Past Runs
+            </Button>
+            {activeTab === "history" && (
+              <ExecutionHistoryPanel functionId={functionId} />
             )}
           </div>
         )}

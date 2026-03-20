@@ -15,6 +15,8 @@ import {
   Bot,
   Globe,
   Cpu,
+  AlertTriangle,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { StepTrace } from "@/lib/types";
@@ -65,15 +67,31 @@ interface ExecutionTraceProps {
   trace: StepTrace[];
   totalDurationMs: number;
   stepsTotal: number;
+  warnings?: string[];
+  isStreaming?: boolean;
+  currentStepName?: string;
 }
 
 export function ExecutionTrace({
   trace,
   totalDurationMs,
   stepsTotal,
+  warnings,
+  isStreaming,
+  currentStepName,
 }: ExecutionTraceProps) {
   const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set());
   const [showPrompt, setShowPrompt] = useState<Set<number>>(new Set());
+  const [showRawResponse, setShowRawResponse] = useState<Set<number>>(new Set());
+
+  const toggleRawResponse = (idx: number) => {
+    setShowRawResponse((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
 
   const toggleExpanded = (idx: number) => {
     setExpandedSteps((prev) => {
@@ -116,6 +134,21 @@ export function ExecutionTrace({
         )}
       </div>
 
+      {/* Warnings banner */}
+      {warnings && warnings.length > 0 && (
+        <div className="rounded bg-amber-500/10 border border-amber-500/30 px-3 py-2 space-y-1">
+          <div className="flex items-center gap-1.5 text-amber-400 text-[11px] font-medium">
+            <AlertTriangle className="h-3 w-3" />
+            {warnings.length === 1 ? "Warning" : `${warnings.length} Warnings`}
+          </div>
+          {warnings.map((w, i) => (
+            <div key={i} className="text-[10px] text-amber-300/80 pl-4">
+              {w}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Step timeline */}
       <div className="relative space-y-0">
         {trace.map((step, i) => {
@@ -123,15 +156,18 @@ export function ExecutionTrace({
           const Icon = config.icon;
           const isExpanded = expandedSteps.has(i);
           const isPromptShown = showPrompt.has(i);
+          const isRawResponseShown = showRawResponse.has(i);
           const hasDetails =
             Object.keys(step.resolved_params).length > 0 ||
             step.output_keys.length > 0 ||
-            step.ai_prompt;
+            step.ai_prompt ||
+            step.ai_raw_response;
+          const isLastStep = i === trace.length - 1;
 
           return (
             <div key={i} className="relative">
               {/* Connecting line */}
-              {i < trace.length - 1 && (
+              {(!isLastStep || isStreaming) && (
                 <div className="absolute left-[11px] top-8 bottom-0 w-px bg-clay-700" />
               )}
 
@@ -168,6 +204,17 @@ export function ExecutionTrace({
                     <Icon className="h-2.5 w-2.5 mr-0.5" />
                     {config.label}
                   </Badge>
+
+                  {/* Parse error badge */}
+                  {step.parse_error && (
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] px-1.5 py-0 h-4 shrink-0 border bg-red-500/15 text-red-400 border-red-500/30"
+                    >
+                      <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
+                      Parse Failed
+                    </Badge>
+                  )}
 
                   {/* Duration pill */}
                   <span className="text-[10px] text-clay-500 ml-auto shrink-0">
@@ -267,12 +314,62 @@ export function ExecutionTrace({
                         )}
                       </div>
                     )}
+
+                    {/* AI Raw Response accordion */}
+                    {step.ai_raw_response && (
+                      <div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleRawResponse(i);
+                          }}
+                          className={cn(
+                            "h-5 px-1 text-[10px] hover:text-clay-200",
+                            step.parse_error
+                              ? "text-red-400"
+                              : "text-clay-400"
+                          )}
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          {isRawResponseShown ? "Hide AI Response" : "Show AI Response"}
+                        </Button>
+                        {isRawResponseShown && (
+                          <pre className={cn(
+                            "mt-1 text-[10px] p-2 rounded border overflow-auto max-h-48 whitespace-pre-wrap",
+                            step.parse_error
+                              ? "text-red-300 bg-red-950/30 border-red-800/50"
+                              : "text-clay-400 bg-clay-950 border-clay-800"
+                          )}>
+                            {step.ai_raw_response}
+                          </pre>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             </div>
           );
         })}
+
+        {/* Streaming skeleton — pulsing indicator for the step currently running */}
+        {isStreaming && (
+          <div className="relative">
+            <div className="rounded bg-clay-900/50 border border-clay-700 border-dashed mb-2 animate-pulse">
+              <div className="flex items-center gap-2 p-2">
+                <span className="flex items-center justify-center h-5 w-5 rounded-full bg-clay-800 border border-clay-600 text-[10px] text-clay-500 shrink-0">
+                  {trace.length + 1}
+                </span>
+                <div className="h-3.5 w-3.5 rounded-full border-2 border-kiln-teal border-t-transparent animate-spin" />
+                <span className="text-xs text-clay-400">
+                  Running{currentStepName ? ` ${currentStepName}` : ""}...
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

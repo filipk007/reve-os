@@ -4,6 +4,8 @@ import time
 import uuid
 from pathlib import Path
 
+from app.core.atomic_writer import atomic_write_text
+
 from app.models.datasets import Dataset, DatasetColumn, DatasetSummary
 
 logger = logging.getLogger("clay-webhook-os")
@@ -173,10 +175,9 @@ class DatasetStore:
                     updated_count += 1
                 all_rows.append(row)
 
-        # Rewrite file
-        with open(rows_path, "w") as f:
-            for row in all_rows:
-                f.write(json.dumps(row) + "\n")
+        # Rewrite file atomically
+        content = "".join(json.dumps(row) + "\n" for row in all_rows)
+        atomic_write_text(rows_path, content)
 
         # Update column metadata if new columns were added
         ds = self.get(dataset_id)
@@ -237,7 +238,7 @@ class DatasetStore:
 
     def _save_meta(self, ds: Dataset):
         meta_path = self.base_dir / ds.id / "meta.json"
-        meta_path.write_text(ds.model_dump_json(indent=2))
+        atomic_write_text(meta_path, ds.model_dump_json(indent=2))
 
     # --- Stage tracking ---
 

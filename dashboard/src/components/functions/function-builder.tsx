@@ -574,6 +574,16 @@ export function FunctionBuilder({
                                       {toolDef.description}
                                     </div>
                                   )}
+                                  {toolDef.execution_mode && (
+                                    <div className="text-clay-400 text-[10px]">
+                                      Executor: {toolDef.execution_mode === "native" ? "Native API" : toolDef.execution_mode === "ai_agent" ? "AI Agent (web search)" : "AI Single-turn"}
+                                    </div>
+                                  )}
+                                  {toolDef.ai_fallback_description && (
+                                    <div className="text-clay-500 text-[10px] italic">
+                                      {toolDef.ai_fallback_description}
+                                    </div>
+                                  )}
                                 </div>
                               </TooltipContent>
                             </Tooltip>
@@ -581,6 +591,42 @@ export function FunctionBuilder({
                             <span className="text-xs font-medium text-clay-100">
                               {step.tool}
                             </span>
+                          )}
+                          {/* Executor badge */}
+                          {toolDef && (
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-[9px] px-1.5 py-0 h-4 shrink-0 border",
+                                toolDef.has_native_api
+                                  ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                                  : toolDef.execution_mode === "ai_agent"
+                                    ? "bg-purple-500/15 text-purple-400 border-purple-500/30"
+                                    : "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                              )}
+                            >
+                              {toolDef.has_native_api
+                                ? `API: ${toolDef.native_api_provider || "Native"}`
+                                : toolDef.execution_mode === "ai_agent"
+                                  ? "AI Agent"
+                                  : "AI Powered"}
+                            </Badge>
+                          )}
+                          {step.tool === "call_ai" && !toolDef && (
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] px-1.5 py-0 h-4 bg-blue-500/15 text-blue-400 border-blue-500/30"
+                            >
+                              AI Analysis
+                            </Badge>
+                          )}
+                          {step.tool.startsWith("skill:") && !toolDef && (
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] px-1.5 py-0 h-4 bg-blue-500/15 text-blue-400 border-blue-500/30"
+                            >
+                              Skill
+                            </Badge>
                           )}
                           {wiredInputs.length > 0 && (
                             <span className="flex items-center gap-1 ml-1">

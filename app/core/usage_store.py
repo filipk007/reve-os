@@ -5,6 +5,8 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from app.core.atomic_writer import atomic_write_text
+
 from app.models.usage import DailyUsage, UsageEntry, UsageError, UsageSummary
 
 logger = logging.getLogger("clay-webhook-os")
@@ -87,12 +89,10 @@ class UsageStore:
 
     def _rewrite(self) -> None:
         self._data_dir.mkdir(parents=True, exist_ok=True)
-        with open(self._entries_file, "w") as f:
-            for e in self._entries:
-                f.write(json.dumps(e.model_dump()) + "\n")
-        with open(self._errors_file, "w") as f:
-            for e in self._errors:
-                f.write(json.dumps(e.model_dump()) + "\n")
+        entries_content = "".join(json.dumps(e.model_dump()) + "\n" for e in self._entries)
+        atomic_write_text(self._entries_file, entries_content)
+        errors_content = "".join(json.dumps(e.model_dump()) + "\n" for e in self._errors)
+        atomic_write_text(self._errors_file, errors_content)
 
     def get_summary(self) -> UsageSummary:
         now = time.time()

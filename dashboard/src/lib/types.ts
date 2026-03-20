@@ -567,6 +567,21 @@ export interface StepTrace {
   output_keys: string[];
   error_message?: string;
   ai_prompt?: string;
+  ai_raw_response?: string;
+  parse_error?: boolean;
+}
+
+export interface ExecutionRecord {
+  id: string;
+  function_id: string;
+  timestamp: number;
+  inputs: Record<string, unknown>;
+  outputs: Record<string, unknown>;
+  trace: StepTrace[];
+  duration_ms: number;
+  status: "success" | "error" | "partial";
+  warnings: string[];
+  step_count: number;
 }
 
 export interface AssemblyReasoning {

@@ -11,7 +11,7 @@ import {
   deleteFunction,
   fetchToolCategories,
   generateFunctionClayConfig,
-  runFunction,
+  streamFunctionExecution,
   previewFunction,
 } from "@/lib/api";
 import type {
@@ -22,6 +22,7 @@ import type {
   ToolCategory,
   ToolDefinition,
   PreviewStep,
+  StepTrace,
 } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -56,6 +57,10 @@ export default function FunctionDetailPage() {
   const [testing, setTesting] = useState(false);
   const testInputsRef = useRef<Record<string, string>>({});
   testInputsRef.current = testInputs;
+
+  // Streaming state
+  const [streamingTrace, setStreamingTrace] = useState<StepTrace[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Preview state (Phase 4)
   const [preview, setPreview] = useState<{
@@ -253,18 +258,30 @@ export default function FunctionDetailPage() {
     }
   };
 
-  const handleRunTest = async () => {
+  const handleRunTest = () => {
     if (!func) return;
+    // Abort any previous stream
+    abortRef.current?.abort();
+
     setTesting(true);
     setTestResult(null);
-    try {
-      const result = await runFunction(func.id, testInputsRef.current);
-      setTestResult(result);
-    } catch (e) {
-      setTestResult({ error: true, message: e instanceof Error ? e.message : "Test failed" });
-    } finally {
-      setTesting(false);
-    }
+    setStreamingTrace([]);
+
+    abortRef.current = streamFunctionExecution(
+      func.id,
+      testInputsRef.current,
+      (trace) => {
+        setStreamingTrace((prev) => [...prev, trace]);
+      },
+      (result) => {
+        setTestResult(result);
+        setTesting(false);
+      },
+      (error) => {
+        setTestResult({ error: true, message: error });
+        setTesting(false);
+      },
+    );
   };
 
   const handlePreview = async () => {
@@ -399,6 +416,8 @@ export default function FunctionDetailPage() {
                   preview={preview}
                   previewing={previewing}
                   onPreview={handlePreview}
+                  streamingTrace={streamingTrace}
+                  functionId={func.id}
                 />
               </ErrorBoundary>
             </div>

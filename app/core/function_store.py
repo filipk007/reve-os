@@ -5,6 +5,8 @@ from pathlib import Path
 
 import yaml
 
+from app.core.atomic_writer import atomic_write_text
+
 from app.models.functions import (
     CreateFolderRequest,
     CreateFunctionRequest,
@@ -106,12 +108,12 @@ class FunctionStore:
         if func.clay_config:
             data["clay_config"] = func.clay_config.model_dump()
         path = self._dir / f"{func.id}.yaml"
-        path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+        atomic_write_text(path, yaml.dump(data, default_flow_style=False, sort_keys=False))
 
     def _save_folders(self) -> None:
         folders_file = self._dir / "_folders.yaml"
         data = [f.model_dump() for f in sorted(self._folders.values(), key=lambda f: f.order)]
-        folders_file.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+        atomic_write_text(folders_file, yaml.dump(data, default_flow_style=False, sort_keys=False))
 
     # ── Function CRUD ─────────────────────────────────────
 

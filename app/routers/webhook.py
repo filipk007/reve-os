@@ -384,8 +384,8 @@ async def webhook(body: WebhookRequest, request: Request, debug: bool = False):
     if memory_store is not None:
         try:
             memory_store.store_from_data(body.data, primary_skill, parsed)
-        except Exception:
-            pass  # Non-critical
+        except Exception as e:
+            logger.warning("[webhook] memory_store failed for skill=%s: %s", primary_skill, e)
 
     response = {
         **parsed,
@@ -484,6 +484,391 @@ async def webhook_function(function_id: str, body: FunctionWebhookRequest, reque
     return await _run_function(full_body, request)
 
 
+@router.post("/webhook/functions/{function_id}/stream")
+async def webhook_function_stream(function_id: str, body: FunctionWebhookRequest, request: Request):
+    """SSE streaming variant — yields step traces as they complete."""
+    import time as _time
+
+    sub_monitor = getattr(request.app.state, "subscription_monitor", None)
+    if sub_monitor and sub_monitor.is_paused:
+        return JSONResponse(
+            status_code=503,
+            content={"error": True, "error_message": "Service temporarily paused due to subscription limits", "retry_after": 120},
+        )
+
+    full_body = WebhookRequest(
+        function=function_id,
+        data=body.data,
+        instructions=body.instructions,
+        model=body.model,
+        output_format=body.output_format,
+        callback_url=body.callback_url,
+        row_id=body.row_id,
+        max_retries=body.max_retries,
+        priority=body.priority,
+    )
+
+    async def event_gen():
+        try:
+            async for event_type, payload in _run_function_stream(full_body, request):
+                yield f"event: {event_type}\ndata: {json.dumps(payload)}\n\n"
+        except Exception as e:
+            yield f"event: error\ndata: {json.dumps({'error': True, 'error_message': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_gen(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+async def _run_function_stream(body: WebhookRequest, request: Request):
+    """Async generator variant of _run_function — yields (event_type, payload) tuples."""
+    import time
+
+    function_store = getattr(request.app.state, "function_store", None)
+    if function_store is None:
+        yield ("error", _error("Function store not initialized", body.function or "unknown"))
+        return
+
+    func = function_store.get(body.function)
+    if func is None:
+        yield ("error", _error(f"Function '{body.function}' not found", body.function or "unknown"))
+        return
+
+    # Validate required inputs
+    for inp in func.inputs:
+        if inp.required and inp.name not in body.data:
+            yield ("error", _error(
+                f"Missing required input '{inp.name}' for function '{func.name}'",
+                body.function or "unknown",
+            ))
+            return
+
+    start_time = time.time()
+    accumulated_output: dict = {}
+    step_traces: list[dict] = []
+
+    # Run each step sequentially, yielding after each
+    for step_idx, step in enumerate(func.steps):
+        tool_id = step.tool
+        step_start = time.time()
+        trace: dict = {
+            "step_index": step_idx,
+            "tool": tool_id,
+            "tool_name": "",
+            "executor": "unknown",
+            "status": "success",
+            "duration_ms": 0,
+            "resolved_params": {},
+            "output_keys": [],
+        }
+
+        remaining_output_keys = [
+            o.key for o in func.outputs
+            if o.key not in accumulated_output or accumulated_output[o.key] is None
+        ]
+        if not remaining_output_keys:
+            trace["status"] = "skipped"
+            trace["duration_ms"] = int((time.time() - step_start) * 1000)
+            step_traces.append(trace)
+            yield ("step", trace)
+            break
+
+        # Resolve params
+        resolved_params = {}
+        for key, val in step.params.items():
+            resolved = val
+            for inp_name, inp_val in {**body.data, **accumulated_output}.items():
+                resolved = resolved.replace("{{" + str(inp_name) + "}}", str(inp_val))
+            resolved_params[key] = resolved
+        trace["resolved_params"] = resolved_params
+
+        logger.info("[functions/stream] Step %d: tool=%s", step_idx, tool_id)
+
+        # Route to skill or Deepline tool (same logic as _run_function)
+        if tool_id.startswith("skill:"):
+            skill_name = tool_id.removeprefix("skill:")
+            trace["tool_name"] = skill_name
+            trace["executor"] = "skill"
+            sub_body = WebhookRequest(
+                skill=skill_name,
+                data={**body.data, **accumulated_output, **resolved_params},
+                instructions=body.instructions,
+                model=body.model,
+            )
+            try:
+                step_result = await webhook(sub_body, request)
+                if isinstance(step_result, dict):
+                    step_result.pop("_meta", None)
+                    accumulated_output.update(step_result)
+                    trace["output_keys"] = list(step_result.keys())
+            except Exception as e:
+                trace["status"] = "error"
+                trace["error_message"] = str(e)
+        elif tool_id == "call_ai":
+            trace["tool_name"] = "AI Analysis"
+            trace["executor"] = "call_ai"
+            sub_body = WebhookRequest(
+                skill="quality-gate" if not resolved_params.get("skill") else resolved_params["skill"],
+                data={**body.data, **accumulated_output, **resolved_params},
+                instructions=resolved_params.get("prompt", body.instructions),
+                model=body.model,
+            )
+            try:
+                step_result = await webhook(sub_body, request)
+                if isinstance(step_result, dict):
+                    step_result.pop("_meta", None)
+                    accumulated_output.update(step_result)
+                    trace["output_keys"] = list(step_result.keys())
+            except Exception as e:
+                trace["status"] = "error"
+                trace["error_message"] = str(e)
+        else:
+            # Deepline tool — same logic as _run_function
+            tool_meta = _get_tool_meta(tool_id)
+            if tool_meta is None:
+                accumulated_output[f"_step_{step_idx}_error"] = f"Unknown tool: {tool_id}"
+                trace["status"] = "error"
+                trace["error_message"] = f"Unknown tool: {tool_id}"
+                trace["duration_ms"] = int((time.time() - step_start) * 1000)
+                step_traces.append(trace)
+                yield ("step", trace)
+                continue
+
+            trace["tool_name"] = tool_meta.get("name", tool_id)
+
+            # Native API execution
+            native_handled = False
+            if tool_id == "findymail" and settings.findymail_api_key:
+                trace["executor"] = "native_api"
+                from app.core import findymail_client
+                try:
+                    result = await findymail_client.enrich_company(
+                        name=resolved_params.get("name") or resolved_params.get("company_name"),
+                        domain=resolved_params.get("domain"),
+                        linkedin_url=resolved_params.get("linkedin_url"),
+                        api_key=settings.findymail_api_key,
+                        base_url=settings.findymail_base_url,
+                        timeout=settings.findymail_timeout,
+                    )
+                    if isinstance(result, dict) and not result.get("error"):
+                        flattened = _flatten_to_expected_keys(result, remaining_output_keys)
+                        accumulated_output.update(result)
+                        accumulated_output.update(flattened)
+                        trace["output_keys"] = list(result.keys())
+                        still_missing = [
+                            k for k in remaining_output_keys
+                            if k not in accumulated_output or accumulated_output[k] is None
+                        ]
+                        if not still_missing:
+                            native_handled = True
+                    elif isinstance(result, dict):
+                        trace["status"] = "error"
+                        trace["error_message"] = result.get("error_message", "Findymail API error")
+                except Exception as e:
+                    trace["status"] = "error"
+                    trace["error_message"] = str(e)
+
+            if native_handled:
+                trace["duration_ms"] = int((time.time() - step_start) * 1000)
+                step_traces.append(trace)
+                yield ("step", trace)
+                continue
+
+            # AI fallback
+            already_found = {k: v for k, v in accumulated_output.items()
+                            if k in [o.key for o in func.outputs] and v is not None}
+            keys_to_find = [
+                k for k in remaining_output_keys
+                if k not in accumulated_output or accumulated_output[k] is None
+            ]
+
+            if not keys_to_find:
+                trace["status"] = "skipped"
+                trace["duration_ms"] = int((time.time() - step_start) * 1000)
+                step_traces.append(trace)
+                yield ("step", trace)
+                continue
+
+            output_hints = []
+            for o in func.outputs:
+                if o.key in keys_to_find:
+                    hint = f"- {o.key}"
+                    if o.type:
+                        hint += f" ({o.type})"
+                    if o.description:
+                        hint += f": {o.description}"
+                    output_hints.append(hint)
+
+            ai_prompt = (
+                f"You are a data lookup agent. Find real, accurate data for this query.\n\n"
+                f"Task: {tool_meta['description']}\n\n"
+                f"Inputs:\n"
+                + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
+                + (f"\n\nAlready found (DO NOT re-lookup these):\n"
+                   + "\n".join(f"- {k}: {v}" for k, v in already_found.items())
+                   if already_found else "")
+                + f"\n\nReturn a JSON object with ONLY these keys:\n"
+                + "\n".join(output_hints)
+                + f"\n\nRULES:\n"
+                f"- Search the web to find real, factual data.\n"
+                f"- For domains: return just the domain (e.g. 'salesforce.com'), not a full URL.\n"
+                f"- For LinkedIn company URLs: return https://linkedin.com/company/{{slug}}\n"
+                f"- NEVER return null — if unsure, search the web and provide your best answer.\n"
+                f"- Return ONLY a valid JSON object. No markdown, no explanation, no code fences.\n"
+            )
+
+            data_categories = {"Research", "People Search", "Company Enrichment"}
+            use_agent = tool_meta.get("category") in data_categories
+            trace["executor"] = "ai_agent" if use_agent else "ai_fallback"
+            trace["ai_prompt"] = ai_prompt
+
+            pool = request.app.state.pool
+
+            try:
+                if use_agent:
+                    ai_result = await pool.submit(
+                        ai_prompt, "sonnet", 60,
+                        executor_type="agent",
+                        max_turns=3,
+                        allowed_tools=["WebSearch", "WebFetch"],
+                    )
+                else:
+                    ai_result = await pool.submit(ai_prompt, "sonnet", 30)
+
+                raw_ai = ai_result.get("result", {})
+                parsed = _parse_ai_json(raw_ai)
+                trace["ai_raw_response"] = str(raw_ai)[:1000]
+
+                parse_failed = isinstance(parsed, dict) and parsed.get("_parse_failed")
+                if parse_failed:
+                    trace["parse_error"] = True
+                elif isinstance(parsed, dict):
+                    flattened = _flatten_to_expected_keys(parsed, keys_to_find)
+                    for k in keys_to_find:
+                        if k in parsed and parsed[k] is not None:
+                            accumulated_output[k] = parsed[k]
+                        elif k in flattened:
+                            accumulated_output[k] = flattened[k]
+                    trace["output_keys"] = [k for k in keys_to_find if k in accumulated_output and accumulated_output[k] is not None]
+
+                # Retry for null keys
+                still_null = [
+                    k for k in keys_to_find
+                    if k not in accumulated_output or accumulated_output[k] is None
+                ]
+                if still_null:
+                    first_attempt_context = ""
+                    if parse_failed:
+                        first_attempt_context = (
+                            f"Your previous attempt returned unparseable text (not valid JSON):\n"
+                            f"---\n{str(raw_ai)[:300]}\n---\n\n"
+                        )
+                    else:
+                        first_attempt_context = (
+                            f"Your previous attempt returned: {json.dumps({k: accumulated_output.get(k) for k in keys_to_find}, default=str)}\n"
+                            f"These keys are still null: {still_null}\n\n"
+                        )
+                    retry_prompt = (
+                        f"{first_attempt_context}"
+                        f"Search the web NOW and find real data for:\n"
+                        + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
+                        + f"\n\nReturn JSON with ONLY these keys: {still_null}\n"
+                        f"You MUST search the web. Do NOT guess or return null.\n"
+                        f"Return ONLY a valid JSON object.\n"
+                    )
+                    try:
+                        retry_result = await pool.submit(
+                            retry_prompt, "sonnet", 45,
+                            executor_type="agent",
+                            max_turns=3,
+                            allowed_tools=["WebSearch", "WebFetch"],
+                        )
+                        retry_parsed = _parse_ai_json(retry_result.get("result", {}))
+                        if isinstance(retry_parsed, dict):
+                            retry_flattened = _flatten_to_expected_keys(retry_parsed, still_null)
+                            for k in still_null:
+                                val = retry_parsed.get(k) or retry_flattened.get(k)
+                                if val is not None:
+                                    accumulated_output[k] = val
+                                    trace["output_keys"].append(k)
+                    except Exception:
+                        pass
+
+            except Exception as e:
+                accumulated_output[f"_step_{step_idx}_error"] = str(e)
+                trace["status"] = "error"
+                trace["error_message"] = str(e)
+
+        trace["duration_ms"] = int((time.time() - step_start) * 1000)
+        step_traces.append(trace)
+        yield ("step", trace)
+
+    # Build final result
+    duration_ms = int((time.time() - start_time) * 1000)
+    step_errors = [
+        f"Step {k.split('_')[2]}: {v}"
+        for k, v in accumulated_output.items()
+        if k.endswith("_error") and k.startswith("_step_")
+    ]
+
+    final_output: dict = {}
+    for out in func.outputs:
+        if out.key in accumulated_output:
+            final_output[out.key] = accumulated_output[out.key]
+        else:
+            flattened = _flatten_to_expected_keys(accumulated_output, [out.key])
+            final_output[out.key] = flattened.get(out.key)
+
+    null_keys = [k for k, v in final_output.items() if v is None]
+    if null_keys:
+        final_output["_warnings"] = [f"Could not resolve '{k}'" for k in null_keys]
+
+    if not func.outputs:
+        final_output = {k: v for k, v in accumulated_output.items() if not k.startswith("_step_")}
+
+    result = {
+        **final_output,
+        **({"_errors": step_errors} if step_errors else {}),
+        "_meta": {
+            "function": func.id,
+            "function_name": func.name,
+            "steps": len(func.steps),
+            "duration_ms": duration_ms,
+            "cached": False,
+            "trace": step_traces,
+        },
+    }
+
+    # Save execution record
+    try:
+        execution_history = getattr(request.app.state, "execution_history", None)
+        if execution_history:
+            has_errors = any(t.get("status") == "error" for t in step_traces)
+            has_null = len(null_keys) > 0
+            status = "error" if has_errors and not any(t.get("status") == "success" for t in step_traces) else "partial" if has_errors or has_null else "success"
+            execution_history.save({
+                "function_id": func.id,
+                "timestamp": time.time(),
+                "inputs": dict(body.data),
+                "outputs": final_output,
+                "trace": step_traces,
+                "duration_ms": duration_ms,
+                "status": status,
+                "warnings": final_output.get("_warnings", []),
+                "step_count": len(func.steps),
+            })
+    except Exception:
+        pass
+
+    yield ("result", result)
+
+
 def _get_tool_meta(tool_id: str) -> dict | None:
     """Look up tool metadata from the tool catalog."""
     from app.core.tool_catalog import DEEPLINE_PROVIDERS
@@ -540,7 +925,9 @@ def _parse_ai_json(raw: str | dict) -> dict:
             return json.loads(brace_match.group(0))
         except json.JSONDecodeError:
             pass
-    return {}
+    # All parse strategies failed — log and return sentinel
+    logger.warning("[functions] _parse_ai_json failed — raw[:300]: %s", str(raw)[:300])
+    return {"_parse_failed": True, "_raw_response": str(raw)[:500]}
 
 
 async def _run_function(body: WebhookRequest, request: Request) -> dict:
@@ -773,12 +1160,19 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
                 else:
                     ai_result = await pool.submit(ai_prompt, "sonnet", 30)
 
-                parsed = _parse_ai_json(ai_result.get("result", {}))
+                raw_ai = ai_result.get("result", {})
+                parsed = _parse_ai_json(raw_ai)
+                # Store raw AI response in trace for debugging
+                trace["ai_raw_response"] = str(raw_ai)[:1000]
                 logger.info("[functions] AI fallback raw type=%s, parsed=%s",
-                             type(ai_result.get("result")).__name__,
+                             type(raw_ai).__name__,
                              {k: ("..." if v and len(str(v)) > 50 else v) for k, v in parsed.items()} if isinstance(parsed, dict) else "not-dict")
 
-                if isinstance(parsed, dict):
+                parse_failed = isinstance(parsed, dict) and parsed.get("_parse_failed")
+                if parse_failed:
+                    trace["parse_error"] = True
+                    logger.warning("[functions] Parse failed for step %d — skipping merge, going to retry", step_idx)
+                elif isinstance(parsed, dict):
                     # Flatten nested results with alias matching
                     flattened = _flatten_to_expected_keys(parsed, keys_to_find)
                     # Merge direct matches first, then flattened aliases
@@ -796,8 +1190,20 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
                 ]
                 if still_null:
                     logger.info("[functions] Retrying for null keys: %s", still_null)
+                    # Include first-attempt context in the retry prompt
+                    first_attempt_context = ""
+                    if parse_failed:
+                        first_attempt_context = (
+                            f"Your previous attempt returned unparseable text (not valid JSON):\n"
+                            f"---\n{str(raw_ai)[:300]}\n---\n\n"
+                        )
+                    else:
+                        first_attempt_context = (
+                            f"Your previous attempt returned: {json.dumps({k: accumulated_output.get(k) for k in keys_to_find}, default=str)}\n"
+                            f"These keys are still null: {still_null}\n\n"
+                        )
                     retry_prompt = (
-                        f"Your previous lookup returned null for: {still_null}\n\n"
+                        f"{first_attempt_context}"
                         f"Search the web NOW and find real data for:\n"
                         + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
                         + f"\n\nReturn JSON with ONLY these keys: {still_null}\n"
@@ -861,7 +1267,7 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
     if not func.outputs:
         final_output = {k: v for k, v in accumulated_output.items() if not k.startswith("_step_")}
 
-    return {
+    result = {
         **final_output,
         **({"_errors": step_errors} if step_errors else {}),
         "_meta": {
@@ -873,3 +1279,26 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
             "trace": step_traces,
         },
     }
+
+    # Save execution record
+    try:
+        execution_history = getattr(request.app.state, "execution_history", None)
+        if execution_history:
+            has_errors = any(t.get("status") == "error" for t in step_traces)
+            has_null = len(null_keys) > 0 if null_keys else False
+            status = "error" if has_errors and not any(t.get("status") == "success" for t in step_traces) else "partial" if has_errors or has_null else "success"
+            execution_history.save({
+                "function_id": func.id,
+                "timestamp": time.time(),
+                "inputs": dict(body.data),
+                "outputs": final_output,
+                "trace": step_traces,
+                "duration_ms": duration_ms,
+                "status": status,
+                "warnings": final_output.get("_warnings", []),
+                "step_count": len(func.steps),
+            })
+    except Exception as e:
+        logger.warning("[functions] Failed to save execution record: %s", e)
+
+    return result

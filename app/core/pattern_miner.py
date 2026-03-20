@@ -4,6 +4,8 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
+from app.core.atomic_writer import atomic_write_text
+
 logger = logging.getLogger("clay-webhook-os")
 
 
@@ -105,7 +107,7 @@ class PatternMiner:
                     lines.append(f"  - {issue}")
             lines.append("")
 
-        self._output_file.write_text("\n".join(lines))
+        atomic_write_text(self._output_file, "\n".join(lines))
         logger.info("[pattern-miner] Wrote %d patterns to %s", len(patterns), self._output_file)
 
     def get_latest(self) -> dict:

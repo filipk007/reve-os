@@ -431,6 +431,7 @@ class JobQueue:
                 job.status = JobStatus.dead_letter
                 job.error = str(e)
                 job.completed_at = time.time()
+                job.data = {}  # Free input payload on dead-letter
                 logger.error("[queue] Job %s dead-lettered (subscription limit): %s", job.id, e)
                 if hasattr(self, '_usage_store') and self._usage_store:
                     self._usage_store.record_error("subscription_limit", str(e))
@@ -454,6 +455,7 @@ class JobQueue:
                     job.status = JobStatus.dead_letter
                     job.error = str(e)
                     job.completed_at = time.time()
+                    job.data = {}  # Free input payload on dead-letter
                     logger.error("[queue] Job %s dead-lettered after %d retries: %s", job.id, job.max_retries, e)
                     if self._event_bus:
                         self._event_bus.publish("job_updated", {"job_id": job.id, "status": "dead_letter"})
@@ -494,6 +496,9 @@ class JobQueue:
 
     async def _send_callback(self, job: Job, cached_result: bool = False):
         if not job.callback_url:
+            # No callback — free input payload for terminal jobs
+            if job.status in (JobStatus.completed, JobStatus.failed, JobStatus.dead_letter):
+                job.data = {}
             return
 
         payload = {
@@ -546,10 +551,14 @@ class JobQueue:
             self._retry_worker.enqueue(job.callback_url, payload, headers, job_id=job.id)
         else:
             self._log_failed_callback(job, payload)
+        # Free input payload — result already captured in callback payload
+        job.data = {}
 
     def _log_failed_callback(self, job: Job, payload: dict):
         import json as _json
         from pathlib import Path
+
+        from app.core.atomic_writer import atomic_write_json
         failed_path = Path("data/failed_callbacks.json")
         failed_path.parent.mkdir(parents=True, exist_ok=True)
         entries = []
@@ -567,4 +576,4 @@ class JobQueue:
         })
         # Keep last 1000 entries
         entries = entries[-1000:]
-        failed_path.write_text(_json.dumps(entries, indent=2))
+        atomic_write_json(failed_path, entries)

@@ -3,6 +3,8 @@ from pathlib import Path
 
 import yaml
 
+from app.core.atomic_writer import atomic_write_text
+
 from app.models.pipelines import CreatePipelineRequest, PipelineDefinition, PipelineStepConfig, UpdatePipelineRequest
 
 logger = logging.getLogger("clay-webhook-os")
@@ -48,7 +50,7 @@ class PipelineStore:
             "confidence_threshold": pipeline.confidence_threshold,
         }
         path = self._dir / f"{name}.yaml"
-        path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+        atomic_write_text(path, yaml.dump(data, default_flow_style=False, sort_keys=False))
 
     def list_all(self) -> list[PipelineDefinition]:
         return list(self._pipelines.values())
