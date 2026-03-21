@@ -9,7 +9,7 @@
 
 - [x] **CHAT-01**: Channel session storage — file-based persistence in `data/channels/`, stores sessions (id, function_id, created_at, messages) and messages (role, content, timestamp, execution_id)
 - [x] **CHAT-02**: Channel orchestrator — receives a chat message + selected function, extracts data from message, runs function via WorkerPool, returns structured results as a chat response
-- [ ] **CHAT-03**: Chat API endpoints — POST create session, POST send message (returns SSE stream), GET session history, GET list sessions, DELETE archive session
+- [x] **CHAT-03**: Chat API endpoints — POST create session, POST send message (returns SSE stream), GET session history, GET list sessions, DELETE archive session
 - [x] **CHAT-04**: Batch processing — when message contains multiple records (list of domains, pasted CSV rows), orchestrator processes all rows and streams progress events ("Processing 12/50...")
 - [x] **CHAT-05**: Execution trace streaming — SSE events during processing include: function_started, row_processing, row_complete, row_error, function_complete, with step-level detail (which skill running, data fetched, timing)
 
@@ -67,7 +67,7 @@
 |-------------|-------|--------|
 | CHAT-01 | Phase 1 | Complete |
 | CHAT-02 | Phase 1 | Complete |
-| CHAT-03 | Phase 1 | Pending |
+| CHAT-03 | Phase 1 | Complete |
 | CHAT-04 | Phase 1 | Complete |
 | CHAT-05 | Phase 1 | Complete |
 | UI-01 | Phase 2 | Pending |
