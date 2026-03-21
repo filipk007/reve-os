@@ -50,7 +50,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Channel types, API client functions, chat page scaffold, ResultCard component
+- [x] 02-01-PLAN.md — Channel types, API client functions, chat page scaffold, ResultCard component
 - [ ] 02-02-PLAN.md — useChat hook, message thread, chat input, function picker, page wiring
 - [ ] 02-03-PLAN.md — Session list panel, sidebar navigation update with Chat item
 
