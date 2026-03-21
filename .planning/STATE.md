@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-21T20:56:09.634Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-03-21T21:01:57.365Z"
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 02 (Chat Frontend — Core UI) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Milestone History
 
@@ -57,6 +57,9 @@ Plan: 2 of 3
 - [Phase 01-chat-backend]: Results persisted in finally block via update_message_results regardless of stream outcome
 - [Phase 02]: Followed existing SSE streaming pattern for channel message streaming -- buffer-based line parsing consistent with streamFunctionExecution
 - [Phase 02]: Activity panel uses hidden lg:flex -- responsive, only visible on large screens per UI-SPEC
+- [Phase 02]: Followed use-function-workbench.ts hook pattern for useChat -- consistent with existing codebase conventions
+- [Phase 02]: FunctionPicker onSelect auto-creates session -- one action to start chatting
+- [Phase 02]: Used bg-[#141416] for assistant bubbles since bg-clay-850 not in Tailwind config -- matches UI-SPEC color
 
 ### Blockers/Concerns
 
@@ -64,6 +67,6 @@ Plan: 2 of 3
 
 ## Session Continuity
 
-Last session: 2026-03-21T20:56:09.632Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-21T21:01:57.364Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None

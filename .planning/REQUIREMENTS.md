@@ -16,9 +16,9 @@
 ### Chat Frontend — Core UI
 
 - [x] **UI-01**: Chat page at `/chat` route with two-panel layout: chat thread (left/main) and activity panel (right)
-- [ ] **UI-02**: Function selector — dropdown at top of chat to pick which function to run; shows function name, description, and expected inputs
-- [ ] **UI-03**: Message thread — user/assistant message bubbles; assistant messages render structured results (formatted JSON, key-value pairs) not raw text
-- [ ] **UI-04**: Chat input bar — text input at bottom with send button; supports pasting multi-line data (company lists, CSV rows)
+- [x] **UI-02**: Function selector — dropdown at top of chat to pick which function to run; shows function name, description, and expected inputs
+- [x] **UI-03**: Message thread — user/assistant message bubbles; assistant messages render structured results (formatted JSON, key-value pairs) not raw text
+- [x] **UI-04**: Chat input bar — text input at bottom with send button; supports pasting multi-line data (company lists, CSV rows)
 - [ ] **UI-05**: Session list — sidebar or dropdown showing past sessions with function name, date, row count; click to resume
 
 ### Chat Frontend — Activity Panel
@@ -71,9 +71,9 @@
 | CHAT-04 | Phase 1 | Complete |
 | CHAT-05 | Phase 1 | Complete |
 | UI-01 | Phase 2 | Complete |
-| UI-02 | Phase 2 | Pending |
-| UI-03 | Phase 2 | Pending |
-| UI-04 | Phase 2 | Pending |
+| UI-02 | Phase 2 | Complete |
+| UI-03 | Phase 2 | Complete |
+| UI-04 | Phase 2 | Complete |
 | UI-05 | Phase 2 | Pending |
 | ACT-01 | Phase 3 | Pending |
 | ACT-02 | Phase 3 | Pending |
