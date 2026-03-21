@@ -16,6 +16,7 @@ import {
   Blocks,
   Bug,
   FlaskConical,
+  MessageSquare,
   Send,
   FolderTree,
   Users,
@@ -49,11 +50,12 @@ const NAV_SECTIONS: NavSection[] = [
     accentColor: "kiln-teal",
     items: [
       { href: "/", label: "Functions", icon: Blocks, shortcut: "1" },
-      { href: "/workbench", label: "Workbench", icon: FlaskConical, shortcut: "2" },
-      { href: "/outbound", label: "Outbound", icon: Send, shortcut: "3" },
-      { href: "/context", label: "Context", icon: FolderTree, shortcut: "4" },
-      { href: "/debugger", label: "Debugger", icon: Bug, shortcut: "5" },
-      { href: "/clients", label: "Clients", icon: Users, shortcut: "6" },
+      { href: "/chat", label: "Chat", icon: MessageSquare, shortcut: "2" },
+      { href: "/workbench", label: "Workbench", icon: FlaskConical, shortcut: "3" },
+      { href: "/outbound", label: "Outbound", icon: Send, shortcut: "4" },
+      { href: "/context", label: "Context", icon: FolderTree, shortcut: "5" },
+      { href: "/debugger", label: "Debugger", icon: Bug, shortcut: "6" },
+      { href: "/clients", label: "Clients", icon: Users, shortcut: "7" },
     ],
   },
 ];
@@ -188,6 +190,7 @@ export function Sidebar() {
   // Mobile bottom nav — 4-item bar
   const mobileBottomItems: { href: string; label: string; icon: LucideIcon }[] = [
     { href: "/", label: "Functions", icon: Blocks },
+    { href: "/chat", label: "Chat", icon: MessageSquare },
     { href: "/workbench", label: "Workbench", icon: FlaskConical },
     { href: "/outbound", label: "Outbound", icon: Send },
     { href: "/context", label: "Context", icon: FolderTree },
