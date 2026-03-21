@@ -783,3 +783,34 @@ export interface PortalSyncStatus {
   doc_id: string | null;
   url: string | null;
 }
+
+// Channel / Chat types
+export interface ChannelMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: number;
+  data: Record<string, unknown>[] | null;
+  results: Record<string, unknown>[] | null;
+  execution_id: string | null;
+}
+
+export interface ChannelSession {
+  id: string;
+  function_id: string;
+  title: string;
+  messages: ChannelMessage[];
+  created_at: number;
+  updated_at: number;
+  status: "active" | "archived";
+}
+
+export interface ChannelSessionSummary {
+  id: string;
+  function_id: string;
+  function_name: string;
+  title: string;
+  message_count: number;
+  created_at: number;
+  updated_at: number;
+  status: "active" | "archived";
+}

@@ -1,6 +1,9 @@
 import type {
   AnalysisRequest,
   AnalysisResult,
+  ChannelMessage,
+  ChannelSession,
+  ChannelSessionSummary,
   ClayConfig,
   ClientProfile,
   ClientSummary,
@@ -1424,4 +1427,97 @@ export function syncPortal(slug: string): Promise<{
 
 export function fetchSyncStatus(slug: string): Promise<PortalSyncStatus> {
   return apiFetch(`/portal/${slug}/sync/status`);
+}
+
+// ── Channel / Chat API ──────────────────────────────────────────
+
+export function createChannel(body: {
+  function_id: string;
+  title?: string;
+}): Promise<ChannelSession> {
+  return apiFetch("/channels", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchChannels(): Promise<{ sessions: ChannelSessionSummary[] }> {
+  return apiFetch("/channels");
+}
+
+export function fetchChannel(sessionId: string): Promise<ChannelSession> {
+  return apiFetch(`/channels/${sessionId}`);
+}
+
+export function archiveChannel(sessionId: string): Promise<ChannelSession> {
+  return apiFetch(`/channels/${sessionId}`, { method: "DELETE" });
+}
+
+export function streamChannelMessage(
+  sessionId: string,
+  content: string,
+  data: Record<string, unknown>[],
+  onEvent: (eventType: string, payload: Record<string, unknown>) => void,
+  onError: (error: string) => void,
+): AbortController {
+  const controller = new AbortController();
+
+  (async () => {
+    try {
+      const res = await fetch(`${API_URL}/channels/${sessionId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": API_KEY,
+        },
+        body: JSON.stringify({ content, data }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        onError(`HTTP ${res.status}: ${text}`);
+        return;
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) {
+        onError("No response body");
+        return;
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        let currentEvent = "";
+        for (const line of lines) {
+          if (line.startsWith("event: ")) {
+            currentEvent = line.slice(7).trim();
+          } else if (line.startsWith("data: ") && currentEvent) {
+            try {
+              const payload = JSON.parse(line.slice(6));
+              onEvent(currentEvent, payload);
+            } catch {
+              // skip malformed JSON
+            }
+            currentEvent = "";
+          }
+        }
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") {
+        onError(e instanceof Error ? e.message : "Stream failed");
+      }
+    }
+  })();
+
+  return controller;
 }
