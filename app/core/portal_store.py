@@ -386,13 +386,14 @@ updated_at: {now}
         atomic_write_text(path, "\n".join(new_lines) + "\n")
         return updated_entry
 
-    def delete_update(self, slug: str, update_id: str) -> bool:
+    def delete_update(self, slug: str, update_id: str) -> dict | None:
+        """Delete an update entry. Returns the deleted entry dict or None if not found."""
         path = self._portal_dir(slug) / "updates" / "updates.jsonl"
         if not path.exists():
-            return False
+            return None
 
         lines = path.read_text().splitlines()
-        found = False
+        deleted_entry = None
         new_lines = []
         for line in lines:
             if not line.strip():
@@ -403,16 +404,16 @@ updated_at: {now}
                 new_lines.append(line)
                 continue
             if entry.get("id") == update_id:
-                found = True
+                deleted_entry = entry
                 continue
             new_lines.append(json.dumps(entry))
 
-        if not found:
-            return False
+        if deleted_entry is None:
+            return None
 
         atomic_write_text(path, "\n".join(new_lines) + "\n" if new_lines else "")
         logger.info("[portal] Deleted update '%s' for %s", update_id, slug)
-        return True
+        return deleted_entry
 
     # ── Media ─────────────────────────────────────────────
 

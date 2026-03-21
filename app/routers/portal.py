@@ -209,8 +209,15 @@ async def toggle_pin(request: Request, slug: str, update_id: str):
 @router.delete("/portal/{slug}/updates/{update_id}")
 async def delete_update(request: Request, slug: str, update_id: str):
     store = request.app.state.portal_store
-    if not store.delete_update(slug, update_id):
+    deleted = store.delete_update(slug, update_id)
+    if not deleted:
         return JSONResponse(status_code=404, content={"error": True, "error_message": f"Update '{update_id}' not found"})
+
+    # Delete associated Google Doc (async, fire-and-forget)
+    doc_sync = getattr(request.app.state, "portal_doc_sync", None)
+    if doc_sync and doc_sync.available and deleted.get("google_doc_id"):
+        asyncio.create_task(doc_sync.delete_post_doc(slug, deleted))
+
     return {"ok": True}
 
 

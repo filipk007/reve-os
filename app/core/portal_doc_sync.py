@@ -138,9 +138,10 @@ class PortalDocSync:
             # 5. Share client folder (idempotent, first-time only per runtime)
             await self._share_client_folder(slug)
 
-            # 6. Store doc URL back on the update entry
+            # 6. Store doc ID and URL back on the update entry
             doc_url = SheetsClient.get_document_url(doc_id)
             self.portal_store.update_entry_field(slug, update_id, "google_doc_url", doc_url)
+            self.portal_store.update_entry_field(slug, update_id, "google_doc_id", doc_id)
 
             logger.info("[portal_doc_sync] Created doc for %s/%s → %s", slug, update_id, doc_url)
             return {"doc_id": doc_id, "url": doc_url}
@@ -148,3 +149,28 @@ class PortalDocSync:
         except Exception as e:
             logger.error("[portal_doc_sync] Failed to sync post %s/%s: %s", slug, update_id, e)
             return None
+
+    async def delete_post_doc(self, slug: str, update: dict) -> bool:
+        """Delete the Google Doc associated with a portal post.
+
+        Args:
+            slug: Client slug
+            update: The update dict (must have google_doc_id if synced)
+
+        Returns:
+            True if deleted, False if no doc to delete or on failure
+        """
+        if not self.available:
+            return False
+
+        doc_id = update.get("google_doc_id")
+        if not doc_id:
+            return False
+
+        try:
+            await self.sheets_client.delete_file(doc_id)
+            logger.info("[portal_doc_sync] Deleted doc %s for %s/%s", doc_id, slug, update.get("id"))
+            return True
+        except Exception as e:
+            logger.error("[portal_doc_sync] Failed to delete doc %s: %s", doc_id, e)
+            return False

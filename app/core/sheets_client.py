@@ -148,6 +148,14 @@ class SheetsClient:
             }),
         )
 
+    async def delete_file(self, file_id: str) -> None:
+        """Permanently delete a file from Google Drive."""
+        await self._run_gws(
+            "drive", "files", "delete",
+            "--params", json.dumps({"fileId": file_id}),
+        )
+        logger.info("[sheets] Deleted Drive file (id=%s)", file_id)
+
     async def share_file(self, file_id: str, email: str, role: str = "reader") -> None:
         """Share a Drive file/folder with an email address."""
         await self._run_gws(
