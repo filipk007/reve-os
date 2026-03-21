@@ -106,25 +106,27 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
                 {update.pinned && <Pin className="h-3 w-3 text-amber-400 shrink-0" />}
               </div>
 
-              {/* Metadata line: author dot + name + org + type + relative time */}
-              <div className="flex items-center gap-1 mt-1 text-xs text-clay-400 flex-wrap">
-                {hasAuthor && (
-                  <>
-                    <span
-                      className={cn(
-                        "h-1.5 w-1.5 rounded-full shrink-0",
-                        isInternal ? "bg-kiln-teal" : "bg-purple-400"
-                      )}
-                    />
-                    {update.author_name && (
-                      <span className="text-clay-300">{update.author_name}</span>
+              {/* Org badge — high visibility */}
+              {hasAuthor && (
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold px-2 py-0.5 rounded-full",
+                      isInternal
+                        ? "bg-kiln-teal/15 text-kiln-teal"
+                        : "bg-purple-500/15 text-purple-400"
                     )}
-                    <span className={cn("text-[11px]", isInternal ? "text-kiln-teal/70" : "text-purple-400/70")}>
-                      {orgLabel}
-                    </span>
-                    <span className="text-clay-600">·</span>
-                  </>
-                )}
+                  >
+                    {orgLabel}
+                  </span>
+                  {update.author_name && (
+                    <span className="text-xs text-clay-300">{update.author_name}</span>
+                  )}
+                </div>
+              )}
+
+              {/* Metadata line: type + relative time */}
+              <div className="flex items-center gap-1 mt-1 text-xs text-clay-400">
                 <span className={cn("text-[11px] font-medium", config.textColor)}>
                   {config.label}
                 </span>
