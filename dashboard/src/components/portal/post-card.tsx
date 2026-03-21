@@ -94,6 +94,7 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
     const [expanded, setExpanded] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [reactions, setReactionsState] = useState<Record<string, boolean>>(() => getReactions(update.id));
+    const [reactionsHovered, setReactionsHovered] = useState(false);
 
     const config = TYPE_CONFIG[update.type] || TYPE_CONFIG.update;
     const TypeIcon = config.icon;
@@ -158,44 +159,40 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
             </div>
           )}
 
-          {/* Title row + kebab */}
-          <div className="flex items-start gap-2">
+          {/* Header section: org + title + metadata + kebab */}
+          <div className="flex items-start gap-2 pb-2.5 border-b border-clay-700/40">
             <div className="min-w-0 flex-1">
+              {/* Org + author — subtle line above title */}
+              {hasAuthor && (
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="text-xs text-clay-500 font-medium">{orgLabel}</span>
+                  {update.author_name && (
+                    <>
+                      <span className="text-clay-600">&mdash;</span>
+                      <span className="text-xs text-clay-400">{update.author_name}</span>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Title */}
               <div className="flex items-center gap-2">
                 {TypeIcon && <TypeIcon className={cn("h-4 w-4 shrink-0", config.textColor)} />}
                 <h4 className="text-lg font-semibold text-clay-50 truncate">{update.title}</h4>
               </div>
 
-              {/* Metadata line: org badge + author + type + time + inline short body */}
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                {hasAuthor && (
-                  <>
-                    <span
-                      className={cn(
-                        "text-xs font-semibold px-2.5 py-0.5 rounded-full",
-                        isInternal
-                          ? "bg-kiln-teal/15 text-kiln-teal"
-                          : "bg-purple-500/15 text-purple-400"
-                      )}
-                    >
-                      {orgLabel}
-                    </span>
-                    {update.author_name && (
-                      <span className="text-xs text-clay-300">{update.author_name}</span>
-                    )}
-                    <span className="text-clay-600">·</span>
-                  </>
-                )}
+              {/* Type + time + inline short body — under title */}
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                 <span className={cn("text-xs font-medium", config.textColor)}>
                   {config.label}
                 </span>
-                <span className="text-clay-600">·</span>
+                <span className="text-clay-600">&middot;</span>
                 <span className="text-xs text-clay-400" title={fullDate}>
                   {formatRelativeTime(update.created_at)}
                 </span>
                 {isShortBody && (
                   <>
-                    <span className="text-clay-600">·</span>
+                    <span className="text-clay-600">&middot;</span>
                     <span className="text-xs text-clay-300 truncate">{update.body}</span>
                   </>
                 )}
@@ -300,25 +297,37 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
             </div>
           )}
 
-          {/* Quick reactions — show on hover or if any are active */}
-          <div className={cn(
-            "flex items-center gap-1 mt-3 transition-opacity",
-            activeReactions.length > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-          )}>
-            {REACTIONS.map((emoji) => (
-              <button
-                key={emoji}
-                onClick={() => toggleReaction(emoji)}
-                className={cn(
-                  "h-7 px-2 rounded-full text-sm transition-all",
-                  reactions[emoji]
-                    ? "bg-kiln-teal/15 ring-1 ring-kiln-teal/30 scale-110"
-                    : "bg-clay-700/50 hover:bg-clay-700"
-                )}
-              >
-                {emoji}
-              </button>
-            ))}
+          {/* Divider before reactions (only if there was content above) */}
+          {(hasBody || attachedMedia.length > 0) && (
+            <div className="border-b border-clay-700/40 mt-3" />
+          )}
+
+          {/* Quick reactions — collapse to selected only, expand all on hover */}
+          <div
+            className={cn(
+              "flex items-center gap-1 mt-2.5 transition-opacity",
+              activeReactions.length > 0 || reactionsHovered ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}
+            onMouseEnter={() => setReactionsHovered(true)}
+            onMouseLeave={() => setReactionsHovered(false)}
+          >
+            {REACTIONS.map((emoji) => {
+              if (activeReactions.length > 0 && !reactionsHovered && !reactions[emoji]) return null;
+              return (
+                <button
+                  key={emoji}
+                  onClick={() => toggleReaction(emoji)}
+                  className={cn(
+                    "h-7 px-2 rounded-full text-sm transition-all",
+                    reactions[emoji]
+                      ? "bg-kiln-teal/15 ring-1 ring-kiln-teal/30 scale-110"
+                      : "bg-clay-700/50 hover:bg-clay-700"
+                  )}
+                >
+                  {emoji}
+                </button>
+              );
+            })}
           </div>
 
           {/* Action row: comments + google doc */}
