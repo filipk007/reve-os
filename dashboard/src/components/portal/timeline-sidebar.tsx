@@ -17,14 +17,12 @@ import { cn, formatRelativeTime } from "@/lib/utils";
 import type { PortalDetail } from "@/lib/types";
 import { NotificationSettings } from "./notification-settings";
 
-const TIMELINE_COLORS: Record<string, { dot: string; icon: React.ElementType }> = {
-  update: { dot: "bg-blue-400", icon: Bell },
-  milestone: { dot: "bg-emerald-400", icon: Milestone },
-  deliverable: { dot: "bg-purple-400", icon: Package },
-  note: { dot: "bg-amber-400", icon: StickyNote },
+const TIMELINE_TYPES: Record<string, { dot: string; textColor: string; label: string; icon: React.ElementType }> = {
+  update: { dot: "bg-blue-400", textColor: "text-blue-400", label: "Update", icon: Bell },
+  milestone: { dot: "bg-emerald-400", textColor: "text-emerald-400", label: "Milestone", icon: Milestone },
+  deliverable: { dot: "bg-purple-400", textColor: "text-purple-400", label: "Deliverable", icon: Package },
+  note: { dot: "bg-amber-400", textColor: "text-amber-400", label: "Note", icon: StickyNote },
 };
-
-// ── Main sidebar ──
 
 interface TimelineSidebarProps {
   portal: PortalDetail;
@@ -97,20 +95,26 @@ export function TimelineSidebar({
           </span>
         </h3>
 
-        {/* Type filters */}
-        <div className="flex items-center gap-2 mb-3">
-          {Object.entries(TIMELINE_COLORS).map(([type, { dot }]) => (
-            <button
-              key={type}
-              onClick={() => toggleFilter(type)}
-              className={cn(
-                "h-3 w-3 rounded-full transition-opacity",
-                dot,
-                !activeFilters.has(type) && "opacity-20"
-              )}
-              title={type.charAt(0).toUpperCase() + type.slice(1)}
-            />
-          ))}
+        {/* Labeled filter chips */}
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
+          {Object.entries(TIMELINE_TYPES).map(([type, config]) => {
+            const active = activeFilters.has(type);
+            return (
+              <button
+                key={type}
+                onClick={() => toggleFilter(type)}
+                className={cn(
+                  "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-all border",
+                  active
+                    ? `${config.textColor} border-current/20 bg-current/5`
+                    : "text-clay-500 border-clay-700 bg-transparent opacity-50"
+                )}
+              >
+                <span className={cn("h-1.5 w-1.5 rounded-full", config.dot)} />
+                {config.label}
+              </button>
+            );
+          })}
         </div>
 
         {visibleUpdates.length === 0 ? (
@@ -126,32 +130,54 @@ export function TimelineSidebar({
             {/* Vertical line */}
             <div className="absolute left-[7px] top-1 bottom-1 w-px bg-clay-700" />
 
-            <div className="space-y-2.5">
+            <div className="space-y-1">
               {visibleUpdates.map((update) => {
-                const config = TIMELINE_COLORS[update.type] || TIMELINE_COLORS.update;
+                const config = TIMELINE_TYPES[update.type] || TIMELINE_TYPES.update;
                 const isActive = update.id === activeUpdateId;
+                const bodySnippet = update.body
+                  ? update.body.replace(/[#*_`>\-\[\]()]/g, "").trim().slice(0, 60)
+                  : null;
 
                 return (
                   <button
                     key={update.id}
                     onClick={() => onSelectUpdate(update.id, update.title)}
                     className={cn(
-                      "relative flex items-start gap-2 w-full text-left rounded-md px-2 py-1.5 -ml-2 transition-colors",
-                      isActive ? "bg-clay-750" : "hover:bg-clay-750/50"
+                      "relative flex items-start gap-2 w-full text-left rounded-md px-2 py-1.5 -ml-2 transition-colors group",
+                      isActive
+                        ? "bg-clay-700/60 border-l-2 border-l-kiln-teal ml-[-10px] pl-3"
+                        : "hover:bg-clay-750/50"
                     )}
                   >
                     {/* Dot */}
                     <span
                       className={cn(
-                        "absolute -left-[13px] top-2.5 h-2.5 w-2.5 rounded-full border-2 border-clay-800 shrink-0 z-10",
+                        "absolute top-2.5 h-2.5 w-2.5 rounded-full border-2 border-clay-800 shrink-0 z-10",
+                        isActive ? "-left-[11px]" : "-left-[13px]",
                         config.dot
                       )}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-clay-200 truncate">{update.title}</p>
-                      <span className="text-[10px] text-clay-500">
-                        {formatRelativeTime(update.created_at)}
-                      </span>
+                      <p className={cn(
+                        "text-xs truncate",
+                        isActive ? "text-clay-100 font-medium" : "text-clay-200"
+                      )}>
+                        {update.title}
+                      </p>
+                      {bodySnippet && (
+                        <p className="text-[10px] text-clay-500 truncate mt-0.5">
+                          {bodySnippet}{update.body && update.body.length > 60 ? "..." : ""}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className={cn("text-[9px] font-medium", config.textColor)}>
+                          {config.label}
+                        </span>
+                        <span className="text-clay-600 text-[9px]">&middot;</span>
+                        <span className="text-[10px] text-clay-500">
+                          {formatRelativeTime(update.created_at)}
+                        </span>
+                      </div>
                     </div>
                   </button>
                 );

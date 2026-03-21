@@ -6,6 +6,7 @@ import { Send, FileText, Loader2 } from "lucide-react";
 import { createPortalUpdate, fetchUpdateTemplates } from "@/lib/api";
 import { toast } from "sonner";
 import type { UpdateTemplate } from "@/lib/types";
+import { AuthorPicker, getSelectedAuthor, saveAuthor } from "./author-picker";
 
 const UPDATE_TYPES = [
   { id: "update", label: "Update" },
@@ -31,9 +32,11 @@ export function UpdateComposer({ slug, clientName, onPosted }: UpdateComposerPro
   const [templates, setTemplates] = useState<UpdateTemplate[]>([]);
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
 
-  // Restore draft from localStorage on mount
+  // Restore draft from localStorage on mount + load saved author
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const lastAuthor = getSelectedAuthor();
+    if (lastAuthor) setAuthorName(lastAuthor);
     try {
       const raw = localStorage.getItem(`portal-draft-${slug}`);
       if (raw) {
@@ -90,6 +93,7 @@ export function UpdateComposer({ slug, clientName, onPosted }: UpdateComposerPro
       setTitle("");
       setBody("");
       setType("update");
+      saveAuthor(authorName);
       // Keep author name + org for next post (common to keep posting as same person)
       try { localStorage.removeItem(`portal-draft-${slug}`); } catch { /* ignore */ }
       onPosted();
@@ -115,12 +119,12 @@ export function UpdateComposer({ slug, clientName, onPosted }: UpdateComposerPro
     <div className="rounded-lg border border-clay-600 bg-clay-800 p-4 space-y-3">
       {/* Author row */}
       <div className="flex items-center gap-3">
-        <input
-          type="text"
+        <AuthorPicker
           value={authorName}
-          onChange={(e) => setAuthorName(e.target.value)}
-          placeholder="Your name"
-          className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+          onChange={(name) => { setAuthorName(name); saveAuthor(name); }}
+          size="md"
+          placeholder="Select name"
+          className="flex-1"
         />
         <div className="flex rounded-md border border-clay-600 overflow-hidden shrink-0">
           <button
