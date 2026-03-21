@@ -67,28 +67,6 @@ export function PortalHeader({
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
           )}
         </Button>
-
-        {syncAvailable && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onSync}
-            disabled={syncing}
-            className="border-clay-600 text-clay-200 hover:bg-clay-700 gap-2"
-          >
-            {syncing ? (
-              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Cloud className="h-3.5 w-3.5" />
-            )}
-            {syncing ? "Syncing..." : "Sync to Google"}
-            {lastSyncedAt && !syncing && (
-              <span className="text-[10px] text-clay-400 ml-1">
-                Last: {new Date(lastSyncedAt * 1000).toLocaleDateString()}
-              </span>
-            )}
-          </Button>
-        )}
       </div>
     </div>
   );

@@ -47,14 +47,17 @@ export function TimelineSidebar({
   const updates = [...portal.recent_updates].sort((a, b) => b.created_at - a.created_at);
   const visibleUpdates = updates.filter((u) => activeFilters.has(u.type));
 
+  const allTypes = Object.keys(TIMELINE_TYPES);
+
   function toggleFilter(type: string) {
-    const next = new Set(activeFilters);
-    if (next.has(type)) {
-      if (next.size > 1) next.delete(type);
+    const isSolo = activeFilters.size === 1 && activeFilters.has(type);
+    if (isSolo) {
+      // Already solo on this type — reset to show all
+      setActiveFilters(new Set(allTypes));
     } else {
-      next.add(type);
+      // Solo this type
+      setActiveFilters(new Set([type]));
     }
-    setActiveFilters(next);
   }
 
   return (
