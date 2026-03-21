@@ -219,6 +219,7 @@ export default function ClientPortalPage() {
             {composerOpen && (
               <UpdateComposer
                 slug={slug}
+                clientName={portal.name}
                 onPosted={() => { loadPortal(); setComposerOpen(false); }}
               />
             )}
@@ -232,6 +233,7 @@ export default function ClientPortalPage() {
               postRefs={postRefs}
               onTogglePin={handleTogglePin}
               onDeleteUpdate={handleDeleteUpdate}
+              clientName={portal.name}
             />
           </div>
 

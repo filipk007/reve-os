@@ -16,13 +16,16 @@ const UPDATE_TYPES = [
 
 interface UpdateComposerProps {
   slug: string;
+  clientName?: string;
   onPosted: () => void;
 }
 
-export function UpdateComposer({ slug, onPosted }: UpdateComposerProps) {
+export function UpdateComposer({ slug, clientName, onPosted }: UpdateComposerProps) {
   const [type, setType] = useState("update");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [authorName, setAuthorName] = useState("");
+  const [authorOrg, setAuthorOrg] = useState<"internal" | "client">("internal");
   const [createAction, setCreateAction] = useState(true);
   const [posting, setPosting] = useState(false);
   const [templates, setTemplates] = useState<UpdateTemplate[]>([]);
@@ -38,6 +41,8 @@ export function UpdateComposer({ slug, onPosted }: UpdateComposerProps) {
         if (draft.type) setType(draft.type);
         if (draft.title) setTitle(draft.title);
         if (draft.body) setBody(draft.body);
+        if (draft.authorName) setAuthorName(draft.authorName);
+        if (draft.authorOrg) setAuthorOrg(draft.authorOrg);
       }
     } catch { /* ignore */ }
   }, [slug]);
@@ -46,15 +51,15 @@ export function UpdateComposer({ slug, onPosted }: UpdateComposerProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       try {
-        if (title || body) {
-          localStorage.setItem(`portal-draft-${slug}`, JSON.stringify({ type, title, body }));
+        if (title || body || authorName) {
+          localStorage.setItem(`portal-draft-${slug}`, JSON.stringify({ type, title, body, authorName, authorOrg }));
         } else {
           localStorage.removeItem(`portal-draft-${slug}`);
         }
       } catch { /* ignore */ }
     }, 500);
     return () => clearTimeout(timer);
-  }, [slug, type, title, body]);
+  }, [slug, type, title, body, authorName, authorOrg]);
 
   useEffect(() => {
     fetchUpdateTemplates()
@@ -74,11 +79,14 @@ export function UpdateComposer({ slug, onPosted }: UpdateComposerProps) {
         title,
         body,
         create_action: type === "deliverable" && createAction,
+        author_name: authorName,
+        author_org: authorOrg,
       });
       toast.success("Update posted");
       setTitle("");
       setBody("");
       setType("update");
+      // Keep author name + org for next post (common to keep posting as same person)
       try { localStorage.removeItem(`portal-draft-${slug}`); } catch { /* ignore */ }
       onPosted();
     } catch (e) {
@@ -96,8 +104,44 @@ export function UpdateComposer({ slug, onPosted }: UpdateComposerProps) {
     toast.success(`Template "${template.title}" applied`);
   };
 
+  const internalLabel = "The Kiln";
+  const clientLabel = clientName || "Client";
+
   return (
     <div className="rounded-lg border border-clay-600 bg-clay-800 p-4 space-y-3">
+      {/* Author row */}
+      <div className="flex items-center gap-3">
+        <input
+          type="text"
+          value={authorName}
+          onChange={(e) => setAuthorName(e.target.value)}
+          placeholder="Your name"
+          className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+        />
+        <div className="flex rounded-md border border-clay-600 overflow-hidden shrink-0">
+          <button
+            onClick={() => setAuthorOrg("internal")}
+            className={`text-xs px-3 py-1.5 transition-colors ${
+              authorOrg === "internal"
+                ? "bg-kiln-teal/15 text-kiln-teal"
+                : "bg-clay-900 text-clay-400 hover:text-clay-200"
+            }`}
+          >
+            {internalLabel}
+          </button>
+          <button
+            onClick={() => setAuthorOrg("client")}
+            className={`text-xs px-3 py-1.5 border-l border-clay-600 transition-colors ${
+              authorOrg === "client"
+                ? "bg-purple-500/15 text-purple-400"
+                : "bg-clay-900 text-clay-400 hover:text-clay-200"
+            }`}
+          >
+            {clientLabel}
+          </button>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
           {UPDATE_TYPES.map((t) => (

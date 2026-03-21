@@ -1249,7 +1249,7 @@ export function fetchPortalUpdates(
 
 export function createPortalUpdate(
   slug: string,
-  body: { type?: string; title: string; body?: string; media_ids?: string[]; create_action?: boolean }
+  body: { type?: string; title: string; body?: string; media_ids?: string[]; create_action?: boolean; author_name?: string; author_org?: string }
 ): Promise<PortalUpdate> {
   return apiFetch(`/portal/${slug}/updates`, {
     method: "POST",

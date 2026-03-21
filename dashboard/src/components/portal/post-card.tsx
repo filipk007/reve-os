@@ -44,10 +44,50 @@ interface PostCardProps {
   onTogglePin: (id: string) => void;
   onDelete: (id: string) => void;
   highlighted?: boolean;
+  clientName?: string;
+}
+
+function AuthorAvatar({ update, clientName }: { update: PortalUpdate; clientName?: string }) {
+  const hasAuthor = update.author_name || update.author_org;
+  if (!hasAuthor) return null;
+
+  const isInternal = !update.author_org || update.author_org === "internal";
+  const orgLabel = isInternal ? "The Kiln" : (clientName || "Client");
+  const initial = isInternal ? "K" : (orgLabel[0] || "C").toUpperCase();
+
+  return (
+    <div className="flex items-center gap-2 shrink-0">
+      <div
+        className={cn(
+          "h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
+          isInternal
+            ? "bg-kiln-teal/20 text-kiln-teal"
+            : "bg-purple-500/20 text-purple-400"
+        )}
+      >
+        {initial}
+      </div>
+      <div className="min-w-0">
+        {update.author_name && (
+          <span className="text-xs font-medium text-clay-200 block truncate">
+            {update.author_name}
+          </span>
+        )}
+        <span
+          className={cn(
+            "text-[10px] font-medium block truncate",
+            isInternal ? "text-kiln-teal/70" : "text-purple-400/70"
+          )}
+        >
+          {orgLabel}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
-  function PostCard({ slug, update, media, onTogglePin, onDelete, highlighted }, ref) {
+  function PostCard({ slug, update, media, onTogglePin, onDelete, highlighted, clientName }, ref) {
     const [expanded, setExpanded] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -97,6 +137,13 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
                   </a>
                 )}
               </div>
+
+              {/* Author */}
+              {(update.author_name || update.author_org) && (
+                <div className="mb-2">
+                  <AuthorAvatar update={update} clientName={clientName} />
+                </div>
+              )}
 
               {/* Body */}
               {update.body && (

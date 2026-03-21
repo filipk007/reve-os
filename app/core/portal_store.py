@@ -309,7 +309,7 @@ updated_at: {now}
                 continue
         return entries
 
-    def create_update(self, slug: str, type_: str, title: str, body: str = "", media_ids: list[str] | None = None) -> dict:
+    def create_update(self, slug: str, type_: str, title: str, body: str = "", media_ids: list[str] | None = None, author_name: str = "", author_org: str = "internal") -> dict:
         self._ensure_dirs(slug)
         update_id = f"upd_{uuid.uuid4().hex[:8]}"
         now = time.time()
@@ -320,6 +320,8 @@ updated_at: {now}
             "body": body,
             "pinned": False,
             "media_ids": media_ids or [],
+            "author_name": author_name,
+            "author_org": author_org,
             "created_at": now,
         }
         path = self._portal_dir(slug) / "updates" / "updates.jsonl"

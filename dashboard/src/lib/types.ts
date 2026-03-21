@@ -672,6 +672,8 @@ export interface PortalUpdate {
   media_ids: string[];
   created_at: number;
   google_doc_url?: string;
+  author_name?: string;
+  author_org?: string;
 }
 
 export interface PortalMedia {

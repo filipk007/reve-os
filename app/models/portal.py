@@ -32,6 +32,8 @@ class CreateUpdateRequest(BaseModel):
     body: str = Field("", description="Markdown body")
     media_ids: list[str] = Field(default_factory=list, description="Attached media IDs")
     create_action: bool = Field(False, description="Auto-create client review action for deliverables")
+    author_name: str = Field("", description="Name of the person posting")
+    author_org: str = Field("internal", description="Organization: 'internal' or 'client'")
 
 
 class UpdateResponse(BaseModel):
@@ -42,6 +44,8 @@ class UpdateResponse(BaseModel):
     pinned: bool
     media_ids: list[str]
     created_at: float
+    author_name: str = ""
+    author_org: str = "internal"
 
 
 # ── Comment Models ────────────────────────────────────────

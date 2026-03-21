@@ -14,6 +14,7 @@ interface PostFeedProps {
   postRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
   onTogglePin: (id: string) => void;
   onDeleteUpdate: (id: string) => void;
+  clientName?: string;
 }
 
 function TimeGroupHeader({ label }: { label: string }) {
@@ -36,6 +37,7 @@ export function PostFeed({
   postRefs,
   onTogglePin,
   onDeleteUpdate,
+  clientName,
 }: PostFeedProps) {
   if (updates.length === 0) {
     return (
@@ -92,6 +94,7 @@ export function PostFeed({
                     onTogglePin={onTogglePin}
                     onDelete={onDeleteUpdate}
                     highlighted={update.id === highlightedPostId}
+                    clientName={clientName}
                   />
                 </motion.div>
               );
@@ -134,6 +137,7 @@ export function PostFeed({
                     onTogglePin={onTogglePin}
                     onDelete={onDeleteUpdate}
                     highlighted={update.id === highlightedPostId}
+                    clientName={clientName}
                   />
                 </motion.div>
               );

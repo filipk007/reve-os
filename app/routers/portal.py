@@ -161,7 +161,8 @@ async def create_update(request: Request, slug: str, body: CreateUpdateRequest):
     notifier = getattr(request.app.state, "portal_notifier", None)
     email_notifier = getattr(request.app.state, "email_notifier", None)
     update = store.create_update(
-        slug, type_=body.type, title=body.title, body=body.body, media_ids=body.media_ids
+        slug, type_=body.type, title=body.title, body=body.body, media_ids=body.media_ids,
+        author_name=body.author_name, author_org=body.author_org,
     )
     # Auto-create client review action for deliverables
     if body.type == "deliverable" and body.create_action:

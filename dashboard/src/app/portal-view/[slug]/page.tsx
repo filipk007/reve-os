@@ -232,25 +232,59 @@ export default function PublicPortalPage() {
               Recent Updates
             </h2>
             <div className="space-y-2">
-              {portal.recent_updates.map((update) => (
-                <div
-                  key={update.id}
-                  className="rounded-lg border border-clay-700 bg-clay-800 p-3"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-clay-700 text-clay-300 uppercase font-medium">
-                      {update.type}
-                    </span>
-                    <h4 className="text-sm font-medium text-clay-100">{update.title}</h4>
-                    <span className="ml-auto text-[10px] text-clay-500">
-                      {new Date(update.created_at * 1000).toLocaleDateString()}
-                    </span>
+              {portal.recent_updates.map((update) => {
+                const hasAuthor = update.author_name || update.author_org;
+                const isInternal = !update.author_org || update.author_org === "internal";
+                const orgLabel = isInternal ? "The Kiln" : (portal.name || "Client");
+                const initial = isInternal ? "K" : (orgLabel[0] || "C").toUpperCase();
+
+                return (
+                  <div
+                    key={update.id}
+                    className="rounded-lg border border-clay-700 bg-clay-800 p-3"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-clay-700 text-clay-300 uppercase font-medium">
+                        {update.type}
+                      </span>
+                      <h4 className="text-sm font-medium text-clay-100">{update.title}</h4>
+                      <span className="ml-auto text-[10px] text-clay-500">
+                        {new Date(update.created_at * 1000).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {hasAuthor && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <div
+                          className={cn(
+                            "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0",
+                            isInternal
+                              ? "bg-kiln-teal/20 text-kiln-teal"
+                              : "bg-purple-500/20 text-purple-400"
+                          )}
+                        >
+                          {initial}
+                        </div>
+                        <div className="min-w-0">
+                          {update.author_name && (
+                            <span className="text-[11px] font-medium text-clay-200">{update.author_name}</span>
+                          )}
+                          <span
+                            className={cn(
+                              "text-[10px] ml-1",
+                              isInternal ? "text-kiln-teal/60" : "text-purple-400/60"
+                            )}
+                          >
+                            {orgLabel}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {update.body && (
+                      <p className="text-xs text-clay-300 whitespace-pre-wrap">{update.body}</p>
+                    )}
                   </div>
-                  {update.body && (
-                    <p className="text-xs text-clay-300 whitespace-pre-wrap">{update.body}</p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
