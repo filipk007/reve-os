@@ -168,28 +168,30 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
                 <h4 className="text-lg font-semibold text-clay-50 truncate">{update.title}</h4>
               </div>
 
-              {/* Metadata line: colored dot + org + author + type + time */}
-              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              {/* Metadata line: org pill + author + type pill + time */}
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 {hasAuthor && (
                   <>
                     <span className={cn(
-                      "h-2 w-2 rounded-full shrink-0",
-                      isInternal ? "bg-kiln-teal" : "bg-purple-400"
-                    )} />
-                    <span className="text-xs text-clay-400 font-medium">{orgLabel}</span>
+                      "text-xs font-medium px-2.5 py-0.5 rounded-md border",
+                      isInternal
+                        ? "bg-kiln-teal/10 text-kiln-teal border-kiln-teal/20"
+                        : "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                    )}>
+                      {orgLabel}
+                    </span>
                     {update.author_name && (
-                      <>
-                        <span className="text-clay-600">&middot;</span>
-                        <span className="text-xs text-clay-400">{update.author_name}</span>
-                      </>
+                      <span className="text-xs text-clay-300">{update.author_name}</span>
                     )}
-                    <span className="text-clay-600">&middot;</span>
                   </>
                 )}
-                <span className={cn("text-xs font-medium", config.textColor)}>
+                <span className={cn(
+                  "text-xs font-medium px-2.5 py-0.5 rounded-full border",
+                  config.textColor,
+                  "bg-clay-700/50 border-clay-600"
+                )}>
                   {config.label}
                 </span>
-                <span className="text-clay-600">&middot;</span>
                 <span className="text-xs text-clay-400" title={fullDate}>
                   {formatRelativeTime(update.created_at)}
                 </span>
