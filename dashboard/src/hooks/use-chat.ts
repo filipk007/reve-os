@@ -16,6 +16,22 @@ import type {
 } from "@/lib/types";
 import { toast } from "sonner";
 
+export type RowStatusValue = "pending" | "running" | "done" | "error";
+
+export interface RowStatus {
+  index: number;
+  status: RowStatusValue;
+  result: Record<string, unknown> | null;
+  error: string | null;
+}
+
+export interface ExecutionState {
+  functionId: string;
+  functionName: string;
+  totalRows: number;
+  startedAt: number;
+}
+
 export interface UseChatReturn {
   // Session state
   sessions: ChannelSessionSummary[];
@@ -42,6 +58,11 @@ export interface UseChatReturn {
   inputValue: string;
   setInputValue: (v: string) => void;
 
+  // Execution tracking
+  rowStatuses: RowStatus[];
+  executionState: ExecutionState | null;
+  completedResults: Record<string, unknown>[];
+
   // Loading
   loading: boolean;
 }
@@ -65,6 +86,11 @@ export function useChat(): UseChatReturn {
     current: number;
     total: number;
   } | null>(null);
+
+  // Execution tracking state
+  const [rowStatuses, setRowStatuses] = useState<RowStatus[]>([]);
+  const [executionState, setExecutionState] = useState<ExecutionState | null>(null);
+  const [completedResults, setCompletedResults] = useState<Record<string, unknown>[]>([]);
 
   // Input state
   const [inputValue, setInputValue] = useState("");
@@ -145,6 +171,9 @@ export function useChat(): UseChatReturn {
     abortRef.current = null;
     setStreaming(false);
     setStreamProgress(null);
+    setRowStatuses([]);
+    setExecutionState(null);
+    setCompletedResults([]);
 
     try {
       const session = await fetchChannel(sessionId);
@@ -195,17 +224,38 @@ export function useChat(): UseChatReturn {
     ) => {
       switch (eventType) {
         case "function_started":
-          setStreamProgress({
-            current: 0,
-            total: (payload.total_rows as number) || 0,
-          });
+          {
+            const totalRows = (payload.total_rows as number) || 0;
+            setStreamProgress({ current: 0, total: totalRows });
+            setExecutionState({
+              functionId: payload.function_id as string,
+              functionName: payload.function_name as string,
+              totalRows,
+              startedAt: Date.now(),
+            });
+            setRowStatuses(
+              Array.from({ length: totalRows }, (_, i) => ({
+                index: i,
+                status: "pending" as const,
+                result: null,
+                error: null,
+              }))
+            );
+            setCompletedResults([]);
+          }
           break;
 
         case "row_processing":
           {
             const rowIndex = (payload.row_index as number) + 1;
             const totalRows = payload.total_rows as number;
+            const rawIdx = payload.row_index as number;
             setStreamProgress({ current: rowIndex, total: totalRows });
+            setRowStatuses((prev) =>
+              prev.map((r, i) =>
+                i === rawIdx ? { ...r, status: "running" } : r
+              )
+            );
             setMessages((prev) => {
               const updated = [...prev];
               const last = updated[updated.length - 1];
@@ -224,7 +274,19 @@ export function useChat(): UseChatReturn {
           {
             const rowIdx = (payload.row_index as number) + 1;
             const total = payload.total_rows as number;
+            const rawRowIdx = payload.row_index as number;
             setStreamProgress({ current: rowIdx, total });
+            setRowStatuses((prev) =>
+              prev.map((r, i) =>
+                i === rawRowIdx
+                  ? { ...r, status: "done", result: payload.result as Record<string, unknown> }
+                  : r
+              )
+            );
+            setCompletedResults((prev) => [
+              ...prev,
+              payload.result as Record<string, unknown>,
+            ]);
           }
           break;
 
@@ -232,13 +294,22 @@ export function useChat(): UseChatReturn {
           {
             const errIdx = (payload.row_index as number) + 1;
             const errTotal = payload.total_rows as number;
+            const rawErrIdx = payload.row_index as number;
             setStreamProgress({ current: errIdx, total: errTotal });
+            setRowStatuses((prev) =>
+              prev.map((r, i) =>
+                i === rawErrIdx
+                  ? { ...r, status: "error", error: payload.error as string }
+                  : r
+              )
+            );
           }
           break;
 
         case "function_complete":
           setStreaming(false);
           setStreamProgress(null);
+          setExecutionState(null);
           setMessages((prev) => {
             const updated = [...prev];
             const last = updated[updated.length - 1];
@@ -320,6 +391,9 @@ export function useChat(): UseChatReturn {
     sendMessage,
     selectFunction,
     refreshSessions,
+    rowStatuses,
+    executionState,
+    completedResults,
     inputValue,
     setInputValue,
     loading,
