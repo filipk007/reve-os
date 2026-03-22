@@ -2,10 +2,10 @@
 
 import { Suspense, useState } from "react";
 import { Header } from "@/components/layout/header";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
-import { Activity, PanelLeft } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import { useChat } from "@/hooks/use-chat";
+import { ActivityPanel } from "@/components/chat/activity-panel";
 import { ChatThread } from "@/components/chat/chat-thread";
 import { ChatInput } from "@/components/chat/chat-input";
 import { FunctionPicker } from "@/components/chat/function-picker";
@@ -97,14 +97,14 @@ function ChatPage() {
           />
         </div>
 
-        {/* Activity panel placeholder -- Phase 3 fills this */}
-        <div className="hidden lg:flex w-80 border-l border-clay-600 flex-col items-center justify-center p-6">
-          <EmptyState
-            title="Activity"
-            description="Execution details will appear here when you run a function."
-            icon={Activity}
-          />
-        </div>
+        {/* Activity panel */}
+        <ActivityPanel
+          executionState={chat.executionState}
+          rowStatuses={chat.rowStatuses}
+          streamProgress={chat.streamProgress}
+          completedResults={chat.completedResults}
+          streaming={chat.streaming}
+        />
       </div>
     </div>
   );
