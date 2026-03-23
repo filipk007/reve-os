@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, CheckSquare, Square, Calendar, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { Plus, CheckSquare, Square, Calendar, ChevronDown, ChevronUp, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -31,12 +31,15 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
   const COLLAPSE_THRESHOLD = 5;
   const openCount = actions.filter((a) => a.status !== "done").length;
 
-  // Sort: open first (by priority), done at bottom
+  // Sort: blocked first, then open (by priority), done at bottom
   const priorityOrder: Record<string, number> = { high: 0, normal: 1, low: 2 };
   const sorted = [...actions].sort((a, b) => {
     const aD = a.status === "done" ? 1 : 0;
     const bD = b.status === "done" ? 1 : 0;
     if (aD !== bD) return aD - bD;
+    const aBlocked = a.blocked_by_client ? 0 : 1;
+    const bBlocked = b.blocked_by_client ? 0 : 1;
+    if (aBlocked !== bBlocked) return aBlocked - bBlocked;
     return (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1);
   });
 
@@ -150,6 +153,12 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
               >
                 {action.title}
               </span>
+
+              {action.blocked_by_client && action.status !== "done" && (
+                <span className="text-amber-400 flex-shrink-0" title={action.blocked_reason || "Blocked by client"}>
+                  <AlertTriangle className="h-3 w-3" />
+                </span>
+              )}
 
               {action.due_date && (
                 <span className="text-[9px] text-clay-500 flex items-center gap-0.5 flex-shrink-0">

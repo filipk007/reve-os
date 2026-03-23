@@ -44,6 +44,7 @@ class PortalStore:
         base = self._portal_dir(slug)
         (base / "sops").mkdir(parents=True, exist_ok=True)
         (base / "updates").mkdir(parents=True, exist_ok=True)
+        (base / "updates" / "reactions").mkdir(parents=True, exist_ok=True)
         (base / "media").mkdir(parents=True, exist_ok=True)
         (base / "actions").mkdir(parents=True, exist_ok=True)
         (base / "projects").mkdir(parents=True, exist_ok=True)
@@ -326,6 +327,16 @@ updated_at: {now}
             "project_id": project_id,
             "created_at": now,
         }
+        # Deliverables start in pending_review approval state
+        if type_ == "deliverable":
+            entry["approval_status"] = "pending_review"
+            entry["approval_history"] = []
+            entry["approved_by"] = None
+            entry["approved_at"] = None
+            entry["revision_notes"] = None
+            entry["revision_count"] = 0
+            entry["linked_action_id"] = None
+
         path = self._portal_dir(slug) / "updates" / "updates.jsonl"
         with open(path, "a") as f:
             f.write(json.dumps(entry) + "\n")
@@ -581,6 +592,8 @@ updated_at: {now}
         priority: str = "normal",
         recurrence: str | None = None,
         project_id: str | None = None,
+        blocked_by_client: bool = False,
+        blocked_reason: str = "",
     ) -> dict:
         self._ensure_dirs(slug)
         action_id = f"act_{uuid.uuid4().hex[:8]}"
@@ -595,6 +608,9 @@ updated_at: {now}
             "priority": priority,
             "recurrence": recurrence,
             "project_id": project_id,
+            "blocked_by_client": blocked_by_client,
+            "blocked_reason": blocked_reason,
+            "blocked_at": now if blocked_by_client else None,
             "created_at": now,
             "updated_at": now,
         }
@@ -614,9 +630,15 @@ updated_at: {now}
         actions = self._load_actions(slug)
         for a in actions:
             if a["id"] == action_id:
+                # Track blocked_at timestamp on transition
+                was_blocked = a.get("blocked_by_client", False)
                 for k, v in updates.items():
                     if v is not None:
                         a[k] = v
+                if updates.get("blocked_by_client") and not was_blocked:
+                    a["blocked_at"] = time.time()
+                elif updates.get("blocked_by_client") is False:
+                    a["blocked_at"] = None
                 a["updated_at"] = time.time()
                 self._save_actions(slug, actions)
                 logger.info("[portal] Updated action '%s' for %s", action_id, slug)
@@ -683,6 +705,264 @@ updated_at: {now}
             return False
         self._save_actions(slug, new_actions)
         logger.info("[portal] Deleted action '%s' for %s", action_id, slug)
+        return True
+
+    # ── Reactions ──────────────────────────────────────────
+
+    def _reactions_path(self, slug: str, update_id: str) -> Path:
+        return self._portal_dir(slug) / "updates" / "reactions" / f"{update_id}.json"
+
+    def get_reactions(self, slug: str, update_id: str) -> dict:
+        """Get all reactions for an update. Returns {type: [{user, created_at}]}."""
+        path = self._reactions_path(slug, update_id)
+        if not path.exists():
+            return {}
+        try:
+            return json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError):
+            return {}
+
+    def toggle_reaction(self, slug: str, update_id: str, reaction_type: str, user: str) -> dict:
+        """Toggle a reaction on/off for a user. Returns updated reactions dict."""
+        self._ensure_dirs(slug)
+        reactions = self.get_reactions(slug, update_id)
+
+        if reaction_type not in reactions:
+            reactions[reaction_type] = []
+
+        existing = [r for r in reactions[reaction_type] if r["user"] == user]
+        if existing:
+            # Remove — user already reacted
+            reactions[reaction_type] = [r for r in reactions[reaction_type] if r["user"] != user]
+            if not reactions[reaction_type]:
+                del reactions[reaction_type]
+        else:
+            # Add reaction
+            reactions[reaction_type].append({"user": user, "created_at": time.time()})
+
+        atomic_write_json(self._reactions_path(slug, update_id), reactions)
+        return reactions
+
+    # ── Approvals ──────────────────────────────────────────
+
+    def approve_update(
+        self,
+        slug: str,
+        update_id: str,
+        action: str,
+        actor_name: str,
+        actor_org: str = "client",
+        notes: str = "",
+    ) -> dict | None:
+        """Process an approval action on a deliverable. Returns updated entry or None."""
+        from app.models.portal import APPROVAL_TRANSITIONS
+
+        path = self._portal_dir(slug) / "updates" / "updates.jsonl"
+        if not path.exists():
+            return None
+
+        lines = path.read_text().splitlines()
+        updated_entry = None
+        new_lines = []
+        for line in lines:
+            if not line.strip():
+                continue
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                new_lines.append(line)
+                continue
+
+            if entry.get("id") == update_id:
+                current_status = entry.get("approval_status")
+                if not current_status:
+                    new_lines.append(json.dumps(entry))
+                    continue
+
+                allowed = APPROVAL_TRANSITIONS.get(current_status, set())
+                if action not in allowed:
+                    # Invalid transition — return entry as-is with error flag
+                    entry["_approval_error"] = f"Cannot '{action}' from '{current_status}'"
+                    updated_entry = entry
+                    new_lines.append(json.dumps(entry))
+                    continue
+
+                # Build history entry
+                now = time.time()
+                history_entry = {
+                    "action": action,
+                    "actor_name": actor_name,
+                    "actor_org": actor_org,
+                    "notes": notes,
+                    "timestamp": now,
+                }
+                if "approval_history" not in entry:
+                    entry["approval_history"] = []
+                entry["approval_history"].append(history_entry)
+
+                # Apply state transition
+                if action == "approve":
+                    entry["approval_status"] = "approved"
+                    entry["approved_by"] = actor_name
+                    entry["approved_at"] = now
+                elif action == "request_revision":
+                    entry["approval_status"] = "revision_requested"
+                    entry["revision_notes"] = notes
+                    entry["revision_count"] = entry.get("revision_count", 0) + 1
+                elif action == "resubmit":
+                    entry["approval_status"] = "resubmitted"
+
+                updated_entry = entry
+
+            new_lines.append(json.dumps(entry))
+
+        if updated_entry is None:
+            return None
+
+        atomic_write_text(path, "\n".join(new_lines) + "\n")
+
+        # Auto-complete linked review action on approval
+        if action == "approve" and updated_entry.get("linked_action_id"):
+            linked_id = updated_entry["linked_action_id"]
+            self.update_action(slug, linked_id, {"status": "done"})
+
+        logger.info("[portal] Approval '%s' on update '%s' by %s for %s", action, update_id, actor_name, slug)
+        return updated_entry
+
+    def set_linked_action_id(self, slug: str, update_id: str, action_id: str) -> None:
+        """Store the linked action ID on a deliverable update."""
+        self.update_entry_field(slug, update_id, "linked_action_id", action_id)
+
+    # ── Discussion Threads ─────────────────────────────────
+
+    def _threads_dir(self, slug: str) -> Path:
+        return self._portal_dir(slug) / "projects" / "threads"
+
+    def create_thread(
+        self,
+        slug: str,
+        project_id: str,
+        title: str,
+        body: str,
+        author: str,
+        author_org: str = "internal",
+    ) -> dict:
+        self._ensure_dirs(slug)
+        threads_dir = self._threads_dir(slug)
+        threads_dir.mkdir(parents=True, exist_ok=True)
+
+        thread_id = f"thr_{uuid.uuid4().hex[:8]}"
+        msg_id = f"msg_{uuid.uuid4().hex[:8]}"
+        now = time.time()
+
+        thread = {
+            "id": thread_id,
+            "project_id": project_id,
+            "title": title,
+            "status": "open",
+            "created_at": now,
+            "updated_at": now,
+            "created_by": author,
+            "messages": [
+                {
+                    "id": msg_id,
+                    "body": body,
+                    "author": author,
+                    "author_org": author_org,
+                    "created_at": now,
+                },
+            ],
+        }
+
+        path = threads_dir / f"{thread_id}.json"
+        atomic_write_json(path, thread)
+        logger.info("[portal] Created thread '%s' in project '%s' for %s", title, project_id, slug)
+        return thread
+
+    def list_threads(self, slug: str, project_id: str) -> list[dict]:
+        """List threads for a project, sorted by last activity (most recent first)."""
+        threads_dir = self._threads_dir(slug)
+        if not threads_dir.exists():
+            return []
+
+        threads = []
+        for f in threads_dir.glob("thr_*.json"):
+            try:
+                data = json.loads(f.read_text())
+            except (json.JSONDecodeError, OSError):
+                continue
+            if data.get("project_id") != project_id:
+                continue
+
+            messages = data.get("messages", [])
+            last_msg = messages[-1] if messages else None
+            threads.append({
+                "id": data["id"],
+                "project_id": data["project_id"],
+                "title": data["title"],
+                "status": data.get("status", "open"),
+                "created_at": data["created_at"],
+                "updated_at": data.get("updated_at", data["created_at"]),
+                "created_by": data.get("created_by", ""),
+                "message_count": len(messages),
+                "last_message_preview": last_msg["body"][:100] if last_msg else "",
+                "last_message_author": last_msg.get("author", "") if last_msg else "",
+            })
+
+        threads.sort(key=lambda t: t["updated_at"], reverse=True)
+        return threads
+
+    def get_thread(self, slug: str, thread_id: str) -> dict | None:
+        """Get a full thread with all messages."""
+        path = self._threads_dir(slug) / f"{thread_id}.json"
+        if not path.exists():
+            return None
+        try:
+            return json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError):
+            return None
+
+    def add_thread_message(
+        self,
+        slug: str,
+        thread_id: str,
+        body: str,
+        author: str,
+        author_org: str = "internal",
+    ) -> dict | None:
+        """Add a message to a thread. Returns the full updated thread."""
+        path = self._threads_dir(slug) / f"{thread_id}.json"
+        if not path.exists():
+            return None
+
+        try:
+            thread = json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError):
+            return None
+
+        msg_id = f"msg_{uuid.uuid4().hex[:8]}"
+        now = time.time()
+        message = {
+            "id": msg_id,
+            "body": body,
+            "author": author,
+            "author_org": author_org,
+            "created_at": now,
+        }
+        thread["messages"].append(message)
+        thread["updated_at"] = now
+
+        atomic_write_json(path, thread)
+        logger.info("[portal] Added message to thread '%s' for %s", thread_id, slug)
+        return thread
+
+    def delete_thread(self, slug: str, thread_id: str) -> bool:
+        """Delete a thread."""
+        path = self._threads_dir(slug) / f"{thread_id}.json"
+        if not path.exists():
+            return False
+        path.unlink()
+        logger.info("[portal] Deleted thread '%s' for %s", thread_id, slug)
         return True
 
     # ── Projects ───────────────────────────────────────────
@@ -762,6 +1042,11 @@ updated_at: {now}
             except json.JSONDecodeError:
                 continue
         return entries
+
+    def get_updates_since(self, slug: str, since_timestamp: float) -> list[dict]:
+        """Get all updates created after a given timestamp."""
+        all_updates = self._load_all_updates(slug)
+        return [u for u in all_updates if u.get("created_at", 0) > since_timestamp]
 
     def create_project(
         self,

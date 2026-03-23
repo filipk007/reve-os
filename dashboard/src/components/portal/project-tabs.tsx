@@ -1,20 +1,21 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { MessageSquare, Paperclip, CheckSquare } from "lucide-react";
+import { MessageSquare, Paperclip, CheckSquare, MessageCircle } from "lucide-react";
 
-export type ProjectTab = "feed" | "files" | "actions";
+export type ProjectTab = "feed" | "files" | "actions" | "discussions";
 
 const TABS: { id: ProjectTab; label: string; icon: typeof MessageSquare }[] = [
   { id: "feed", label: "Feed", icon: MessageSquare },
   { id: "files", label: "Files", icon: Paperclip },
   { id: "actions", label: "Actions", icon: CheckSquare },
+  { id: "discussions", label: "Discussions", icon: MessageCircle },
 ];
 
 interface ProjectTabsProps {
   active: ProjectTab;
   onChange: (tab: ProjectTab) => void;
-  counts?: { feed: number; files: number; actions: number };
+  counts?: { feed: number; files: number; actions: number; discussions?: number };
 }
 
 export function ProjectTabs({ active, onChange, counts }: ProjectTabsProps) {

@@ -254,6 +254,7 @@ export default function ClientPortalPage() {
               onTogglePin={handleTogglePin}
               onDeleteUpdate={handleDeleteUpdate}
               onMoveToProject={handleMoveToProject}
+              onUpdated={loadPortal}
               clientName={portal.name}
               projects={portal.projects}
             />

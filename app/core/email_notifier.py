@@ -45,6 +45,7 @@ class EmailNotifier:
         smtp_user: str = "",
         smtp_pass: str = "",
         smtp_from: str = "",
+        reply_domain: str = "",
     ):
         self._store = portal_store
         self._host = smtp_host
@@ -52,6 +53,7 @@ class EmailNotifier:
         self._user = smtp_user
         self._pass = smtp_pass
         self._from = smtp_from
+        self._reply_domain = reply_domain
 
     @property
     def available(self) -> bool:
@@ -62,7 +64,13 @@ class EmailNotifier:
         meta = self._store.get_meta(slug)
         return meta.get("notification_emails", [])
 
-    async def _send_email(self, to_addrs: list[str], subject: str, html: str) -> None:
+    def _reply_to_address(self, slug: str, update_id: str) -> str | None:
+        """Build a reply-to address for the email bridge."""
+        if not self._reply_domain:
+            return None
+        return f"reply+{slug}+{update_id}@{self._reply_domain}"
+
+    async def _send_email(self, to_addrs: list[str], subject: str, html: str, reply_to: str | None = None) -> None:
         """Send email via SMTP in a thread pool. Never raises."""
         if not self.available or not to_addrs:
             return
@@ -73,6 +81,8 @@ class EmailNotifier:
                 msg["From"] = self._from
                 msg["To"] = ", ".join(to_addrs)
                 msg["Subject"] = subject
+                if reply_to:
+                    msg["Reply-To"] = reply_to
                 msg.attach(MIMEText(html, "html"))
 
                 with smtplib.SMTP(self._host, self._port) as server:
@@ -93,32 +103,36 @@ class EmailNotifier:
             return f"{DASHBOARD_URL}/portal-view/{slug}?token={token}"
         return f"{DASHBOARD_URL}/clients/{slug}"
 
-    async def notify_deliverable(self, slug: str, title: str, body: str = "") -> None:
+    async def notify_deliverable(self, slug: str, title: str, body: str = "", update_id: str = "") -> None:
         recipients = self._get_recipients(slug)
         if not recipients:
             return
         client_name = self._store._client_name(slug)
         preview = body[:300] if body else ""
+        reply_to = self._reply_to_address(slug, update_id) if update_id else None
         html = _html_wrapper(
             f"Deliverable Ready — {client_name}",
             f"<p><strong>{title}</strong></p><p>{preview}</p>"
-            f"<p style='color:#94a3b8;font-style:italic;'>Please review and approve at your earliest convenience.</p>",
+            f"<p style='color:#94a3b8;font-style:italic;'>Please review and approve at your earliest convenience.</p>"
+            + (f"<p style='color:#64748b;font-size:11px;'>Reply to this email to add a comment.</p>" if reply_to else ""),
             self._portal_url(slug),
         )
-        await self._send_email(recipients, f"Deliverable: {title} — {client_name}", html)
+        await self._send_email(recipients, f"Deliverable: {title} — {client_name}", html, reply_to=reply_to)
 
-    async def notify_update(self, slug: str, type_: str, title: str, body: str = "") -> None:
+    async def notify_update(self, slug: str, type_: str, title: str, body: str = "", update_id: str = "") -> None:
         recipients = self._get_recipients(slug)
         if not recipients:
             return
         client_name = self._store._client_name(slug)
         preview = body[:300] if body else ""
+        reply_to = self._reply_to_address(slug, update_id) if update_id else None
         html = _html_wrapper(
             f"{type_.title()} — {client_name}",
-            f"<p><strong>{title}</strong></p><p>{preview}</p>",
+            f"<p><strong>{title}</strong></p><p>{preview}</p>"
+            + (f"<p style='color:#64748b;font-size:11px;'>Reply to this email to add a comment.</p>" if reply_to else ""),
             self._portal_url(slug),
         )
-        await self._send_email(recipients, f"{type_.title()}: {title} — {client_name}", html)
+        await self._send_email(recipients, f"{type_.title()}: {title} — {client_name}", html, reply_to=reply_to)
 
     async def notify_action(self, slug: str, action: dict) -> None:
         recipients = self._get_recipients(slug)
@@ -146,16 +160,79 @@ class EmailNotifier:
         )
         await self._send_email(recipients, f"SOP Updated: {sop_title} — {client_name}", html)
 
-    async def notify_comment(self, slug: str, update_title: str, comment_body: str, author: str) -> None:
+    async def notify_comment(self, slug: str, update_title: str, comment_body: str, author: str, update_id: str = "") -> None:
         recipients = self._get_recipients(slug)
         if not recipients:
             return
         client_name = self._store._client_name(slug)
         preview = comment_body[:300]
+        reply_to = self._reply_to_address(slug, update_id) if update_id else None
         html = _html_wrapper(
             f"New Comment — {client_name}",
             f"<p><strong>{author}</strong> commented on <strong>{update_title}</strong></p>"
+            f"<blockquote style='border-left:3px solid #2dd4bf;padding-left:12px;color:#cbd5e1;margin:12px 0;'>{preview}</blockquote>"
+            + (f"<p style='color:#64748b;font-size:11px;'>Reply to this email to add a comment.</p>" if reply_to else ""),
+            self._portal_url(slug),
+        )
+        await self._send_email(recipients, f"Comment on {update_title} — {client_name}", html, reply_to=reply_to)
+
+    async def notify_approval(self, slug: str, title: str, action: str, actor_name: str) -> None:
+        recipients = self._get_recipients(slug)
+        if not recipients:
+            return
+        client_name = self._store._client_name(slug)
+        action_labels = {
+            "approve": ("Approved", "#22c55e"),
+            "request_revision": ("Revision Requested", "#f59e0b"),
+            "resubmit": ("Resubmitted", "#8b5cf6"),
+        }
+        label, color = action_labels.get(action, (action.title(), "#94a3b8"))
+        html = _html_wrapper(
+            f"Deliverable {label} — {client_name}",
+            f"<p style='color:{color};font-weight:600;'>{label}</p>"
+            f"<p><strong>{title}</strong></p>"
+            f"<p>{actor_name} {label.lower()} this deliverable.</p>",
+            self._portal_url(slug),
+        )
+        await self._send_email(recipients, f"{label}: {title} — {client_name}", html)
+
+    async def notify_thread_created(self, slug: str, title: str, author: str) -> None:
+        recipients = self._get_recipients(slug)
+        if not recipients:
+            return
+        client_name = self._store._client_name(slug)
+        html = _html_wrapper(
+            f"New Discussion — {client_name}",
+            f"<p><strong>{author}</strong> started a discussion: <strong>{title}</strong></p>",
+            self._portal_url(slug),
+        )
+        await self._send_email(recipients, f"Discussion: {title} — {client_name}", html)
+
+    async def notify_thread_message(self, slug: str, thread_title: str, body: str, author: str) -> None:
+        recipients = self._get_recipients(slug)
+        if not recipients:
+            return
+        client_name = self._store._client_name(slug)
+        preview = body[:300]
+        html = _html_wrapper(
+            f"Reply in Discussion — {client_name}",
+            f"<p><strong>{author}</strong> replied in <strong>{thread_title}</strong></p>"
             f"<blockquote style='border-left:3px solid #2dd4bf;padding-left:12px;color:#cbd5e1;margin:12px 0;'>{preview}</blockquote>",
             self._portal_url(slug),
         )
-        await self._send_email(recipients, f"Comment on {update_title} — {client_name}", html)
+        await self._send_email(recipients, f"Reply: {thread_title} — {client_name}", html)
+
+    async def notify_action_blocked(self, slug: str, action: dict) -> None:
+        recipients = self._get_recipients(slug)
+        if not recipients:
+            return
+        client_name = self._store._client_name(slug)
+        reason = action.get("blocked_reason", "")
+        reason_html = f"<p style='color:#fbbf24;font-style:italic;'>{reason}</p>" if reason else ""
+        html = _html_wrapper(
+            f"Action Blocked — {client_name}",
+            f"<p style='color:#fbbf24;font-weight:600;'>Waiting on your input</p>"
+            f"<p><strong>{action['title']}</strong></p>{reason_html}",
+            self._portal_url(slug),
+        )
+        await self._send_email(recipients, f"Blocked: {action['title']} — {client_name}", html)

@@ -193,6 +193,7 @@ async def startup():
         smtp_user=getattr(settings, "smtp_user", ""),
         smtp_pass=getattr(settings, "smtp_pass", ""),
         smtp_from=getattr(settings, "smtp_from", ""),
+        reply_domain=getattr(settings, "portal_reply_domain", ""),
     )
     if app.state.email_notifier.available:
         logger.info("  Email notifications: enabled")
@@ -204,6 +205,14 @@ async def startup():
     app.state.reminder_worker_portal = ReminderWorker(
         portal_store=app.state.portal_store,
         portal_notifier=app.state.portal_notifier,
+    )
+
+    # Status report worker (weekly AI-generated reports)
+    from app.core.status_report_worker import StatusReportWorker
+    app.state.status_report_worker = StatusReportWorker(
+        portal_store=app.state.portal_store,
+        portal_notifier=app.state.portal_notifier,
+        email_notifier=app.state.email_notifier,
     )
 
     # Google Sheets integration (graceful degradation if gws not installed)
@@ -302,6 +311,7 @@ async def startup():
     await app.state.subscription_monitor.start()
     await app.state.cleanup_worker.start()
     await app.state.reminder_worker_portal.start()
+    await app.state.status_report_worker.start()
 
     skills = list_skills()
 
@@ -334,6 +344,10 @@ async def shutdown():
     if hasattr(app.state, "reminder_worker_portal"):
         await app.state.reminder_worker_portal.stop()
         logger.info("  Portal reminder worker stopped")
+
+    if hasattr(app.state, "status_report_worker"):
+        await app.state.status_report_worker.stop()
+        logger.info("  Status report worker stopped")
 
     if hasattr(app.state, "portal_notifier"):
         await app.state.portal_notifier.close()

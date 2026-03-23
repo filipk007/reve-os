@@ -5,13 +5,17 @@ from fastapi import APIRouter, File, Form, Query, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.models.portal import (
+    ApprovalActionRequest,
     CreateActionRequest,
     CreateCommentRequest,
     CreatePhaseRequest,
     CreateProjectRequest,
     CreateSOPRequest,
+    CreateThreadMessageRequest,
+    CreateThreadRequest,
     CreateUpdateRequest,
     OnboardRequest,
+    ReactionRequest,
     UpdateActionRequest,
     UpdatePhaseRequest,
     UpdatePortalRequest,
@@ -172,7 +176,7 @@ async def create_update(request: Request, slug: str, body: CreateUpdateRequest):
         slug, type_=body.type, title=body.title, body=body.body, media_ids=body.media_ids,
         author_name=body.author_name, author_org=body.author_org, project_id=body.project_id,
     )
-    # Auto-create client review action for deliverables
+    # Auto-create client review action for deliverables + link it
     if body.type == "deliverable" and body.create_action:
         action = store.create_action(
             slug,
@@ -180,6 +184,9 @@ async def create_update(request: Request, slug: str, body: CreateUpdateRequest):
             owner="client",
             priority="high",
         )
+        # Link the action ID back to the deliverable for auto-close on approval
+        store.set_linked_action_id(slug, update["id"], action["id"])
+        update["linked_action_id"] = action["id"]
         if notifier:
             asyncio.create_task(notifier.notify_action_assigned(slug, action))
 
@@ -190,12 +197,12 @@ async def create_update(request: Request, slug: str, body: CreateUpdateRequest):
         elif body.type in ("milestone", "update"):
             asyncio.create_task(notifier.notify_update_posted(slug, body.type, body.title, body.body))
 
-    # Fire email notifications
+    # Fire email notifications (with update_id for Reply-To bridging)
     if email_notifier:
         if body.type == "deliverable":
-            asyncio.create_task(email_notifier.notify_deliverable(slug, body.title, body.body))
+            asyncio.create_task(email_notifier.notify_deliverable(slug, body.title, body.body, update_id=update["id"]))
         elif body.type in ("milestone", "update"):
-            asyncio.create_task(email_notifier.notify_update(slug, body.type, body.title, body.body))
+            asyncio.create_task(email_notifier.notify_update(slug, body.type, body.title, body.body, update_id=update["id"]))
 
     # Fire Google Doc sync (async, fire-and-forget)
     doc_sync = getattr(request.app.state, "portal_doc_sync", None)
@@ -276,21 +283,43 @@ async def create_action(request: Request, slug: str, body: CreateActionRequest):
         priority=body.priority,
         recurrence=body.recurrence,
         project_id=body.project_id,
+        blocked_by_client=body.blocked_by_client,
+        blocked_reason=body.blocked_reason,
     )
     if notifier and body.owner == "client":
         asyncio.create_task(notifier.notify_action_assigned(slug, action))
     if email_notifier and body.owner == "client":
         asyncio.create_task(email_notifier.notify_action(slug, action))
+    if body.blocked_by_client:
+        if notifier:
+            asyncio.create_task(notifier.notify_action_blocked(slug, action))
+        if email_notifier:
+            asyncio.create_task(email_notifier.notify_action_blocked(slug, action))
     return action
 
 
 @router.put("/portal/{slug}/actions/{action_id}")
 async def update_action(request: Request, slug: str, action_id: str, body: UpdateActionRequest):
     store = request.app.state.portal_store
+    notifier = getattr(request.app.state, "portal_notifier", None)
+    email_notifier = getattr(request.app.state, "email_notifier", None)
+
+    # Check if transitioning to blocked
+    old_action = store.get_action(slug, action_id)
+    was_blocked = old_action.get("blocked_by_client", False) if old_action else False
+
     updates = body.model_dump(exclude_none=True)
     action = store.update_action(slug, action_id, updates)
     if not action:
         return JSONResponse(status_code=404, content={"error": True, "error_message": f"Action '{action_id}' not found"})
+
+    # Fire notification when transitioning to blocked
+    if body.blocked_by_client and not was_blocked:
+        if notifier:
+            asyncio.create_task(notifier.notify_action_blocked(slug, action))
+        if email_notifier:
+            asyncio.create_task(email_notifier.notify_action_blocked(slug, action))
+
     return action
 
 
@@ -490,7 +519,7 @@ async def post_comment(request: Request, slug: str, update_id: str, body: Create
     if notifier:
         asyncio.create_task(notifier.notify_comment_posted(slug, update_title, body.body, body.author))
     if email_notifier:
-        asyncio.create_task(email_notifier.notify_comment(slug, update_title, body.body, body.author))
+        asyncio.create_task(email_notifier.notify_comment(slug, update_title, body.body, body.author, update_id=update_id))
     return comment
 
 
@@ -500,6 +529,54 @@ async def delete_comment(request: Request, slug: str, update_id: str, comment_id
     if not store.delete_comment(slug, update_id, comment_id):
         return JSONResponse(status_code=404, content={"error": True, "error_message": f"Comment '{comment_id}' not found"})
     return {"ok": True}
+
+
+# ── Reactions ─────────────────────────────────────────────
+
+
+@router.get("/portal/{slug}/updates/{update_id}/reactions")
+async def get_reactions(request: Request, slug: str, update_id: str):
+    store = request.app.state.portal_store
+    reactions = store.get_reactions(slug, update_id)
+    return {"reactions": reactions}
+
+
+@router.post("/portal/{slug}/updates/{update_id}/reactions")
+async def toggle_reaction(request: Request, slug: str, update_id: str, body: ReactionRequest):
+    store = request.app.state.portal_store
+    reactions = store.toggle_reaction(slug, update_id, body.reaction_type, body.user)
+    return {"reactions": reactions}
+
+
+# ── Approvals ─────────────────────────────────────────────
+
+
+@router.post("/portal/{slug}/updates/{update_id}/approval")
+async def process_approval(request: Request, slug: str, update_id: str, body: ApprovalActionRequest):
+    store = request.app.state.portal_store
+    notifier = getattr(request.app.state, "portal_notifier", None)
+    email_notifier = getattr(request.app.state, "email_notifier", None)
+
+    entry = store.approve_update(
+        slug, update_id,
+        action=body.action,
+        actor_name=body.actor_name,
+        actor_org=body.actor_org,
+        notes=body.notes,
+    )
+    if not entry:
+        return JSONResponse(status_code=404, content={"error": True, "error_message": f"Update '{update_id}' not found"})
+    if entry.get("_approval_error"):
+        error_msg = entry.pop("_approval_error")
+        return JSONResponse(status_code=400, content={"error": True, "error_message": error_msg})
+
+    # Fire notifications
+    if notifier:
+        asyncio.create_task(notifier.notify_approval(slug, entry.get("title", ""), body.action, body.actor_name))
+    if email_notifier:
+        asyncio.create_task(email_notifier.notify_approval(slug, entry.get("title", ""), body.action, body.actor_name))
+
+    return entry
 
 
 # ── SOP Acknowledgment ───────────────────────────────────
@@ -573,6 +650,84 @@ async def test_notification(request: Request, slug: str):
         return JSONResponse(status_code=500, content={"error": True, "error_message": str(e)})
 
 
+# ── Inbound Email Bridge ────────────────────────────────
+
+
+@router.post("/portal/inbound-email")
+async def receive_inbound_email(request: Request):
+    """Receive inbound emails from SendGrid Inbound Parse and post as comments."""
+    from app.core.email_bridge import (
+        parse_reply_address,
+        strip_quoted_content,
+        extract_sender_name,
+        extract_sender_email,
+        verify_sender,
+    )
+
+    store = request.app.state.portal_store
+    notifier = getattr(request.app.state, "portal_notifier", None)
+
+    form = await request.form()
+    from_field = str(form.get("from", ""))
+    to_field = str(form.get("to", ""))
+    text_body = str(form.get("text", ""))
+
+    # Parse the reply-to address to get slug + update_id
+    parsed = parse_reply_address(to_field)
+    if not parsed:
+        logger.warning("[email-bridge] Could not parse reply address: %s", to_field)
+        return JSONResponse(status_code=400, content={"error": True, "error_message": "Invalid reply address"})
+
+    slug, update_id = parsed
+
+    # Verify sender is authorized
+    sender_email = extract_sender_email(from_field)
+    if not verify_sender(sender_email, slug, store):
+        logger.warning("[email-bridge] Unauthorized sender %s for %s", sender_email, slug)
+        return JSONResponse(status_code=403, content={"error": True, "error_message": "Sender not authorized"})
+
+    # Strip quoted content
+    clean_body = strip_quoted_content(text_body)
+    if not clean_body:
+        return JSONResponse(status_code=400, content={"error": True, "error_message": "Empty reply body"})
+
+    # Post as comment
+    sender_name = extract_sender_name(from_field)
+    comment = store.add_comment(slug, update_id, clean_body, sender_name)
+
+    # Find the update title for notifications
+    updates = store.list_updates(slug, limit=100)
+    update_title = update_id
+    for u in updates:
+        if u.get("id") == update_id:
+            update_title = u.get("title", update_id)
+            break
+
+    # Notify (excluding the sender)
+    if notifier:
+        asyncio.create_task(notifier.notify_comment_posted(slug, update_title, clean_body, f"{sender_name} (via email)"))
+
+    logger.info("[email-bridge] Comment posted for %s on %s by %s", slug, update_id, sender_email)
+    return {"ok": True, "comment_id": comment.get("id"), "source": "email"}
+
+
+# ── Status Report ────────────────────────────────────────
+
+
+@router.post("/portal/{slug}/status-report")
+async def generate_status_report(request: Request, slug: str):
+    worker = getattr(request.app.state, "status_report_worker", None)
+    if not worker:
+        return JSONResponse(status_code=503, content={"error": True, "error_message": "Status report worker not available"})
+    store = request.app.state.portal_store
+    if not store.get_portal(slug):
+        return JSONResponse(status_code=404, content={"error": True, "error_message": f"Client '{slug}' not found"})
+    update = await worker.generate_now(slug)
+    if not update:
+        return JSONResponse(status_code=500, content={"error": True, "error_message": "Failed to generate report (no activity or AI error)"})
+    return update
+
+
 # ── Google Workspace Sync ─────────────────────────────────
 
 
@@ -602,3 +757,66 @@ async def sync_status(request: Request, slug: str):
     status = portal_sync.get_sync_status(slug)
     status["available"] = portal_sync.available
     return status
+
+
+# ── Discussion Threads ───────────────────────────────────
+
+
+@router.get("/portal/{slug}/projects/{project_id}/threads")
+async def list_threads(request: Request, slug: str, project_id: str):
+    store = request.app.state.portal_store
+    threads = store.list_threads(slug, project_id)
+    return {"threads": threads, "total": len(threads)}
+
+
+@router.post("/portal/{slug}/projects/{project_id}/threads")
+async def create_thread(request: Request, slug: str, project_id: str, body: CreateThreadRequest):
+    store = request.app.state.portal_store
+    notifier = getattr(request.app.state, "portal_notifier", None)
+    email_notifier = getattr(request.app.state, "email_notifier", None)
+    thread = store.create_thread(
+        slug, project_id,
+        title=body.title, body=body.body,
+        author=body.author, author_org=body.author_org,
+    )
+    if notifier:
+        client_name = store._client_name(slug)
+        asyncio.create_task(notifier.notify_thread_created(slug, body.title, body.author))
+    if email_notifier:
+        asyncio.create_task(email_notifier.notify_thread_created(slug, body.title, body.author))
+    return thread
+
+
+@router.get("/portal/{slug}/threads/{thread_id}")
+async def get_thread(request: Request, slug: str, thread_id: str):
+    store = request.app.state.portal_store
+    thread = store.get_thread(slug, thread_id)
+    if not thread:
+        return JSONResponse(status_code=404, content={"error": True, "error_message": f"Thread '{thread_id}' not found"})
+    return thread
+
+
+@router.post("/portal/{slug}/threads/{thread_id}/messages")
+async def add_thread_message(request: Request, slug: str, thread_id: str, body: CreateThreadMessageRequest):
+    store = request.app.state.portal_store
+    notifier = getattr(request.app.state, "portal_notifier", None)
+    email_notifier = getattr(request.app.state, "email_notifier", None)
+    thread = store.add_thread_message(
+        slug, thread_id,
+        body=body.body, author=body.author, author_org=body.author_org,
+    )
+    if not thread:
+        return JSONResponse(status_code=404, content={"error": True, "error_message": f"Thread '{thread_id}' not found"})
+    if notifier:
+        asyncio.create_task(notifier.notify_thread_message(slug, thread["title"], body.body, body.author))
+    if email_notifier:
+        asyncio.create_task(email_notifier.notify_thread_message(slug, thread["title"], body.body, body.author))
+    return thread
+
+
+@router.delete("/portal/{slug}/threads/{thread_id}")
+async def delete_thread(request: Request, slug: str, thread_id: str):
+    store = request.app.state.portal_store
+    if not store.delete_thread(slug, thread_id):
+        return JSONResponse(status_code=404, content={"error": True, "error_message": f"Thread '{thread_id}' not found"})
+    return {"ok": True}

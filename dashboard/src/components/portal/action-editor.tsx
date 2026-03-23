@@ -39,6 +39,8 @@ export function ActionEditor({ slug, action, onSaved, onCancel }: ActionEditorPr
   const [priority, setPriority] = useState<ActionPriority>(action?.priority || "normal");
   const [dueDate, setDueDate] = useState(action?.due_date || "");
   const [recurrence, setRecurrence] = useState<ActionRecurrence>(action?.recurrence || "none");
+  const [blockedByClient, setBlockedByClient] = useState(action?.blocked_by_client || false);
+  const [blockedReason, setBlockedReason] = useState(action?.blocked_reason || "");
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -56,6 +58,8 @@ export function ActionEditor({ slug, action, onSaved, onCancel }: ActionEditorPr
           priority,
           due_date: dueDate || null,
           recurrence: recurrence === "none" ? null : recurrence,
+          blocked_by_client: blockedByClient,
+          blocked_reason: blockedByClient ? blockedReason : "",
         });
         toast.success("Action updated");
       } else {
@@ -66,6 +70,7 @@ export function ActionEditor({ slug, action, onSaved, onCancel }: ActionEditorPr
           priority,
           due_date: dueDate || null,
           recurrence: recurrence === "none" ? undefined : recurrence,
+          ...(blockedByClient ? { blocked_by_client: true, blocked_reason: blockedReason } : {}),
         });
         toast.success("Action created");
       }
@@ -139,6 +144,28 @@ export function ActionEditor({ slug, action, onSaved, onCancel }: ActionEditorPr
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Blocked by client toggle */}
+      <div className="flex items-center gap-3">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={blockedByClient}
+            onChange={(e) => setBlockedByClient(e.target.checked)}
+            className="h-3.5 w-3.5 rounded border-clay-600 bg-clay-900 text-amber-400 focus:ring-amber-400/30"
+          />
+          <span className="text-xs text-amber-400">Blocked by client</span>
+        </label>
+        {blockedByClient && (
+          <input
+            type="text"
+            value={blockedReason}
+            onChange={(e) => setBlockedReason(e.target.value)}
+            placeholder="Reason (optional)..."
+            className="flex-1 bg-clay-900 border border-amber-500/30 rounded-md px-3 py-1 text-xs text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-amber-400"
+          />
+        )}
       </div>
 
       <div className="flex items-center gap-2 justify-end">

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -80,6 +82,8 @@ class CreateActionRequest(BaseModel):
     priority: str = Field("normal", description="Priority: high, normal, low")
     recurrence: str | None = Field(None, description="Recurrence: none, weekly, biweekly, monthly")
     project_id: str | None = Field(None, description="Link action to a project")
+    blocked_by_client: bool = Field(False, description="Whether this action is blocked waiting on client")
+    blocked_reason: str = Field("", description="Reason the action is blocked")
 
 
 class UpdateActionRequest(BaseModel):
@@ -90,6 +94,20 @@ class UpdateActionRequest(BaseModel):
     priority: str | None = None
     status: str | None = None
     recurrence: str | None = None
+    blocked_by_client: bool | None = None
+    blocked_reason: str | None = None
+
+
+# ── Reaction Models ──────────────────────────────────────
+
+ALLOWED_REACTIONS = {"thumbs_up", "fire", "eyes", "check", "question"}
+
+
+class ReactionRequest(BaseModel):
+    reaction_type: Literal["thumbs_up", "fire", "eyes", "check", "question"] = Field(
+        ..., description="Reaction type"
+    )
+    user: str = Field(..., description="User name who reacted")
 
 
 # ── Media Models ──────────────────────────────────────────
@@ -201,3 +219,36 @@ class UpdatePhaseRequest(BaseModel):
     name: str | None = None
     status: str | None = Field(None, description="pending, active, completed")
     order: int | None = None
+
+
+# ── Approval Models ──────────────────────────────────────
+
+APPROVAL_TRANSITIONS = {
+    "pending_review": {"approve", "request_revision"},
+    "revision_requested": {"resubmit"},
+    "resubmitted": {"approve", "request_revision"},
+}
+
+
+class ApprovalActionRequest(BaseModel):
+    action: Literal["approve", "request_revision", "resubmit"] = Field(
+        ..., description="Approval action to take"
+    )
+    actor_name: str = Field(..., description="Name of the person acting")
+    actor_org: str = Field("client", description="Organization: internal or client")
+    notes: str = Field("", description="Optional notes (e.g. revision feedback)")
+
+
+# ── Thread Models ────────────────────────────────────────
+
+class CreateThreadRequest(BaseModel):
+    title: str = Field(..., description="Discussion thread title")
+    body: str = Field(..., description="First message body")
+    author: str = Field(..., description="Author name")
+    author_org: str = Field("internal", description="Organization: internal or client")
+
+
+class CreateThreadMessageRequest(BaseModel):
+    body: str = Field(..., description="Message body")
+    author: str = Field(..., description="Author name")
+    author_org: str = Field("internal", description="Organization: internal or client")

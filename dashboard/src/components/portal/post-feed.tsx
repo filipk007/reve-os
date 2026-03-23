@@ -16,6 +16,7 @@ interface PostFeedProps {
   onTogglePin: (id: string) => void;
   onDeleteUpdate: (id: string) => void;
   onMoveToProject?: (updateId: string, projectId: string | null) => void;
+  onUpdated?: () => void;
   clientName?: string;
   projects?: ProjectSummary[];
 }
@@ -53,6 +54,7 @@ export function PostFeed({
   onTogglePin,
   onDeleteUpdate,
   onMoveToProject,
+  onUpdated,
   clientName,
   projects,
 }: PostFeedProps) {
@@ -163,6 +165,7 @@ export function PostFeed({
           isFocused={globalIdx === focusedIndex}
           projects={projects}
           onMoveToProject={onMoveToProject}
+          onUpdated={onUpdated}
         />
       </motion.div>
     );

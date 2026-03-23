@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, CheckSquare, Square, Calendar, User, Repeat } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckSquare, Square, Calendar, User, Repeat, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { PortalAction } from "@/lib/types";
@@ -31,22 +31,31 @@ export function ActionList({ slug, actions, onCreated, onUpdated, onToggle, onDe
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Sort: open/in_progress first (by priority), done at bottom
+  // Sort: blocked first, then open/in_progress (by priority), done at bottom
   const priorityOrder: Record<string, number> = { high: 0, normal: 1, low: 2 };
   const sorted = [...actions].sort((a, b) => {
     const aIsDone = a.status === "done" ? 1 : 0;
     const bIsDone = b.status === "done" ? 1 : 0;
     if (aIsDone !== bIsDone) return aIsDone - bIsDone;
+    const aBlocked = a.blocked_by_client ? 0 : 1;
+    const bBlocked = b.blocked_by_client ? 0 : 1;
+    if (aBlocked !== bBlocked) return aBlocked - bBlocked;
     return (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1);
   });
 
   const openCount = actions.filter((a) => a.status !== "done").length;
+  const blockedCount = actions.filter((a) => a.blocked_by_client && a.status !== "done").length;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-clay-200">
+        <h3 className="text-sm font-semibold text-clay-200 flex items-center gap-2">
           Action Items ({openCount} open, {actions.length} total)
+          {blockedCount > 0 && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-medium">
+              {blockedCount} blocked
+            </span>
+          )}
         </h3>
         <Button
           variant="outline"
@@ -77,7 +86,12 @@ export function ActionList({ slug, actions, onCreated, onUpdated, onToggle, onDe
       )}
 
       {sorted.map((action) => (
-        <div key={action.id} className="rounded-lg border border-clay-700 bg-clay-800 overflow-hidden">
+        <div key={action.id} className={cn(
+          "rounded-lg border bg-clay-800 overflow-hidden",
+          action.blocked_by_client && action.status !== "done"
+            ? "border-amber-500/30 border-l-2 border-l-amber-400"
+            : "border-clay-700"
+        )}>
           {editingId === action.id ? (
             <ActionEditor
               slug={slug}
@@ -125,10 +139,20 @@ export function ActionList({ slug, actions, onCreated, onUpdated, onToggle, onDe
                     <User className="h-2.5 w-2.5 inline mr-0.5" />
                     {action.owner}
                   </span>
+                  {/* Blocked badge */}
+                  {action.blocked_by_client && action.status !== "done" && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 text-amber-400 bg-amber-500/10 flex items-center gap-0.5">
+                      <AlertTriangle className="h-2.5 w-2.5" />
+                      Waiting on you
+                    </span>
+                  )}
                 </div>
 
                 {action.description && (
                   <p className="text-xs text-clay-400 mt-0.5 line-clamp-1">{action.description}</p>
+                )}
+                {action.blocked_by_client && action.blocked_reason && action.status !== "done" && (
+                  <p className="text-xs text-amber-400/70 mt-0.5 line-clamp-1">Blocked: {action.blocked_reason}</p>
                 )}
 
                 <div className="flex flex-wrap items-center gap-2 mt-1">

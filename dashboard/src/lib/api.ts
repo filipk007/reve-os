@@ -43,10 +43,12 @@ import type {
   ProjectLink,
   PortalSOP,
   PortalSyncStatus,
+  PortalThread,
   PortalUpdate,
   ProjectDetail,
   ProjectPhase,
   ProjectSummary,
+  ThreadDetail,
   UpdateTemplate,
   PromptPreview,
   PublicPortalView,
@@ -1367,6 +1369,25 @@ export function deleteComment(
   });
 }
 
+// Reactions
+export function fetchReactions(
+  slug: string,
+  updateId: string
+): Promise<{ reactions: Record<string, { user: string; created_at: number }[]> }> {
+  return apiFetch(`/portal/${slug}/updates/${updateId}/reactions`);
+}
+
+export function toggleReaction(
+  slug: string,
+  updateId: string,
+  body: { reaction_type: string; user: string }
+): Promise<{ reactions: Record<string, { user: string; created_at: number }[]> }> {
+  return apiFetch(`/portal/${slug}/updates/${updateId}/reactions`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
 // SOP Acknowledgment
 export function acknowledgeSOP(
   slug: string,
@@ -1505,6 +1526,56 @@ export function updateProjectPhase(
 
 export function deleteProjectPhase(slug: string, projectId: string, phaseId: string): Promise<{ ok: boolean }> {
   return apiFetch(`/portal/${slug}/projects/${projectId}/phases/${phaseId}`, { method: "DELETE" });
+}
+
+// Approvals
+export function processApproval(
+  slug: string,
+  updateId: string,
+  body: { action: "approve" | "request_revision" | "resubmit"; actor_name: string; actor_org?: string; notes?: string }
+): Promise<PortalUpdate> {
+  return apiFetch(`/portal/${slug}/updates/${updateId}/approval`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+// Discussion Threads
+export function fetchThreads(
+  slug: string,
+  projectId: string
+): Promise<{ threads: PortalThread[]; total: number }> {
+  return apiFetch(`/portal/${slug}/projects/${projectId}/threads`);
+}
+
+export function createThread(
+  slug: string,
+  projectId: string,
+  body: { title: string; body: string; author: string; author_org?: string }
+): Promise<ThreadDetail> {
+  return apiFetch(`/portal/${slug}/projects/${projectId}/threads`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchThread(slug: string, threadId: string): Promise<ThreadDetail> {
+  return apiFetch(`/portal/${slug}/threads/${threadId}`);
+}
+
+export function postThreadMessage(
+  slug: string,
+  threadId: string,
+  body: { body: string; author: string; author_org?: string }
+): Promise<ThreadDetail> {
+  return apiFetch(`/portal/${slug}/threads/${threadId}/messages`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteThread(slug: string, threadId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/portal/${slug}/threads/${threadId}`, { method: "DELETE" });
 }
 
 // ── Channel / Chat API ──────────────────────────────────────────

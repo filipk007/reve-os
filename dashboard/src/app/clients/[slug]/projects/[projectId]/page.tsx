@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { fetchPortal, uploadPortalMedia } from "@/lib/api";
+import { fetchPortal, fetchThreads } from "@/lib/api";
 import { useProject } from "@/hooks/use-project";
 import { usePortalFeed } from "@/hooks/use-portal-feed";
 import { ProjectHeader } from "@/components/portal/project-header";
@@ -18,6 +18,9 @@ import { UpdateComposer } from "@/components/portal/update-composer";
 import { MediaGrid } from "@/components/portal/media-grid";
 import { ActionList } from "@/components/portal/action-list";
 import { PinnedStrip } from "@/components/portal/pinned-strip";
+import { ThreadList } from "@/components/portal/thread-list";
+import { ThreadDetail } from "@/components/portal/thread-detail";
+import type { PortalThread } from "@/lib/types";
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -28,6 +31,8 @@ export default function ProjectDetailPage() {
   const [clientName, setClientName] = useState("");
   const [composerOpen, setComposerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ProjectTab>("feed");
+  const [threads, setThreads] = useState<PortalThread[]>([]);
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
   const {
     project,
@@ -65,6 +70,17 @@ export default function ProjectDetailPage() {
       .then((p) => setClientName(p.name))
       .catch(() => {});
   }, [slug]);
+
+  // Load threads
+  const loadThreads = () => {
+    fetchThreads(slug, projectId)
+      .then((data) => setThreads(data.threads))
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    loadThreads();
+  }, [slug, projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keyboard: N opens composer
   useEffect(() => {
@@ -132,11 +148,15 @@ export default function ProjectDetailPage() {
         <div className="flex items-center justify-between">
           <ProjectTabs
             active={activeTab}
-            onChange={setActiveTab}
+            onChange={(tab) => {
+              setActiveTab(tab);
+              if (tab !== "discussions") setSelectedThreadId(null);
+            }}
             counts={{
               feed: updates.length,
               files: media.length,
               actions: actions.length,
+              discussions: threads.length,
             }}
           />
           {activeTab === "feed" && (
@@ -187,6 +207,7 @@ export default function ProjectDetailPage() {
                   onTogglePin={handleTogglePin}
                   onDeleteUpdate={handleDeleteUpdate}
                   onMoveToProject={handleMoveToProject}
+                  onUpdated={reload}
                   clientName={clientName || slug}
                 />
               </>
@@ -208,6 +229,28 @@ export default function ProjectDetailPage() {
                 onToggle={handleToggleAction}
                 onDelete={handleDeleteAction}
               />
+            )}
+
+            {activeTab === "discussions" && (
+              selectedThreadId ? (
+                <ThreadDetail
+                  slug={slug}
+                  threadId={selectedThreadId}
+                  onBack={() => setSelectedThreadId(null)}
+                  onDeleted={() => {
+                    setSelectedThreadId(null);
+                    loadThreads();
+                  }}
+                />
+              ) : (
+                <ThreadList
+                  slug={slug}
+                  projectId={projectId}
+                  threads={threads}
+                  onSelectThread={setSelectedThreadId}
+                  onReload={loadThreads}
+                />
+              )
             )}
           </div>
 

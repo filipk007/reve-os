@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, forwardRef, useCallback } from "react";
+import { useState, useEffect, forwardRef, useCallback } from "react";
 import {
   Pin, PinOff, Trash2, MoreVertical, FileIcon, Film,
   ChevronDown, ChevronUp, X, FileText, Milestone, Package, FolderOpen,
@@ -16,8 +16,10 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import type { PortalUpdate, PortalMedia, ProjectSummary } from "@/lib/types";
+import { fetchReactions, toggleReaction as apiToggleReaction } from "@/lib/api";
 import { MarkdownContent } from "./markdown-content";
 import { CommentThread } from "./comment-thread";
+import { ApprovalBanner } from "./approval-banner";
 import { ConfirmDeleteDialog } from "./confirm-delete-dialog";
 import { VideoEmbed } from "./video-embed";
 import { parseVideoUrls } from "@/lib/video-utils";
@@ -37,7 +39,18 @@ const TYPE_CONFIG: Record<string, {
   note: { label: "Note", textColor: "text-amber-400", border: "border-l-clay-600", bg: "" },
 };
 
-const REACTIONS = ["👍", "🔥", "👀", "✅"];
+const REACTION_TYPES = [
+  { key: "thumbs_up", emoji: "👍" },
+  { key: "fire", emoji: "🔥" },
+  { key: "eyes", emoji: "👀" },
+  { key: "check", emoji: "✅" },
+  { key: "question", emoji: "❓" },
+];
+
+function getStoredAuthor(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("portal_author_name") || "";
+}
 
 function isImage(mime: string) {
   return mime.startsWith("image/");
@@ -70,17 +83,6 @@ function formatRelativeTime(epochSeconds: number): string {
   return date.getFullYear() === currentYear ? `${month} ${day}` : `${month} ${day}, ${date.getFullYear()}`;
 }
 
-function getReactions(updateId: string): Record<string, boolean> {
-  if (typeof window === "undefined") return {};
-  try {
-    return JSON.parse(localStorage.getItem(`reactions:${updateId}`) || "{}");
-  } catch { return {}; }
-}
-
-function setReactions(updateId: string, reactions: Record<string, boolean>) {
-  localStorage.setItem(`reactions:${updateId}`, JSON.stringify(reactions));
-}
-
 interface PostCardProps {
   slug: string;
   update: PortalUpdate;
@@ -93,13 +95,14 @@ interface PostCardProps {
   isFocused?: boolean;
   projects?: ProjectSummary[];
   onMoveToProject?: (updateId: string, projectId: string | null) => void;
+  onUpdated?: () => void;
 }
 
 export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
-  function PostCard({ slug, update, media, onTogglePin, onDelete, highlighted, clientName, isNew, isFocused, projects, onMoveToProject }, ref) {
+  function PostCard({ slug, update, media, onTogglePin, onDelete, highlighted, clientName, isNew, isFocused, projects, onMoveToProject, onUpdated }, ref) {
     const [expanded, setExpanded] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [reactions, setReactionsState] = useState<Record<string, boolean>>(() => getReactions(update.id));
+    const [reactions, setReactionsState] = useState<Record<string, { user: string; created_at: number }[]>>({});
     const [reactionsHovered, setReactionsHovered] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -121,15 +124,39 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
       timeStyle: "short",
     });
 
-    const activeReactions = REACTIONS.filter((r) => reactions[r]);
+    const currentUser = getStoredAuthor();
+    const activeReactionKeys = REACTION_TYPES.filter((r) => (reactions[r.key]?.length ?? 0) > 0).map((r) => r.key);
+    const userReactedKeys = new Set(
+      REACTION_TYPES.filter((r) => reactions[r.key]?.some((e) => e.user === currentUser)).map((r) => r.key)
+    );
 
-    const toggleReaction = useCallback((emoji: string) => {
+    // Fetch reactions on mount
+    useEffect(() => {
+      fetchReactions(slug, update.id)
+        .then((data) => setReactionsState(data.reactions || {}))
+        .catch(() => {});
+    }, [slug, update.id]);
+
+    const handleToggleReaction = useCallback((reactionKey: string) => {
+      const user = getStoredAuthor() || "Anonymous";
+      // Optimistic update
       setReactionsState((prev) => {
-        const next = { ...prev, [emoji]: !prev[emoji] };
-        setReactions(update.id, next);
-        return next;
+        const existing = prev[reactionKey] || [];
+        const alreadyReacted = existing.some((e) => e.user === user);
+        if (alreadyReacted) {
+          const filtered = existing.filter((e) => e.user !== user);
+          const next = { ...prev };
+          if (filtered.length === 0) {
+            delete next[reactionKey];
+          } else {
+            next[reactionKey] = filtered;
+          }
+          return next;
+        }
+        return { ...prev, [reactionKey]: [...existing, { user, created_at: Date.now() / 1000 }] };
       });
-    }, [update.id]);
+      apiToggleReaction(slug, update.id, { reaction_type: reactionKey, user }).catch(() => {});
+    }, [slug, update.id]);
 
     const handleBodyClick = useCallback(() => {
       if (isLong) setExpanded((e) => !e);
@@ -368,34 +395,42 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
             </div>
           )}
 
+          {/* Approval workflow for deliverables */}
+          {update.type === "deliverable" && update.approval_status && onUpdated && (
+            <ApprovalBanner slug={slug} update={update} onUpdated={onUpdated} />
+          )}
+
           {/* Divider before reactions (only if there was content above) */}
-          {(hasBody || attachedMedia.length > 0) && (
+          {(hasBody || attachedMedia.length > 0 || update.approval_status) && (
             <div className="border-b border-clay-700/40 mt-3" />
           )}
 
-          {/* Quick reactions — collapse to selected only, expand all on hover */}
+          {/* Quick reactions — collapse to active only, expand all on hover */}
           <div
             className={cn(
               "flex items-center gap-1 mt-2.5 transition-opacity",
-              activeReactions.length > 0 || reactionsHovered ? "opacity-100" : "opacity-40 group-hover:opacity-100"
+              activeReactionKeys.length > 0 || reactionsHovered ? "opacity-100" : "opacity-40 group-hover:opacity-100"
             )}
             onMouseEnter={() => setReactionsHovered(true)}
             onMouseLeave={() => setReactionsHovered(false)}
           >
-            {REACTIONS.map((emoji) => {
-              if (activeReactions.length > 0 && !reactionsHovered && !reactions[emoji]) return null;
+            {REACTION_TYPES.map(({ key, emoji }) => {
+              const count = reactions[key]?.length ?? 0;
+              const isActive = userReactedKeys.has(key);
+              if (activeReactionKeys.length > 0 && !reactionsHovered && count === 0) return null;
               return (
                 <button
-                  key={emoji}
-                  onClick={() => toggleReaction(emoji)}
+                  key={key}
+                  onClick={() => handleToggleReaction(key)}
                   className={cn(
-                    "h-7 px-2 rounded-full text-sm transition-all",
-                    reactions[emoji]
+                    "h-7 px-2 rounded-full text-sm transition-all flex items-center gap-1",
+                    isActive
                       ? "bg-kiln-teal/15 ring-1 ring-kiln-teal/30 scale-110"
                       : "bg-clay-700/50 hover:bg-clay-700"
                   )}
                 >
                   {emoji}
+                  {count > 0 && <span className="text-[10px] text-clay-300">{count}</span>}
                 </button>
               );
             })}

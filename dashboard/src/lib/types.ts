@@ -663,6 +663,16 @@ export interface PortalSOP {
   acknowledged_by?: string;
 }
 
+export type ApprovalStatus = "pending_review" | "approved" | "revision_requested" | "resubmitted";
+
+export interface ApprovalHistoryEntry {
+  action: string;
+  actor_name: string;
+  actor_org: string;
+  notes: string;
+  timestamp: number;
+}
+
 export interface PortalUpdate {
   id: string;
   type: string;
@@ -675,6 +685,14 @@ export interface PortalUpdate {
   author_name?: string;
   author_org?: string;
   project_id?: string | null;
+  // Approval fields (deliverables only)
+  approval_status?: ApprovalStatus | null;
+  approval_history?: ApprovalHistoryEntry[];
+  approved_by?: string | null;
+  approved_at?: number | null;
+  revision_notes?: string | null;
+  revision_count?: number;
+  linked_action_id?: string | null;
 }
 
 export interface PortalMedia {
@@ -741,9 +759,22 @@ export interface PortalAction {
   priority: ActionPriority;
   recurrence: ActionRecurrence | null;
   project_id?: string | null;
+  blocked_by_client?: boolean;
+  blocked_reason?: string;
+  blocked_at?: number | null;
   created_at: number;
   updated_at: number;
 }
+
+// Reactions
+export type ReactionType = "thumbs_up" | "fire" | "eyes" | "check" | "question";
+
+export interface ReactionEntry {
+  user: string;
+  created_at: number;
+}
+
+export type ReactionsMap = Record<string, ReactionEntry[]>;
 
 // SOP Templates
 export interface SOPTemplate {
@@ -824,6 +855,39 @@ export interface ProjectDetail {
     open_actions: number;
     completion_pct: number;
   };
+}
+
+// Discussion Threads
+export interface ThreadMessage {
+  id: string;
+  body: string;
+  author: string;
+  author_org: string;
+  created_at: number;
+}
+
+export interface PortalThread {
+  id: string;
+  project_id: string;
+  title: string;
+  status: string;
+  created_at: number;
+  updated_at: number;
+  created_by: string;
+  message_count: number;
+  last_message_preview: string;
+  last_message_author: string;
+}
+
+export interface ThreadDetail {
+  id: string;
+  project_id: string;
+  title: string;
+  status: string;
+  created_at: number;
+  updated_at: number;
+  created_by: string;
+  messages: ThreadMessage[];
 }
 
 // Share Links

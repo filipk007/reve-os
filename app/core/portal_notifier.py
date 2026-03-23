@@ -104,6 +104,57 @@ class PortalNotifier:
         ]
         await self._send(slug, blocks, f"New comment by {author} on {update_title}")
 
+    async def notify_approval(self, slug: str, title: str, action: str, actor_name: str) -> None:
+        """Notify on a deliverable approval action."""
+        client_name = self._store._client_name(slug)
+        action_config = {
+            "approve": (":white_check_mark:", "Approved"),
+            "request_revision": (":arrows_counterclockwise:", "Revision Requested"),
+            "resubmit": (":package:", "Resubmitted"),
+        }
+        emoji, label = action_config.get(action, (":memo:", action.title()))
+        blocks = [
+            self._header(f"Deliverable {label} — {client_name}"),
+            self._section(f"{emoji} *{title}*\n{actor_name} {label.lower()} this deliverable."),
+            self._portal_link(slug),
+        ]
+        await self._send(slug, blocks, f"{label}: {title} by {actor_name}")
+
+    async def notify_thread_created(self, slug: str, title: str, author: str) -> None:
+        """Notify when a new discussion thread is created."""
+        client_name = self._store._client_name(slug)
+        blocks = [
+            self._header(f"New Discussion — {client_name}"),
+            self._section(f":speech_balloon: *{author}* started a discussion: *{title}*"),
+            self._portal_link(slug),
+        ]
+        await self._send(slug, blocks, f"New discussion: {title} by {author}")
+
+    async def notify_thread_message(self, slug: str, thread_title: str, body: str, author: str) -> None:
+        """Notify when a message is posted in a discussion thread."""
+        client_name = self._store._client_name(slug)
+        preview = body[:200] + ("..." if len(body) > 200 else "")
+        blocks = [
+            self._header(f"New Reply — {client_name}"),
+            self._section(f":speech_balloon: *{author}* replied in *{thread_title}*\n_{preview}_"),
+            self._portal_link(slug),
+        ]
+        await self._send(slug, blocks, f"Reply in {thread_title} by {author}")
+
+    async def notify_action_blocked(self, slug: str, action: dict) -> None:
+        """Notify when an action is blocked waiting on the client."""
+        client_name = self._store._client_name(slug)
+        reason = action.get("blocked_reason", "")
+        blocks = [
+            self._header(f"Action Blocked — {client_name}"),
+            self._section(
+                f":warning: *Waiting on your input:* {action['title']}"
+                + (f"\n_{reason}_" if reason else "")
+            ),
+            self._portal_link(slug),
+        ]
+        await self._send(slug, blocks, f"Blocked: {action['title']}")
+
     async def notify_due_date_reminder(self, slug: str, upcoming: list[dict], overdue: list[dict]) -> None:
         """Send a digest of upcoming and overdue actions for a client."""
         client_name = self._store._client_name(slug)
