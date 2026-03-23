@@ -17,6 +17,7 @@ import { PostFeed } from "@/components/portal/post-feed";
 import { UpdateComposer } from "@/components/portal/update-composer";
 import { MediaGrid } from "@/components/portal/media-grid";
 import { ActionList } from "@/components/portal/action-list";
+import { PinnedStrip } from "@/components/portal/pinned-strip";
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -47,8 +48,6 @@ export default function ProjectDetailPage() {
     handleDeleteAction,
     handleDeleteMedia,
     handleMoveToProject,
-    handleAddLink,
-    handleDeleteLink,
   } = useProject(slug, projectId);
 
   const {
@@ -116,8 +115,17 @@ export default function ProjectDetailPage() {
           onStatusChange={(status) => handleUpdateProject({ status })}
           onDelete={handleDelete}
           onUpdateProject={handleUpdateProject}
-          onAddLink={handleAddLink}
-          onDeleteLink={handleDeleteLink}
+        />
+
+        {/* Pinned posts strip */}
+        <PinnedStrip
+          slug={slug}
+          pinnedUpdates={updates.filter((u) => u.pinned)}
+          media={media}
+          onSelectUpdate={(id) => {
+            setActiveTab("feed");
+            highlightPost(id);
+          }}
         />
 
         {/* Tabs + Create Post */}

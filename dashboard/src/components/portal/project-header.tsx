@@ -5,8 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Trash2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { PortalProject, ProjectLink } from "@/lib/types";
-import { ProjectLinksSection } from "./project-links-section";
+import type { PortalProject } from "@/lib/types";
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
@@ -33,13 +32,10 @@ interface ProjectHeaderProps {
   onStatusChange: (status: string) => void;
   onDelete: () => void;
   onUpdateProject: (updates: Record<string, unknown>) => void;
-  onAddLink: (title: string, url: string) => void;
-  onDeleteLink: (linkId: string) => void;
 }
 
 export function ProjectHeader({
-  project, slug, clientName, onStatusChange, onDelete,
-  onUpdateProject, onAddLink, onDeleteLink,
+  project, slug, clientName, onStatusChange, onDelete, onUpdateProject,
 }: ProjectHeaderProps) {
   const [editingDate, setEditingDate] = useState(false);
 
@@ -130,13 +126,6 @@ export function ProjectHeader({
       {project.description && (
         <p className="text-sm text-clay-400 max-w-2xl">{project.description}</p>
       )}
-
-      {/* Pinned links */}
-      <ProjectLinksSection
-        links={project.links ?? []}
-        onAddLink={onAddLink}
-        onDeleteLink={onDeleteLink}
-      />
     </div>
   );
 }
