@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-23T12:35:57.973Z"
+status: Ready to execute
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-23T15:22:15.086Z"
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 10
+  completed_plans: 9
 ---
 
 # Project State
@@ -19,11 +19,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** A user can pick an enrichment function, paste a list of companies into a chat, and watch results stream into a table in real-time.
-**Current focus:** Phase 03 — Activity Panel + Results
+**Current focus:** Phase 04 — Client Access + Polish
 
 ## Current Position
 
-Phase: 03 (Activity Panel + Results) — EXECUTING
+Phase: 04 (Client Access + Polish) — EXECUTING
 Plan: 2 of 2
 
 ## Milestone History
@@ -64,6 +64,10 @@ Plan: 2 of 2
 - [Phase 02-chat-frontend-core-ui]: Sidebar shortcuts shifted +1 to insert Chat at position 2 -- Chat is primary workflow entry point
 - [Phase 03-activity-panel-results]: Derive ResultsTable columns from first done result keys when function has no explicit output definitions
 - [Phase 03-activity-panel-results]: CSV filename uses function name slugified for meaningful download names
+- [Phase 04-client-access-polish]: Reuse portal_store.validate_share_token for channel auth -- no new token infrastructure
+- [Phase 04-client-access-polish]: Skip fetchFunctions() in client mode to prevent 401 from missing API key
+- [Phase 04-client-access-polish]: Client page uses fn query param for function selection instead of FunctionPicker component
+- [Phase 04-client-access-polish]: Auth middleware bypasses /channels/client paths entirely -- token validation in endpoint handlers
 
 ### Blockers/Concerns
 
@@ -71,6 +75,6 @@ Plan: 2 of 2
 
 ## Session Continuity
 
-Last session: 2026-03-23T12:35:57.972Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-23T15:22:15.083Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None

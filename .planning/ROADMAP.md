@@ -81,7 +81,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Share token auth for channels (backend client endpoints + frontend client chat page)
+- [x] 04-01-PLAN.md — Share token auth for channels (backend client endpoints + frontend client chat page)
 - [ ] 04-02-PLAN.md — Session persistence via localStorage, error state handling, polish
 
 ## Progress

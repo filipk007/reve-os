@@ -31,8 +31,8 @@
 ### Navigation & Access
 
 - [x] **NAV-01**: Add "Chat" to sidebar navigation (between Functions and Workbench, or as a top-level item)
-- [ ] **AUTH-01**: Internal access — API key authentication (existing middleware)
-- [ ] **AUTH-02**: Client access — share token authentication reusing portal's token system; client sessions scoped to their profile
+- [x] **AUTH-01**: Internal access — API key authentication (existing middleware)
+- [x] **AUTH-02**: Client access — share token authentication reusing portal's token system; client sessions scoped to their profile
 
 ## v2 Requirements
 
@@ -80,8 +80,8 @@
 | ACT-03 | Phase 3 | Pending |
 | ACT-04 | Phase 3 | Complete |
 | NAV-01 | Phase 2 | Complete |
-| AUTH-01 | Phase 4 | Pending |
-| AUTH-02 | Phase 4 | Pending |
+| AUTH-01 | Phase 4 | Complete |
+| AUTH-02 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 17 total
