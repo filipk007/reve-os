@@ -45,7 +45,7 @@ export function ChatInput({
   const canSend = !!value.trim() && !!selectedFunction && !disabled;
 
   return (
-    <div className="border-t border-clay-600 bg-clay-800 p-3">
+    <div className="border-t border-clay-700/60 bg-clay-850 p-3">
       {/* Function context chip */}
       {selectedFunction && (
         <div className="flex items-center gap-1.5 mb-2">
@@ -67,7 +67,7 @@ export function ChatInput({
           disabled={disabled}
           placeholder="Type or paste your data..."
           rows={1}
-          className="bg-clay-900 border border-clay-600 rounded-xl px-4 py-3 text-sm text-clay-100 placeholder:text-clay-400 resize-none min-h-[44px] max-h-[160px] w-full focus:outline-none focus:ring-1 focus:ring-kiln-teal/50 focus:border-kiln-teal/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-clay-900/80 border border-clay-600/80 rounded-xl px-4 py-3 text-sm text-clay-100 placeholder:text-clay-400 resize-none min-h-[44px] max-h-[160px] w-full focus:outline-none focus:border-kiln-teal disabled:opacity-50 disabled:cursor-not-allowed"
         />
         <Button
           variant="ghost"

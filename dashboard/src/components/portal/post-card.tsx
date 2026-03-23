@@ -145,14 +145,6 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
             isFocused && "ring-2 ring-kiln-teal/40",
           )}
         >
-          {/* Pinned label */}
-          {update.pinned && (
-            <div className="flex items-center gap-1.5 mb-2">
-              <Pin className="h-3 w-3 text-amber-400" />
-              <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wide">Pinned</span>
-            </div>
-          )}
-
           {/* New indicator */}
           {isNew && (
             <div className="flex items-center gap-1.5 mb-2">
@@ -171,11 +163,11 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
               </div>
 
               {/* Metadata line: org pill + author + type pill + time */}
-              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <div className="flex items-center gap-2.5 mt-2 flex-wrap">
                 {hasAuthor && (
                   <>
                     <span className={cn(
-                      "text-xs font-medium px-2.5 py-0.5 rounded-md border",
+                      "text-xs font-medium px-2.5 py-0.5 rounded-full border",
                       isInternal
                         ? "bg-kiln-teal/10 text-kiln-teal border-kiln-teal/20"
                         : "bg-purple-500/10 text-purple-400 border-purple-500/20"
@@ -190,7 +182,7 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
                 <span className={cn(
                   "text-xs font-medium px-2.5 py-0.5 rounded-full border",
                   config.textColor,
-                  "bg-clay-700/50 border-clay-600"
+                  "bg-clay-800 border-clay-600/60"
                 )}>
                   {config.label}
                 </span>
@@ -246,7 +238,7 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
           {isLong && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-1 mt-1.5 text-xs text-clay-400 hover:text-clay-200 transition-colors"
+              className="flex items-center gap-1 mt-2 text-xs text-clay-300 font-medium hover:text-clay-200 transition-colors"
             >
               {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               {expanded ? "Show less" : "Show more"}
@@ -320,7 +312,7 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
           <div
             className={cn(
               "flex items-center gap-1 mt-2.5 transition-opacity",
-              activeReactions.length > 0 || reactionsHovered ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              activeReactions.length > 0 || reactionsHovered ? "opacity-100" : "opacity-40 group-hover:opacity-100"
             )}
             onMouseEnter={() => setReactionsHovered(true)}
             onMouseLeave={() => setReactionsHovered(false)}
@@ -345,7 +337,7 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
           </div>
 
           {/* Action row: comments + google doc */}
-          <div className="flex items-center gap-3 mt-2 pt-2 border-t border-clay-700/50">
+          <div className="flex items-center gap-3 mt-3 pt-2.5 border-t border-clay-700/40">
             <CommentThread slug={slug} updateId={update.id} />
             {update.google_doc_url && (
               <a

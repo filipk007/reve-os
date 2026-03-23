@@ -29,7 +29,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
           className={
             isUser
               ? "bg-clay-700 text-clay-100 rounded-2xl rounded-br-md px-4 py-2.5"
-              : "bg-[#141416] text-clay-100 border border-clay-700 rounded-2xl rounded-bl-md px-4 py-2.5"
+              : "bg-clay-850 text-clay-100 border border-clay-700 rounded-2xl rounded-bl-md px-4 py-2.5"
           }
         >
           {/* Message content */}

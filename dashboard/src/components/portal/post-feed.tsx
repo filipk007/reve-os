@@ -163,7 +163,7 @@ export function PostFeed({
   }
 
   return (
-    <div ref={containerRef} className="space-y-4">
+    <div ref={containerRef} className="space-y-5">
       {/* Pinned posts */}
       <AnimatePresence>
         {pinned.length > 0 && (
