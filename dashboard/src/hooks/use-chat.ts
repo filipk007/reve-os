@@ -69,6 +69,7 @@ export interface UseChatReturn {
 
   // Loading
   loading: boolean;
+  sessionsLoading: boolean;
 }
 
 interface UseChatOptions {
@@ -77,11 +78,16 @@ interface UseChatOptions {
   clientFunctionId?: string;
 }
 
+function getStorageKey(clientSlug?: string): string {
+  return clientSlug ? `clay-chat-session-${clientSlug}` : "clay-chat-session";
+}
+
 export function useChat(options?: UseChatOptions): UseChatReturn {
   const clientSlug = options?.clientSlug;
   const shareToken = options?.shareToken;
   const clientFunctionId = options?.clientFunctionId;
   const isClientMode = !!(clientSlug && shareToken);
+  const storageKey = getStorageKey(clientSlug);
 
   // Function state
   const [functions, setFunctions] = useState<FunctionDefinition[]>([]);
@@ -110,6 +116,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
   // Input state
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
 
   // Stream abort ref
   const abortRef = useRef<AbortController | null>(null);
@@ -146,8 +153,39 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
       : () => fetchChannels();
     loadSessions()
       .then(({ sessions: sess }) => setSessions(sess))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setSessionsLoading(false));
   }, [isClientMode, clientSlug, shareToken]);
+
+  // Restore active session from localStorage after sessions load
+  useEffect(() => {
+    if (sessionsLoading || activeSession) return;
+    try {
+      const savedId = localStorage.getItem(storageKey);
+      if (savedId) {
+        // Only restore if the session exists in the loaded list
+        const exists = sessions.some((s) => s.id === savedId);
+        if (exists) {
+          loadSession(savedId);
+        } else {
+          localStorage.removeItem(storageKey);
+        }
+      }
+    } catch {
+      // localStorage unavailable (e.g., incognito)
+    }
+  }, [sessionsLoading, sessions, storageKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist active session ID to localStorage
+  useEffect(() => {
+    try {
+      if (activeSession) {
+        localStorage.setItem(storageKey, activeSession.id);
+      }
+    } catch {
+      // localStorage unavailable
+    }
+  }, [activeSession?.id, storageKey]);
 
   // Cleanup abort controller on unmount
   useEffect(() => {
@@ -433,5 +471,6 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
     inputValue,
     setInputValue,
     loading,
+    sessionsLoading,
   };
 }
