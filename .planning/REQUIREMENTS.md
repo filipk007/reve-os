@@ -24,9 +24,9 @@
 ### Chat Frontend — Activity Panel
 
 - [ ] **ACT-01**: Activity panel — right sidebar showing real-time execution state: which function is running, current row, steps completed
-- [ ] **ACT-02**: Results table — within activity panel, a sortable table that fills row by row as results stream in; columns from function outputs
+- [x] **ACT-02**: Results table — within activity panel, a sortable table that fills row by row as results stream in; columns from function outputs
 - [ ] **ACT-03**: Progress indicators — "Processing row 12/50" with progress bar, per-row status icons (pending/running/done/error)
-- [ ] **ACT-04**: Export from activity panel — "Export CSV" button to download results table
+- [x] **ACT-04**: Export from activity panel — "Export CSV" button to download results table
 
 ### Navigation & Access
 
@@ -76,9 +76,9 @@
 | UI-04 | Phase 2 | Complete |
 | UI-05 | Phase 2 | Complete |
 | ACT-01 | Phase 3 | Pending |
-| ACT-02 | Phase 3 | Pending |
+| ACT-02 | Phase 3 | Complete |
 | ACT-03 | Phase 3 | Pending |
-| ACT-04 | Phase 3 | Pending |
+| ACT-04 | Phase 3 | Complete |
 | NAV-01 | Phase 2 | Complete |
 | AUTH-01 | Phase 4 | Pending |
 | AUTH-02 | Phase 4 | Pending |

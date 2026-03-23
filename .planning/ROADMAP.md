@@ -66,8 +66,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — useChat hook per-row tracking, ActivityPanel layout, ExecutionTrace, ProgressBar components
-- [ ] 03-02-PLAN.md — ResultsTable with dynamic columns, CSV export, wired into ActivityPanel
+- [x] 03-01-PLAN.md — useChat hook per-row tracking, ActivityPanel layout, ExecutionTrace, ProgressBar components
+- [x] 03-02-PLAN.md — ResultsTable with dynamic columns, CSV export, wired into ActivityPanel
 
 ### Phase 4: Client Access + Polish
 **Goal**: Clients can access the chat via share token, sessions persist reliably, and edge cases are handled
