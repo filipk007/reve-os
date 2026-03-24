@@ -288,19 +288,32 @@ export default function FunctionsPage() {
             <Plus className="h-4 w-4 mr-1.5" />
             New Function
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleToggleView}
-            className="border-clay-600 text-clay-200 hover:bg-clay-700"
-            title={viewMode === "catalog" ? "Switch to builder view" : "Switch to catalog view"}
-          >
-            {viewMode === "catalog" ? (
-              <Settings2 className="h-4 w-4" />
-            ) : (
-              <LayoutGrid className="h-4 w-4" />
-            )}
-          </Button>
+          <div className="flex items-center rounded-lg border border-clay-600 p-0.5">
+            <button
+              onClick={() => { setViewMode("catalog"); localStorage.setItem("kiln_functions_view", "catalog"); }}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                viewMode === "catalog"
+                  ? "bg-kiln-teal text-clay-950"
+                  : "text-clay-300 hover:text-clay-100"
+              )}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Sales
+            </button>
+            <button
+              onClick={() => { setViewMode("builder"); localStorage.setItem("kiln_functions_view", "builder"); }}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                viewMode === "builder"
+                  ? "bg-kiln-teal text-clay-950"
+                  : "text-clay-300 hover:text-clay-100"
+              )}
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              Builder
+            </button>
+          </div>
         </div>
 
         {/* Loading state */}
