@@ -33,7 +33,12 @@ import {
   Trash2,
   ChevronRight,
   Blocks,
+  LayoutGrid,
+  Settings2,
 } from "lucide-react";
+import { CatalogGrid } from "@/components/functions/catalog-grid";
+import { FavoritesStrip } from "@/components/functions/favorites-strip";
+import { RecentRunsSection } from "@/components/functions/recent-runs-section";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,6 +72,36 @@ export default function FunctionsPage() {
   const [newFolderName, setNewFolderName] = useState("");
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const newFolderInputRef = useRef<HTMLInputElement>(null);
+
+  // View mode: catalog (consumer) vs builder (owner)
+  const [viewMode, setViewMode] = useState<"catalog" | "builder">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("kiln_functions_view") as "catalog" | "builder") || "catalog";
+    }
+    return "catalog";
+  });
+  const handleToggleView = () => {
+    const next = viewMode === "catalog" ? "builder" : "catalog";
+    setViewMode(next);
+    localStorage.setItem("kiln_functions_view", next);
+  };
+
+  // Favorites (localStorage-backed, used in catalog view)
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return JSON.parse(localStorage.getItem("kiln_function_favorites") || "[]");
+      } catch { return []; }
+    }
+    return [];
+  });
+  const handleToggleFavorite = (id: string) => {
+    setFavorites((prev) => {
+      const next = prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id];
+      localStorage.setItem("kiln_function_favorites", JSON.stringify(next));
+      return next;
+    });
+  };
 
   const load = useCallback(async () => {
     try {
@@ -253,6 +288,19 @@ export default function FunctionsPage() {
             <Plus className="h-4 w-4 mr-1.5" />
             New Function
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleToggleView}
+            className="border-clay-600 text-clay-200 hover:bg-clay-700"
+            title={viewMode === "catalog" ? "Switch to builder view" : "Switch to catalog view"}
+          >
+            {viewMode === "catalog" ? (
+              <Settings2 className="h-4 w-4" />
+            ) : (
+              <LayoutGrid className="h-4 w-4" />
+            )}
+          </Button>
         </div>
 
         {/* Loading state */}
@@ -292,8 +340,21 @@ export default function FunctionsPage() {
           </div>
         )}
 
-        {/* Folder grid — show when there are functions OR custom folders */}
+        {/* Function grid — catalog or builder view */}
         {!loading && (functions.length > 0 || folders.filter(f => f.name !== "Uncategorized").length > 0) && (
+          viewMode === "catalog" ? (
+            <>
+              <FavoritesStrip functions={functions} favoriteIds={favorites} />
+              <RecentRunsSection />
+              <CatalogGrid
+                folders={folders}
+                functionsByFolder={functionsByFolder}
+                searchQuery={searchQuery}
+                favorites={favorites}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            </>
+          ) : (
           <div className="space-y-8">
             {folders
               .filter(f => functionsByFolder[f.name]?.length > 0 || !searchQuery)
@@ -402,6 +463,7 @@ export default function FunctionsPage() {
               </section>
             ))}
           </div>
+          )
         )}
       </div>
 

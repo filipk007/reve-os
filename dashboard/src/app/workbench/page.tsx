@@ -2,9 +2,11 @@
 
 import { Suspense } from "react";
 import { Header } from "@/components/layout/header";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
+import { Play, ClipboardCheck } from "lucide-react";
 import { useFunctionWorkbench } from "@/hooks/use-function-workbench";
+import { sendToReview } from "@/hooks/use-review-queue";
 import {
   FunctionSelector,
   FunctionInfoPanel,
@@ -33,7 +35,22 @@ export default function WorkbenchPageWrapper() {
 }
 
 function WorkbenchPage() {
+  const router = useRouter();
   const wb = useFunctionWorkbench();
+
+  const handleSendToReview = () => {
+    if (!wb.selectedFunction) return;
+    sendToReview(
+      wb.selectedFunction.id,
+      wb.selectedFunction.name,
+      wb.results.map((r) => ({
+        rowIndex: r.rowIndex,
+        input: r.input,
+        output: r.output,
+      }))
+    );
+    router.push("/review");
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -128,7 +145,7 @@ function WorkbenchPage() {
                 onRetrySelected={wb.handleRetrySelected}
                 onNewRun={wb.resetWorkbench}
               />
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -136,6 +153,15 @@ function WorkbenchPage() {
                   className="border-clay-600 text-clay-300 text-xs"
                 >
                   New Run
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSendToReview}
+                  disabled={wb.doneCount === 0}
+                  className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light text-xs font-semibold"
+                >
+                  <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />
+                  Send to Review ({wb.doneCount})
                 </Button>
               </div>
             </div>

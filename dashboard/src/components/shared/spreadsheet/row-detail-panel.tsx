@@ -1,6 +1,7 @@
 "use client";
 
 import type { SpreadsheetRow, SpreadsheetStatus } from "./types";
+import { OutputRenderer } from "@/components/output/output-renderer";
 
 const STATUS_STYLES: Record<SpreadsheetStatus, string> = {
   done: "bg-status-success/15 text-status-success",
@@ -39,10 +40,10 @@ export function RowDetailPanel({ row }: { row: SpreadsheetRow }) {
           <p className="text-xs text-clay-200 uppercase tracking-wider mb-2">
             {row._error ? "Error" : "Result"}
           </p>
-          {row._result ? (
-            <pre className="text-xs text-clay-300 font-[family-name:var(--font-mono)] max-h-48 overflow-auto whitespace-pre-wrap rounded bg-clay-800 p-2 border border-clay-500">
-              {JSON.stringify(row._result, null, 2)}
-            </pre>
+          {row._result && typeof row._result === "object" ? (
+            <div className="max-h-64 overflow-auto rounded bg-clay-800 p-2 border border-clay-500">
+              <OutputRenderer result={row._result as Record<string, unknown>} />
+            </div>
           ) : row._error ? (
             <pre className="text-xs text-kiln-coral font-[family-name:var(--font-mono)] max-h-48 overflow-auto whitespace-pre-wrap rounded bg-kiln-coral/5 p-2 border border-kiln-coral/30">
               {row._error}

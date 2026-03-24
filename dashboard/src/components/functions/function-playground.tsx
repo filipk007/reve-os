@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import type { FunctionInput, StepTrace, PreviewStep } from "@/lib/types";
 import { ExecutionTrace } from "./execution-trace";
 import { ExecutionHistoryPanel } from "./execution-history";
-import { OutputView } from "./output-view";
+import { OutputRenderer } from "@/components/output/output-renderer";
 
 interface FunctionPlaygroundProps {
   inputs: FunctionInput[];
@@ -387,7 +387,7 @@ export function FunctionPlayground({
                   </TabsList>
 
                   <TabsContent value="output">
-                    <OutputView result={testResult} />
+                    <OutputRenderer result={testResult} />
                   </TabsContent>
 
                   {hasTrace && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { OutputView } from "@/components/functions/output-view";
+import { OutputRenderer } from "@/components/output/output-renderer";
 
 interface ResultCardProps {
   results: Record<string, unknown>[];
@@ -12,7 +12,7 @@ export function ResultCard({ results }: ResultCardProps) {
   if (results.length === 1) {
     return (
       <div className="mt-2 rounded-lg border border-clay-700 bg-clay-900/50 p-3">
-        <OutputView result={results[0]} />
+        <OutputRenderer result={results[0]} />
       </div>
     );
   }
@@ -27,7 +27,7 @@ export function ResultCard({ results }: ResultCardProps) {
           <div className="mb-2 text-xs font-semibold text-clay-300">
             Row {i + 1}
           </div>
-          <OutputView result={result} />
+          <OutputRenderer result={result} />
         </div>
       ))}
     </div>

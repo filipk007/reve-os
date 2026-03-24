@@ -10,9 +10,10 @@ __pycache__/
 dist/
 build/
 data/
-output/
+/output/
 tmp/
 .pytest_cache/
 todoist-mcp-server.log
 *.tsbuildinfo
 .planning*/
+.vercel
