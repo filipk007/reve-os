@@ -134,7 +134,7 @@ export default function FunctionsPage() {
   const functionsByFolder = useMemo(() => {
     const grouped: Record<string, FunctionDefinition[]> = {};
     for (const func of functions) {
-      const folder = func.folder || "Uncategorized";
+      const folder = func.folder || "(No Folder)";
       if (!grouped[folder]) grouped[folder] = [];
       grouped[folder].push(func);
     }
@@ -324,7 +324,7 @@ export default function FunctionsPage() {
         )}
 
         {/* Empty state — only when no functions AND no custom folders */}
-        {!loading && functions.length === 0 && !searchQuery && folders.filter(f => f.name !== "Uncategorized").length === 0 && (
+        {!loading && functions.length === 0 && !searchQuery && folders.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="h-16 w-16 rounded-2xl bg-clay-700 flex items-center justify-center">
               <Blocks className="h-8 w-8 text-clay-300" />
@@ -354,7 +354,7 @@ export default function FunctionsPage() {
         )}
 
         {/* Function grid — catalog or builder view */}
-        {!loading && (functions.length > 0 || folders.filter(f => f.name !== "Uncategorized").length > 0) && (
+        {!loading && (functions.length > 0 || folders.length > 0) && (
           viewMode === "catalog" ? (
             <>
               <FavoritesStrip functions={functions} favoriteIds={favorites} />
@@ -390,8 +390,7 @@ export default function FunctionsPage() {
                       {functionsByFolder[folder.name]?.length || 0}
                     </span>
                   </div>
-                  {folder.name !== "Uncategorized" && (
-                    <DropdownMenu>
+                  <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-clay-300 hover:text-clay-200">
                           <MoreHorizontal className="h-3.5 w-3.5" />
@@ -407,7 +406,6 @@ export default function FunctionsPage() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -510,7 +508,7 @@ function FunctionBuilderPanel({
   // Editable suggestion fields
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [folder, setFolder] = useState("Uncategorized");
+  const [folder, setFolder] = useState("");
   const [inputs, setInputs] = useState<FunctionInput[]>([]);
   const [outputs, setOutputs] = useState<FunctionOutput[]>([]);
   const [steps, setSteps] = useState<FunctionStep[]>([]);
@@ -540,6 +538,10 @@ function FunctionBuilderPanel({
   const handleSave = async () => {
     if (!name.trim()) {
       toast.error("Function name is required");
+      return;
+    }
+    if (!folder) {
+      toast.error("Select a folder for this function");
       return;
     }
     setSaving(true);
@@ -603,10 +605,10 @@ function FunctionBuilderPanel({
             </div>
 
             <div>
-              <label className="text-xs font-medium text-clay-300 mb-1 block">Folder (optional)</label>
+              <label className="text-xs font-medium text-clay-300 mb-1 block">Folder <span className="text-red-400">*</span></label>
               <Select value={folder} onValueChange={setFolder}>
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue placeholder="Select a folder..." />
                 </SelectTrigger>
                 <SelectContent>
                   {availableFolders.map(f => (
@@ -614,6 +616,9 @@ function FunctionBuilderPanel({
                   ))}
                 </SelectContent>
               </Select>
+              {availableFolders.length === 0 && (
+                <p className="text-[10px] text-clay-300 mt-1">No folders yet — create one first using the &quot;New Folder&quot; button above</p>
+              )}
             </div>
 
             <div className="border-t border-clay-700 pt-3">
@@ -781,7 +786,7 @@ function FunctionBuilderPanel({
               </Button>
               <Button
                 onClick={handleSave}
-                disabled={saving || !name.trim()}
+                disabled={saving || !name.trim() || !folder}
                 className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold"
               >
                 {saving ? "Creating..." : "Create Function"}

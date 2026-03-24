@@ -66,10 +66,6 @@ class FunctionStore:
             except Exception as e:
                 logger.warning("[functions] Failed to load %s: %s", f.name, e)
 
-        # Ensure "Uncategorized" folder exists
-        if "Uncategorized" not in self._folders:
-            self._folders["Uncategorized"] = FolderDefinition(name="Uncategorized", order=999)
-
         logger.info("[functions] Loaded %d functions in %d folders", len(self._functions), len(self._folders))
 
     def _parse_function(self, file_id: str, raw: dict) -> FunctionDefinition:
@@ -84,7 +80,7 @@ class FunctionStore:
             id=raw.get("id", file_id),
             name=raw.get("name", file_id),
             description=raw.get("description", ""),
-            folder=raw.get("folder", "Uncategorized"),
+            folder=raw.get("folder", ""),
             inputs=inputs,
             outputs=outputs,
             steps=steps,
@@ -254,14 +250,21 @@ class FunctionStore:
     def delete_folder(self, name: str) -> bool:
         if name not in self._folders:
             return False
-        if name == "Uncategorized":
-            return False  # Cannot delete default folder
 
-        # Move functions to Uncategorized
-        for func in self._functions.values():
-            if func.folder == name:
-                func.folder = "Uncategorized"
-                self._save_function(func)
+        # Find a fallback folder for orphaned functions
+        remaining = [f for f in sorted(self._folders.values(), key=lambda f: f.order) if f.name != name]
+        has_functions = any(f.folder == name for f in self._functions.values())
+
+        if has_functions and not remaining:
+            return False  # Cannot delete the last folder if it has functions
+
+        # Move functions to the first remaining folder
+        if has_functions and remaining:
+            fallback = remaining[0].name
+            for func in self._functions.values():
+                if func.folder == name:
+                    func.folder = fallback
+                    self._save_function(func)
 
         del self._folders[name]
         self._save_folders()

@@ -30,7 +30,7 @@ class FunctionDefinition(BaseModel):
     id: str = Field(..., description="Unique function ID (slug)")
     name: str = Field(..., description="Human-readable function name")
     description: str = Field("", description="What this function does")
-    folder: str = Field("Uncategorized", description="Folder name for organization")
+    folder: str = Field("", description="Folder name for organization")
     inputs: list[FunctionInput] = Field(default_factory=list)
     outputs: list[FunctionOutput] = Field(default_factory=list)
     steps: list[FunctionStep] = Field(default_factory=list)
@@ -48,16 +48,18 @@ class FolderDefinition(BaseModel):
 class CreateFunctionRequest(BaseModel):
     name: str = Field(..., description="Human-readable function name")
     description: str = Field("", description="What this function does")
-    folder: str = Field("Uncategorized", description="Folder name")
+    folder: str = Field(..., description="Folder name (required)")
     inputs: list[FunctionInput] = Field(default_factory=list)
     outputs: list[FunctionOutput] = Field(default_factory=list)
     steps: list[FunctionStep] = Field(default_factory=list)
     clay_config: FunctionClayConfig | None = None
 
     @model_validator(mode="after")
-    def validate_name(self) -> "CreateFunctionRequest":
+    def validate_fields(self) -> "CreateFunctionRequest":
         if not self.name.strip():
             raise ValueError("Function name cannot be empty")
+        if not self.folder.strip():
+            raise ValueError("Folder is required — select a folder for this function")
         return self
 
 
