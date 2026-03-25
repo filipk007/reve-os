@@ -1,9 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Cloud, RefreshCw, Share2 } from "lucide-react";
+import { Cloud, RefreshCw, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/15 text-emerald-400",
@@ -36,11 +36,6 @@ export function PortalHeader({
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-clay-300 hover:text-clay-100">
-          <Link href="/clients">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
         <div>
           <h1 className="text-xl font-bold text-clay-100">{name}</h1>
           <span

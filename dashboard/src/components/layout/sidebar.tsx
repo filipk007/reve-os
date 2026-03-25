@@ -57,7 +57,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/outbound", label: "Outbound", icon: Send, shortcut: "5" },
       { href: "/context", label: "Context", icon: FolderTree, shortcut: "6" },
       { href: "/debugger", label: "Debugger", icon: Bug, shortcut: "7" },
-      { href: "/clients", label: "Clients", icon: Users, shortcut: "8" },
+      { href: "/clients/twelve-labs", label: "Communication", icon: Users, shortcut: "8" },
     ],
   },
 ];
@@ -198,7 +198,7 @@ export function Sidebar() {
     { href: "/outbound", label: "Outbound", icon: Send },
     { href: "/context", label: "Context", icon: FolderTree },
     { href: "/debugger", label: "Debugger", icon: Bug },
-    { href: "/clients", label: "Clients", icon: Users },
+    { href: "/clients/twelve-labs", label: "Communication", icon: Users },
   ];
 
   return (
