@@ -4,8 +4,11 @@ import { Suspense } from "react";
 import { Header } from "@/components/layout/header";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Play, ClipboardCheck } from "lucide-react";
+import { useState } from "react";
+import { Play, ClipboardCheck, Monitor, Cloud } from "lucide-react";
 import { useFunctionWorkbench } from "@/hooks/use-function-workbench";
+import { isLocalExecutionMode, setExecutionMode } from "@/lib/api";
+import { toast } from "sonner";
 import { sendToReview } from "@/hooks/use-review-queue";
 import {
   FunctionSelector,
@@ -16,6 +19,35 @@ import {
 } from "@/components/workbench-v2";
 import { ProgressBar } from "@/components/shared/progress-bar";
 import { SpreadsheetView } from "@/components/shared/spreadsheet";
+
+function ExecutionModeToggle() {
+  const [isLocal, setIsLocal] = useState(isLocalExecutionMode());
+
+  const toggle = () => {
+    const next = isLocal ? "remote" : "local";
+    setExecutionMode(next);
+    setIsLocal(next === "local");
+    toast.success(
+      next === "local"
+        ? "Local mode — batched execution, fewer calls"
+        : "Remote mode — individual execution via VPS"
+    );
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${
+        isLocal
+          ? "bg-violet-500/10 text-violet-400 border-violet-500/25 hover:bg-violet-500/20"
+          : "bg-sky-500/10 text-sky-400 border-sky-500/25 hover:bg-sky-500/20"
+      }`}
+    >
+      {isLocal ? <Monitor className="h-3.5 w-3.5" /> : <Cloud className="h-3.5 w-3.5" />}
+      {isLocal ? "Local" : "Remote"}
+    </button>
+  );
+}
 
 export default function WorkbenchPageWrapper() {
   return (
@@ -98,7 +130,8 @@ function WorkbenchPage() {
             )}
 
             {wb.canRun && (
-              <div className="flex justify-end">
+              <div className="flex items-center justify-end gap-3">
+                <ExecutionModeToggle />
                 <Button
                   onClick={wb.handleRun}
                   className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light font-semibold"

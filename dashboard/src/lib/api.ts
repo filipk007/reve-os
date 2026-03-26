@@ -75,10 +75,31 @@ const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
 
 // Execution mode: "local" uses claude --print directly from Next.js,
 // "remote" (default) goes through the FastAPI backend.
-const EXECUTION_MODE = process.env.NEXT_PUBLIC_EXECUTION_MODE || "remote";
+// localStorage override takes priority, then env var, then "remote".
+const ENV_EXECUTION_MODE = process.env.NEXT_PUBLIC_EXECUTION_MODE || "remote";
 
 export function isLocalExecutionMode(): boolean {
-  return EXECUTION_MODE === "local";
+  if (typeof window !== "undefined") {
+    const override = localStorage.getItem("clay_execution_mode");
+    if (override) return override === "local";
+  }
+  return ENV_EXECUTION_MODE === "local";
+}
+
+export function getExecutionMode(): "local" | "remote" {
+  return isLocalExecutionMode() ? "local" : "remote";
+}
+
+export function setExecutionMode(mode: "local" | "remote"): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("clay_execution_mode", mode);
+  }
+}
+
+export function clearExecutionModeOverride(): void {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("clay_execution_mode");
+  }
 }
 
 export class NetworkError extends Error {
