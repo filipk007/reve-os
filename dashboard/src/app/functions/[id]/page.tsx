@@ -12,7 +12,7 @@ import {
   duplicateFunction,
   fetchToolCategories,
   generateFunctionClayConfig,
-  streamFunction,
+  streamFunctionExecution,
   previewFunction,
 } from "@/lib/api";
 import type {
@@ -279,7 +279,7 @@ export default function FunctionDetailPage() {
     setTestResult(null);
     setStreamingTrace([]);
 
-    abortRef.current = streamFunction(
+    abortRef.current = streamFunctionExecution(
       func.id,
       testInputsRef.current,
       (trace) => {

@@ -50,21 +50,6 @@ const EXECUTOR_CONFIG: Record<
     color: "bg-amber-500/15 text-amber-400 border-amber-500/30",
     icon: Bot,
   },
-  local: {
-    label: "Local",
-    color: "bg-violet-500/15 text-violet-400 border-violet-500/30",
-    icon: Cpu,
-  },
-  local_consolidated: {
-    label: "Local Consolidated",
-    color: "bg-violet-500/15 text-violet-400 border-violet-500/30",
-    icon: Zap,
-  },
-  error: {
-    label: "Error",
-    color: "bg-red-500/15 text-red-400 border-red-500/30",
-    icon: Code2,
-  },
   unknown: {
     label: "Unknown",
     color: "bg-clay-500/15 text-clay-300 border-clay-500/30",
@@ -72,11 +57,10 @@ const EXECUTOR_CONFIG: Record<
   },
 };
 
-const STATUS_ICON: Record<string, React.ReactNode> = {
+const STATUS_ICON = {
   success: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />,
   error: <XCircle className="h-3.5 w-3.5 text-red-400" />,
   skipped: <SkipForward className="h-3.5 w-3.5 text-clay-300" />,
-  running: <CheckCircle2 className="h-3.5 w-3.5 text-blue-400 animate-pulse" />,
 };
 
 interface ExecutionTraceProps {

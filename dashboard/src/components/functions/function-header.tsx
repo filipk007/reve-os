@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,12 +15,8 @@ import {
   Save,
   Pencil,
   Trash2,
-  Monitor,
-  Cloud,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { isLocalExecutionMode, setExecutionMode } from "@/lib/api";
-import { toast } from "sonner";
 import type { FunctionDefinition } from "@/lib/types";
 
 interface FunctionHeaderProps {
@@ -50,18 +45,6 @@ export function FunctionHeader({
   onDuplicate,
 }: FunctionHeaderProps) {
   const router = useRouter();
-  const [isLocal, setIsLocal] = useState(isLocalExecutionMode());
-
-  const toggleMode = useCallback(() => {
-    const next = isLocal ? "remote" : "local";
-    setExecutionMode(next);
-    setIsLocal(next === "local");
-    toast.success(
-      next === "local"
-        ? "Switched to Local — consolidated prompts via your machine"
-        : "Switched to Remote — executing via VPS backend"
-    );
-  }, [isLocal]);
 
   return (
     <div className="flex items-center justify-between mb-6">
@@ -75,32 +58,6 @@ export function FunctionHeader({
         Back
       </Button>
       <div className="flex items-center gap-2">
-        {/* Execution mode toggle */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={toggleMode}
-              className={cn(
-                "inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full border cursor-pointer transition-colors",
-                isLocal
-                  ? "bg-violet-500/10 text-violet-400 border-violet-500/25 hover:bg-violet-500/20"
-                  : "bg-sky-500/10 text-sky-400 border-sky-500/25 hover:bg-sky-500/20"
-              )}
-            >
-              {isLocal ? (
-                <Monitor className="h-3 w-3" />
-              ) : (
-                <Cloud className="h-3 w-3" />
-              )}
-              {isLocal ? "Local" : "Remote"}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {isLocal
-              ? "Local mode — click to switch to Remote (VPS)"
-              : "Remote mode — click to switch to Local (consolidated)"}
-          </TooltipContent>
-        </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

@@ -930,6 +930,179 @@ def _parse_ai_json(raw: str | dict) -> dict:
     return {"_parse_failed": True, "_raw_response": str(raw)[:500]}
 
 
+async def _run_function_consolidated(body: WebhookRequest, request: Request) -> dict:
+    """Execute a function using a single consolidated claude --print call.
+
+    Merges all AI steps into one mega-prompt with deduplicated context.
+    Native API steps (findymail) still run separately before the AI call.
+    Falls back to step-by-step (_run_function_stepwise) on any failure.
+    """
+    import time
+    from app.core.consolidated_runner import (
+        build_consolidated_prompt,
+        parse_consolidated_output,
+    )
+
+    function_store = getattr(request.app.state, "function_store", None)
+    if function_store is None:
+        raise RuntimeError("Function store not initialized")
+
+    func = function_store.get(body.function)
+    if func is None:
+        raise RuntimeError(f"Function '{body.function}' not found")
+
+    model = body.model or settings.default_model
+    pool = request.app.state.pool
+    start_time = time.time()
+
+    # Build consolidated prompt
+    consolidated = build_consolidated_prompt(
+        func=func,
+        data=dict(body.data),
+        instructions=body.instructions,
+        model=model,
+        request=request,
+    )
+
+    accumulated_output: dict = {}
+    step_traces: list[dict] = []
+
+    # Run native API steps first (e.g., findymail)
+    for native_idx in consolidated.native_step_indices:
+        step = func.steps[native_idx]
+        tool_id = step.tool
+        step_start = time.time()
+
+        resolved_params: dict[str, str] = {}
+        for key, val in step.params.items():
+            resolved = val
+            for inp_name, inp_val in {**body.data, **accumulated_output}.items():
+                resolved = resolved.replace("{{" + str(inp_name) + "}}", str(inp_val))
+            resolved_params[key] = resolved
+
+        if tool_id == "findymail" and settings.findymail_api_key:
+            from app.core import findymail_client
+            try:
+                result = await findymail_client.enrich_company(
+                    name=resolved_params.get("name") or resolved_params.get("company_name"),
+                    domain=resolved_params.get("domain"),
+                    linkedin_url=resolved_params.get("linkedin_url"),
+                    api_key=settings.findymail_api_key,
+                    base_url=settings.findymail_base_url,
+                    timeout=settings.findymail_timeout,
+                )
+                if isinstance(result, dict) and not result.get("error"):
+                    remaining_keys = [o.key for o in func.outputs]
+                    flattened = _flatten_to_expected_keys(result, remaining_keys)
+                    accumulated_output.update(result)
+                    accumulated_output.update(flattened)
+                    step_traces.append({
+                        "step_index": native_idx, "tool": tool_id,
+                        "tool_name": "Findymail", "executor": "native_api",
+                        "status": "success",
+                        "duration_ms": int((time.time() - step_start) * 1000),
+                        "output_keys": list(result.keys()),
+                    })
+                else:
+                    step_traces.append({
+                        "step_index": native_idx, "tool": tool_id,
+                        "tool_name": "Findymail", "executor": "native_api",
+                        "status": "error",
+                        "duration_ms": int((time.time() - step_start) * 1000),
+                        "error_message": result.get("error_message", "API error") if isinstance(result, dict) else "API error",
+                    })
+            except Exception as e:
+                step_traces.append({
+                    "step_index": native_idx, "tool": tool_id,
+                    "tool_name": "Findymail", "executor": "native_api",
+                    "status": "error",
+                    "duration_ms": int((time.time() - step_start) * 1000),
+                    "error_message": str(e),
+                })
+
+    # Inject native API outputs into the prompt if available
+    prompt = consolidated.prompt
+    if accumulated_output:
+        prompt += f"\n\n---\n\n# Data from Native API Steps\n\n{__import__('json').dumps(accumulated_output, default=str)}"
+
+    # Execute the mega-prompt — ONE claude --print call
+    ai_start = time.time()
+    result = await pool.submit(prompt, consolidated.model, 180)
+    ai_duration = int((time.time() - ai_start) * 1000)
+
+    raw_output = result.get("result", {})
+    parsed = parse_consolidated_output(
+        raw_output, consolidated.task_keys, consolidated.output_keys,
+    )
+    accumulated_output.update(parsed)
+
+    step_traces.append({
+        "step_index": -1,
+        "tool": "consolidated",
+        "tool_name": f"{len(consolidated.task_keys)} AI tasks combined",
+        "executor": "consolidated",
+        "status": "success",
+        "duration_ms": ai_duration,
+        "output_keys": list(parsed.keys()),
+    })
+
+    duration_ms = int((time.time() - start_time) * 1000)
+
+    # Filter output to declared outputs only
+    final_output: dict = {}
+    for out in func.outputs:
+        if out.key in accumulated_output:
+            final_output[out.key] = accumulated_output[out.key]
+        else:
+            flattened = _flatten_to_expected_keys(accumulated_output, [out.key])
+            final_output[out.key] = flattened.get(out.key)
+
+    null_keys = [k for k, v in final_output.items() if v is None]
+    if null_keys:
+        final_output["_warnings"] = [f"Could not resolve '{k}'" for k in null_keys]
+
+    if not func.outputs:
+        final_output = {k: v for k, v in accumulated_output.items() if not k.startswith("_")}
+
+    result_dict = {
+        **final_output,
+        "_meta": {
+            "function": func.id,
+            "function_name": func.name,
+            "execution_mode": "consolidated",
+            "claude_calls": 1,
+            "task_count": len(consolidated.task_keys),
+            "steps": len(func.steps),
+            "duration_ms": duration_ms,
+            "cached": False,
+            "trace": step_traces,
+        },
+    }
+
+    # Save execution record
+    try:
+        execution_history = getattr(request.app.state, "execution_history", None)
+        if execution_history:
+            has_errors = any(t.get("status") == "error" for t in step_traces)
+            has_null = bool(null_keys)
+            status = "error" if has_errors and not any(t.get("status") == "success" for t in step_traces) else "partial" if has_errors or has_null else "success"
+            execution_history.save({
+                "function_id": func.id,
+                "timestamp": time.time(),
+                "inputs": dict(body.data),
+                "outputs": final_output,
+                "trace": step_traces,
+                "duration_ms": duration_ms,
+                "status": status,
+                "warnings": final_output.get("_warnings", []),
+                "step_count": len(func.steps),
+            })
+    except Exception as e:
+        logger.warning("[functions] Failed to save execution record: %s", e)
+
+    return result_dict
+
+
 async def _run_function(body: WebhookRequest, request: Request) -> dict:
     """Execute a function by ID — validate inputs, run steps, filter outputs."""
     import time
@@ -949,6 +1122,15 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
                 f"Missing required input '{inp.name}' for function '{func.name}'",
                 body.function or "unknown",
             )
+
+    # --- Consolidated execution (default) ---
+    # Merges all AI steps into one claude --print call. Falls back to
+    # step-by-step if anything goes wrong or if explicitly disabled.
+    if not body.data.get("_force_step_by_step"):
+        try:
+            return await _run_function_consolidated(body, request)
+        except Exception as e:
+            logger.warning("[functions] Consolidated execution failed, falling back to step-by-step: %s", e)
 
     start_time = time.time()
     accumulated_output: dict = {}
