@@ -350,7 +350,8 @@ class JobQueue:
 
                     # Research skill pre-fetch: fetch external data and merge into job.data
                     from app.routers.webhook import _maybe_fetch_research
-                    await _maybe_fetch_research(job.skill, job.data)
+                    ec = getattr(self, '_enrichment_cache', None)
+                    await _maybe_fetch_research(job.skill, job.data, enrichment_cache=ec)
 
                     if is_agent:
                         prompt = build_agent_prompts(

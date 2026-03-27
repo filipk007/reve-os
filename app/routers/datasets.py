@@ -491,7 +491,8 @@ async def _run_skill_stage(
                 data["client_slug"] = client_slug
 
             # Research pre-fetch if applicable
-            await _maybe_fetch_research(stage, data)
+            ec = getattr(request.app.state, "enrichment_cache", None)
+            await _maybe_fetch_research(stage, data, enrichment_cache=ec)
 
             # Load context and build prompt
             context_files = load_context_files(skill_content, data, skill_name=stage)

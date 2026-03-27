@@ -9,11 +9,11 @@ Pattern: Same as FeedbackStore — file-based, JSON persistence.
 
 import json
 import logging
-import re
 import time
 from pathlib import Path
 
 from app.core.atomic_writer import atomic_write_json
+from app.core.entity_utils import extract_entity_key
 
 logger = logging.getLogger("clay-webhook-os")
 
@@ -21,38 +21,8 @@ logger = logging.getLogger("clay-webhook-os")
 DEFAULT_TTL = 604800  # 7 days
 MAX_ENTRIES_PER_ENTITY = 50
 
-
-def _slugify(value: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
-
-
-def _extract_entity_key(data: dict) -> tuple[str, str] | None:
-    """Extract the primary entity identifier from request data.
-
-    Returns (entity_type, entity_id) or None if no entity can be identified.
-    """
-    # Company-level keys (prefer domain)
-    for key in ("company_domain", "domain", "website"):
-        val = data.get(key)
-        if val and isinstance(val, str):
-            # Normalize domain: strip protocol, www, trailing slash
-            domain = re.sub(r"^https?://", "", val).strip("/")
-            domain = re.sub(r"^www\.", "", domain)
-            return ("company", _slugify(domain))
-
-    # Contact-level keys
-    for key in ("email", "contact_email", "person_email"):
-        val = data.get(key)
-        if val and isinstance(val, str):
-            return ("contact", _slugify(val))
-
-    # Company name as fallback
-    for key in ("company_name", "company"):
-        val = data.get(key)
-        if val and isinstance(val, str):
-            return ("company", _slugify(val))
-
-    return None
+# Backward compat aliases — internal callers may still use these
+_extract_entity_key = extract_entity_key
 
 
 class MemoryEntry:

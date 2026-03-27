@@ -56,6 +56,14 @@ class Settings(BaseSettings):
     deepline_base_url: str = "https://code.deepline.com"
     deepline_timeout: int = 60
 
+    # Supabase
+    supabase_url: str = ""
+    supabase_anon_key: str = ""
+    supabase_service_role_key: str = ""
+    supabase_jwt_secret: str = ""
+    supabase_cache_enabled: bool = False
+    supabase_auth_enabled: bool = False
+
     # Retry worker
     retry_max_attempts: int = 5
     retry_check_interval: int = 10

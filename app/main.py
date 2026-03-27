@@ -153,6 +153,12 @@ async def startup():
     app.state.context_index.build()
     app.state.job_queue._context_index = app.state.context_index
 
+    # Enrichment cache (Supabase-backed L2 cache for external API results + skill outputs)
+    from app.core.enrichment_cache import EnrichmentCache
+    app.state.enrichment_cache = EnrichmentCache()
+    await app.state.enrichment_cache.init()
+    app.state.job_queue._enrichment_cache = app.state.enrichment_cache
+
     # Dataset store
     app.state.dataset_store = DatasetStore(data_dir=settings.data_dir)
     app.state.dataset_store.load()

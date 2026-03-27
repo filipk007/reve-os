@@ -31,24 +31,29 @@ def _error(message: str, skill: str = "unknown") -> dict:
     return {"error": True, "error_message": message, "skill": skill}
 
 
-async def _maybe_fetch_research(skill: str, data: dict) -> None:
+async def _maybe_fetch_research(skill: str, data: dict, enrichment_cache=None) -> None:
     """If skill is a research skill, fetch external data and merge into data['research_context']."""
     if skill == "company-research":
         ctx: dict = {}
         domain = data.get("company_domain", "")
         name = data.get("company_name", "")
         if domain and settings.parallel_api_key:
-            ctx.update(await fetch_company_intel(domain, name, settings.parallel_api_key))
+            ctx.update(await fetch_company_intel(
+                domain, name, settings.parallel_api_key,
+                enrichment_cache=enrichment_cache,
+            ))
         if domain and settings.sumble_api_key:
             profile = await fetch_company_profile(
                 domain, data, settings.sumble_api_key,
                 settings.sumble_base_url, settings.sumble_timeout,
+                enrichment_cache=enrichment_cache,
             )
             ctx.update(profile)
         if domain and settings.deepline_api_key:
             deepline_company = await fetch_deepline_company(
                 domain, settings.deepline_api_key,
                 settings.deepline_base_url, settings.deepline_timeout,
+                enrichment_cache=enrichment_cache,
             )
             ctx.update(deepline_company)
         if ctx:
@@ -61,6 +66,7 @@ async def _maybe_fetch_research(skill: str, data: dict) -> None:
             profile = await fetch_company_profile(
                 domain, data, settings.sumble_api_key,
                 settings.sumble_base_url, settings.sumble_timeout,
+                enrichment_cache=enrichment_cache,
             )
             if profile:
                 ctx.update(profile)
@@ -71,6 +77,7 @@ async def _maybe_fetch_research(skill: str, data: dict) -> None:
                 first_name, last_name, domain,
                 settings.deepline_api_key,
                 settings.deepline_base_url, settings.deepline_timeout,
+                enrichment_cache=enrichment_cache,
             )
             ctx.update(email_result)
         if ctx:
@@ -79,7 +86,10 @@ async def _maybe_fetch_research(skill: str, data: dict) -> None:
     elif skill == "competitor-research":
         competitor_domain = data.get("competitor_domain", "")
         if competitor_domain and settings.parallel_api_key:
-            intel = await fetch_competitor_intel(competitor_domain, settings.parallel_api_key)
+            intel = await fetch_competitor_intel(
+                competitor_domain, settings.parallel_api_key,
+                enrichment_cache=enrichment_cache,
+            )
             if intel:
                 data["research_context"] = intel
 
@@ -174,6 +184,7 @@ async def webhook(body: WebhookRequest, request: Request, debug: bool = False):
                 cache=cache,
                 memory_store=getattr(request.app.state, "memory_store", None),
                 context_index=getattr(request.app.state, "context_index", None),
+                enrichment_cache=getattr(request.app.state, "enrichment_cache", None),
             )
             return result
         except Exception as e:
@@ -185,10 +196,10 @@ async def webhook(body: WebhookRequest, request: Request, debug: bool = False):
     if skill_content is None:
         return _error(f"Skill '{primary_skill}' not found", primary_skill)
 
-    # Check row-level cache
+    # Check row-level cache (L1: in-memory)
     cached = cache.get(primary_skill, body.data, body.instructions, model)
     if cached is not None:
-        logger.info("[%s] Cache hit", primary_skill)
+        logger.info("[%s] L1 cache hit", primary_skill)
         return {
             **cached,
             "_meta": {
@@ -196,11 +207,34 @@ async def webhook(body: WebhookRequest, request: Request, debug: bool = False):
                 "model": model,
                 "duration_ms": 0,
                 "cached": True,
+                "cache_level": "L1",
                 "input_tokens_est": 0,
                 "output_tokens_est": 0,
                 "cost_est_usd": 0.0,
             },
         }
+
+    # Check entity-level cache (L2: Supabase)
+    _enrichment_cache = getattr(request.app.state, "enrichment_cache", None)
+    if _enrichment_cache:
+        l2_cached = await _enrichment_cache.get_skill_result(body.data, primary_skill)
+        if l2_cached is not None:
+            logger.info("[%s] L2 cache hit (Supabase)", primary_skill)
+            # Warm L1 cache so subsequent identical requests are fast
+            cache.put(primary_skill, body.data, body.instructions, l2_cached, model)
+            return {
+                **l2_cached,
+                "_meta": {
+                    "skill": primary_skill,
+                    "model": model,
+                    "duration_ms": 0,
+                    "cached": True,
+                    "cache_level": "L2",
+                    "input_tokens_est": 0,
+                    "output_tokens_est": 0,
+                    "cost_est_usd": 0.0,
+                },
+            }
 
     # Build prompt — agent skills use a different prompt structure
     context_files = load_context_files(skill_content, body.data, skill_name=primary_skill)
@@ -221,7 +255,8 @@ async def webhook(body: WebhookRequest, request: Request, debug: bool = False):
         )
 
     # Research skill pre-fetch: fetch external data and merge into body.data
-    await _maybe_fetch_research(primary_skill, body.data)
+    enrichment_cache = getattr(request.app.state, "enrichment_cache", None)
+    await _maybe_fetch_research(primary_skill, body.data, enrichment_cache=enrichment_cache)
 
     if is_agent:
         prompt = build_agent_prompts(
@@ -361,8 +396,12 @@ async def webhook(body: WebhookRequest, request: Request, debug: bool = False):
             is_actual=is_actual,
         ))
 
-    # Cache result
+    # Cache result (L1: in-memory)
     cache.put(primary_skill, body.data, body.instructions, parsed, model)
+
+    # Cache result (L2: Supabase entity-level)
+    if _enrichment_cache:
+        await _enrichment_cache.put_skill_result(body.data, primary_skill, parsed)
 
     # Record for deduplication
     if dedup is not None:
@@ -441,8 +480,9 @@ async def webhook_stream(body: WebhookRequest, request: Request):
     memory_store = getattr(request.app.state, "memory_store", None)
     context_index = getattr(request.app.state, "context_index", None)
     learning_engine = getattr(request.app.state, "learning_engine", None)
+    enrichment_cache_stream = getattr(request.app.state, "enrichment_cache", None)
 
-    await _maybe_fetch_research(primary_skill, body.data)
+    await _maybe_fetch_research(primary_skill, body.data, enrichment_cache=enrichment_cache_stream)
 
     prompt = build_prompt(
         skill_content, context_files, body.data, body.instructions,

@@ -1,15 +1,28 @@
-"""Thin async research fetchers — no class, no cache, no dedup.
+"""Thin async research fetchers with optional Supabase enrichment cache.
 
 Called directly from webhook/job_queue when a research skill is invoked.
 Uses Parallel.ai for web search and content extraction,
 Sumble for structured company/people enrichment,
 DeepLine for email waterfall and firmographic enrichment.
+
+Each fetcher accepts an optional `enrichment_cache` parameter. When provided,
+it checks for cached results before making API calls and stores new results
+after successful fetches.
 """
+
+from __future__ import annotations
 
 import asyncio
 import logging
+import time
+from typing import TYPE_CHECKING
 
 import httpx
+
+if TYPE_CHECKING:
+    from app.core.enrichment_cache import EnrichmentCache
+
+from app.core.entity_utils import slugify
 
 logger = logging.getLogger("clay-webhook-os")
 
@@ -44,15 +57,32 @@ def _format_extract_content(results) -> str:
     return ""
 
 
-async def fetch_company_intel(domain: str, name: str, parallel_key: str) -> dict:
+async def fetch_company_intel(
+    domain: str,
+    name: str,
+    parallel_key: str,
+    enrichment_cache: EnrichmentCache | None = None,
+) -> dict:
     """Parallel Search (news) + Extract (website) in parallel.
 
     Returns {"website_overview": "...", "recent_news": "..."}.
     """
+    entity_id = slugify(domain)
+
+    # Check cache
+    if enrichment_cache:
+        cached = await enrichment_cache.get("company", entity_id, "parallel", "company_intel")
+        if cached:
+            await enrichment_cache.log_api_call(
+                "parallel", "company_intel", "company", entity_id, cache_hit=True,
+            )
+            return cached
+
     from parallel import AsyncParallel
 
     website_overview = ""
     recent_news = ""
+    start = time.monotonic()
 
     try:
         client = AsyncParallel(api_key=parallel_key)
@@ -93,7 +123,18 @@ async def fetch_company_intel(domain: str, name: str, parallel_key: str) -> dict
     except Exception as e:
         logger.warning("[research] fetch_company_intel failed for %s: %s", name, e)
 
-    return {"website_overview": website_overview, "recent_news": recent_news}
+    result = {"website_overview": website_overview, "recent_news": recent_news}
+    duration_ms = int((time.monotonic() - start) * 1000)
+
+    # Store in cache
+    if enrichment_cache and (website_overview or recent_news):
+        await enrichment_cache.put("company", entity_id, "parallel", "company_intel", result)
+        await enrichment_cache.log_api_call(
+            "parallel", "company_intel", "company", entity_id,
+            duration_ms=duration_ms, cache_hit=False,
+        )
+
+    return result
 
 
 async def fetch_company_profile(
@@ -102,11 +143,22 @@ async def fetch_company_profile(
     sumble_key: str,
     sumble_url: str = "https://api.sumble.com/v3",
     sumble_timeout: int = 30,
+    enrichment_cache: EnrichmentCache | None = None,
 ) -> dict:
     """Sumble organizations/enrich + people/find in parallel.
 
     Returns {"tech_stack": [...], "key_people": [...]}.
     """
+    entity_id = slugify(domain)
+
+    # Check cache
+    if enrichment_cache:
+        cached = await enrichment_cache.get("company", entity_id, "sumble", "company_profile")
+        if cached:
+            await enrichment_cache.log_api_call(
+                "sumble", "company_profile", "company", entity_id, cache_hit=True,
+            )
+            return cached
     tech_stack_raw = data.get("tech_stack", [])
     if isinstance(tech_stack_raw, str):
         tech_stack_raw = [t.strip() for t in tech_stack_raw.split(",") if t.strip()]
@@ -180,16 +232,41 @@ async def fetch_company_profile(
     except Exception as e:
         logger.warning("[research] fetch_company_profile failed for %s: %s", domain, e)
 
-    return {"tech_stack": tech_stack, "key_people": key_people}
+    result = {"tech_stack": tech_stack, "key_people": key_people}
+
+    # Store in cache
+    if enrichment_cache and (tech_stack or key_people):
+        await enrichment_cache.put("company", entity_id, "sumble", "company_profile", result)
+        await enrichment_cache.log_api_call(
+            "sumble", "company_profile", "company", entity_id, cache_hit=False,
+        )
+
+    return result
 
 
-async def fetch_competitor_intel(competitor_domain: str, parallel_key: str) -> dict:
+async def fetch_competitor_intel(
+    competitor_domain: str,
+    parallel_key: str,
+    enrichment_cache: EnrichmentCache | None = None,
+) -> dict:
     """Parallel Extract on competitor site.
 
     Returns {"positioning": "...", "differentiators": "..."}.
     """
+    entity_id = slugify(competitor_domain)
+
+    # Check cache
+    if enrichment_cache:
+        cached = await enrichment_cache.get("company", entity_id, "parallel", "competitor_intel")
+        if cached:
+            await enrichment_cache.log_api_call(
+                "parallel", "competitor_intel", "company", entity_id, cache_hit=True,
+            )
+            return cached
+
     positioning = ""
     differentiators = ""
+    start = time.monotonic()
 
     try:
         from parallel import AsyncParallel
@@ -214,7 +291,18 @@ async def fetch_competitor_intel(competitor_domain: str, parallel_key: str) -> d
     except Exception as e:
         logger.warning("[research] fetch_competitor_intel failed for %s: %s", competitor_domain, e)
 
-    return {"positioning": positioning, "differentiators": differentiators}
+    result_dict = {"positioning": positioning, "differentiators": differentiators}
+    duration_ms = int((time.monotonic() - start) * 1000)
+
+    # Store in cache
+    if enrichment_cache and (positioning or differentiators):
+        await enrichment_cache.put("company", entity_id, "parallel", "competitor_intel", result_dict)
+        await enrichment_cache.log_api_call(
+            "parallel", "competitor_intel", "company", entity_id,
+            duration_ms=duration_ms, cache_hit=False,
+        )
+
+    return result_dict
 
 
 # ---------------------------------------------------------------------------
@@ -261,14 +349,28 @@ async def fetch_deepline_email(
     deepline_key: str,
     deepline_url: str = "https://code.deepline.com",
     deepline_timeout: int = 60,
+    enrichment_cache: EnrichmentCache | None = None,
 ) -> dict:
     """DeepLine email waterfall: leadmagic -> dropleads -> hunter -> native -> PDL.
 
     Returns {"email": "...", "email_status": "...", "provider": "..."}.
     """
+    # Cache key: contact-level by name+domain combo
+    entity_id = slugify(f"{first_name}-{last_name}-{domain}")
+
+    # Check cache
+    if enrichment_cache:
+        cached = await enrichment_cache.get("contact", entity_id, "deepline", "email_waterfall")
+        if cached:
+            await enrichment_cache.log_api_call(
+                "deepline", "email_waterfall", "contact", entity_id, cache_hit=True,
+            )
+            return cached
+
     email = ""
     email_status = ""
     provider = ""
+    start = time.monotonic()
 
     try:
         result = await _deepline_execute(
@@ -296,7 +398,18 @@ async def fetch_deepline_email(
     except Exception as e:
         logger.warning("[deepline] Email waterfall failed for %s@%s: %s", first_name, domain, e)
 
-    return {"email": email, "email_status": email_status, "provider": provider}
+    result_dict = {"email": email, "email_status": email_status, "provider": provider}
+    duration_ms = int((time.monotonic() - start) * 1000)
+
+    # Store in cache (emails are high-value, long TTL)
+    if enrichment_cache and email:
+        await enrichment_cache.put("contact", entity_id, "deepline", "email_waterfall", result_dict)
+        await enrichment_cache.log_api_call(
+            "deepline", "email_waterfall", "contact", entity_id,
+            duration_ms=duration_ms, cache_hit=False,
+        )
+
+    return result_dict
 
 
 async def fetch_deepline_company(
@@ -304,15 +417,28 @@ async def fetch_deepline_company(
     deepline_key: str,
     deepline_url: str = "https://code.deepline.com",
     deepline_timeout: int = 30,
+    enrichment_cache: EnrichmentCache | None = None,
 ) -> dict:
     """DeepLine company enrichment: firmographic data (size, revenue, tech stack).
 
     Returns {"company_size": "...", "revenue_range": "...", "tech_stack": [...], "industry": "..."}.
     """
+    entity_id = slugify(domain)
+
+    # Check cache
+    if enrichment_cache:
+        cached = await enrichment_cache.get("company", entity_id, "deepline", "company_enrich")
+        if cached:
+            await enrichment_cache.log_api_call(
+                "deepline", "company_enrich", "company", entity_id, cache_hit=True,
+            )
+            return cached
+
     company_size = ""
     revenue_range = ""
     tech_stack: list = []
     industry = ""
+    start = time.monotonic()
 
     try:
         result = await _deepline_execute(
@@ -340,9 +466,20 @@ async def fetch_deepline_company(
     except Exception as e:
         logger.warning("[deepline] Company enrichment failed for %s: %s", domain, e)
 
-    return {
+    result_dict = {
         "company_size": company_size,
         "revenue_range": revenue_range,
         "tech_stack": tech_stack,
         "industry": industry,
     }
+    duration_ms = int((time.monotonic() - start) * 1000)
+
+    # Store in cache
+    if enrichment_cache and (company_size or tech_stack or industry):
+        await enrichment_cache.put("company", entity_id, "deepline", "company_enrich", result_dict)
+        await enrichment_cache.log_api_call(
+            "deepline", "company_enrich", "company", entity_id,
+            duration_ms=duration_ms, cache_hit=False,
+        )
+
+    return result_dict

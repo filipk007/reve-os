@@ -101,6 +101,7 @@ async def test_play(name: str, body: PlayTestRequest, request: Request):
             model=body.model,
             pool=pool,
             cache=cache,
+            enrichment_cache=getattr(request.app.state, "enrichment_cache", None),
         )
         return result
     except Exception as e:

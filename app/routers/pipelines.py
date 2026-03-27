@@ -68,6 +68,7 @@ async def test_pipeline(name: str, body: PipelineTestRequest, request: Request):
             model=body.model,
             pool=pool,
             cache=cache,
+            enrichment_cache=getattr(request.app.state, "enrichment_cache", None),
         )
         return result
     except Exception as e:

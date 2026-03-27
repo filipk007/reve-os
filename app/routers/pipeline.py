@@ -25,6 +25,7 @@ async def pipeline(body: PipelineRequest, request: Request):
         result = await run_pipeline(
             body.pipeline, body.data, body.instructions, model, pool, cache,
             memory_store=memory_store, context_index=context_index,
+            enrichment_cache=getattr(request.app.state, "enrichment_cache", None),
         )
     except FileNotFoundError as e:
         return {"error": True, "error_message": str(e), "skill": "pipeline"}

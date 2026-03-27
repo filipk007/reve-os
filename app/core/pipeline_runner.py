@@ -113,6 +113,7 @@ async def _run_single_step(
     cache: ResultCache | None = None,
     memory_store: MemoryStore | None = None,
     context_index: ContextIndex | None = None,
+    enrichment_cache=None,
 ) -> dict:
     """Execute a single skill step. Returns a result dict."""
     step_start = time.monotonic()
@@ -143,7 +144,7 @@ async def _run_single_step(
 
     # Research skill pre-fetch: fetch external data and merge into current_data
     from app.routers.webhook import _maybe_fetch_research
-    await _maybe_fetch_research(skill_name, current_data)
+    await _maybe_fetch_research(skill_name, current_data, enrichment_cache=enrichment_cache)
 
     skip_semantic = not skill_cfg.get("semantic_context", True)
 
@@ -250,6 +251,7 @@ async def run_skill_chain(
     cache: ResultCache | None = None,
     memory_store: MemoryStore | None = None,
     context_index: ContextIndex | None = None,
+    enrichment_cache=None,
 ) -> dict:
     results = []
     current_data = dict(data)
@@ -265,6 +267,7 @@ async def run_skill_chain(
             cache=cache,
             memory_store=memory_store,
             context_index=context_index,
+            enrichment_cache=enrichment_cache,
         )
         results.append(step_result)
         if step_result.get("success") and step_result.get("output"):
@@ -292,6 +295,7 @@ async def run_pipeline(
     cache: ResultCache,
     memory_store: MemoryStore | None = None,
     context_index: ContextIndex | None = None,
+    enrichment_cache=None,
 ) -> dict:
     pipeline = load_pipeline(name)
     if pipeline is None:
@@ -311,6 +315,7 @@ async def run_pipeline(
         confidence_threshold=confidence_threshold,
         memory_store=memory_store,
         context_index=context_index,
+        enrichment_cache=enrichment_cache,
     )
 
 
@@ -325,6 +330,7 @@ async def run_pipeline_from_plan(
     confidence_threshold: float = 0.8,
     memory_store: MemoryStore | None = None,
     context_index: ContextIndex | None = None,
+    enrichment_cache=None,
 ) -> dict:
     """Execute a dynamically generated pipeline plan (from coordinator)."""
     return await _execute_steps(
@@ -338,6 +344,7 @@ async def run_pipeline_from_plan(
         confidence_threshold=confidence_threshold,
         memory_store=memory_store,
         context_index=context_index,
+        enrichment_cache=enrichment_cache,
     )
 
 
@@ -352,6 +359,7 @@ async def _execute_steps(
     confidence_threshold: float = 0.8,
     memory_store: MemoryStore | None = None,
     context_index: ContextIndex | None = None,
+    enrichment_cache=None,
 ) -> dict:
     """Core step execution engine — handles sequential, parallel, and conditional steps."""
     results = []
@@ -449,7 +457,7 @@ async def _execute_steps(
 
         # Research skill pre-fetch: fetch external data and merge into current_data
         from app.routers.webhook import _maybe_fetch_research
-        await _maybe_fetch_research(skill_name, current_data)
+        await _maybe_fetch_research(skill_name, current_data, enrichment_cache=enrichment_cache)
 
         skip_semantic = not skill_cfg.get("semantic_context", True)
 
