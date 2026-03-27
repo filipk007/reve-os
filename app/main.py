@@ -33,11 +33,12 @@ from app.core.skill_version_store import SkillVersionStore
 from app.core.subscription_monitor import SubscriptionMonitor
 from app.core.usage_store import UsageStore
 from app.core.worker_pool import WorkerPool
-from app.middleware.auth import ApiKeyMiddleware
+from app.middleware.auth import DualAuthMiddleware
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.security_headers import SecurityHeadersMiddleware
 from app.routers import (
+    auth,
     channels,
     context,
     datasets,
@@ -74,16 +75,17 @@ app = FastAPI(
 app.add_middleware(ErrorHandlerMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RateLimitMiddleware)
-app.add_middleware(ApiKeyMiddleware)
+app.add_middleware(DualAuthMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "x-api-key"],
+    allow_headers=["Content-Type", "x-api-key", "Authorization"],
 )
 
 # Routers
+app.include_router(auth.router)
 app.include_router(health.router)
 app.include_router(webhook.router)
 app.include_router(pipeline.router)

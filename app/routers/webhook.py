@@ -484,6 +484,18 @@ async def webhook_stream(body: WebhookRequest, request: Request):
 
     await _maybe_fetch_research(primary_skill, body.data, enrichment_cache=enrichment_cache_stream)
 
+    # Check L2 cache — return cached result as single SSE event if hit
+    if enrichment_cache_stream:
+        l2_cached = await enrichment_cache_stream.get_skill_result(body.data, primary_skill)
+        if l2_cached is not None:
+            logger.info("[%s] L2 cache hit in stream mode (Supabase)", primary_skill)
+
+            async def cached_stream():
+                yield f"data: {json.dumps({'chunk': json.dumps(l2_cached), 'done': False})}\n\n"
+                yield f"data: {json.dumps({'done': True, 'cache_level': 'L2'})}\n\n"
+
+            return StreamingResponse(cached_stream(), media_type="text/event-stream")
+
     prompt = build_prompt(
         skill_content, context_files, body.data, body.instructions,
         memory_store=memory_store, context_index=context_index,
@@ -494,8 +506,23 @@ async def webhook_stream(body: WebhookRequest, request: Request):
 
     async def event_stream():
         executor = ClaudeExecutor()
+        full_output = []
         async for chunk in executor.stream_execute(prompt, model=model, timeout=timeout):
             yield f"data: {json.dumps(chunk)}\n\n"
+            if isinstance(chunk, dict) and "chunk" in chunk:
+                full_output.append(chunk["chunk"])
+
+        # Store completed result in L2 cache
+        if enrichment_cache_stream and full_output:
+            try:
+                combined = "".join(full_output).strip()
+                parsed = json.loads(combined)
+                if isinstance(parsed, dict):
+                    await enrichment_cache_stream.put_skill_result(
+                        body.data, primary_skill, parsed
+                    )
+            except (json.JSONDecodeError, Exception):
+                pass  # Non-JSON output — skip L2 store
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 

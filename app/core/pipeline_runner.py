@@ -193,6 +193,7 @@ async def _run_parallel_step(
     merge_strategy: str = "deep",
     memory_store: MemoryStore | None = None,
     context_index: ContextIndex | None = None,
+    enrichment_cache=None,
 ) -> tuple[list[dict], dict]:
     """Run multiple skill steps concurrently. Returns (results_list, merged_data)."""
     parallel_start = time.monotonic()
@@ -212,6 +213,7 @@ async def _run_parallel_step(
             cache=cache,
             memory_store=memory_store,
             context_index=context_index,
+            enrichment_cache=enrichment_cache,
         ))
 
     # Fan out — run all concurrently through the existing semaphore-controlled pool
@@ -387,6 +389,7 @@ async def _execute_steps(
                 merge_strategy=merge_strategy,
                 memory_store=memory_store,
                 context_index=context_index,
+                enrichment_cache=enrichment_cache,
             )
             # Track confidence from parallel results
             for pr in parallel_results:
