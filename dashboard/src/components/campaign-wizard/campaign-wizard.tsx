@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,14 +27,18 @@ import {
   X,
   Trophy,
   XCircle,
+  Upload,
+  FileSpreadsheet,
+  Check,
 } from "lucide-react";
 import {
   useCampaignWizard,
   type CampaignStep,
-  type DealEntry,
-  type DealOutcome,
+  type CsvDealData,
   type StepAnalysis,
 } from "@/hooks/use-campaign-wizard";
+import { fetchClients, fetchKnowledgeBase } from "@/lib/api";
+import type { ClientSummary, KnowledgeBaseFile } from "@/lib/types";
 
 /* ── Step metadata ─────────────────────────────────── */
 
@@ -50,7 +54,7 @@ const STEP_META: Record<
   invert: {
     label: "Invert Your Deals",
     icon: <TrendingUp className="h-4 w-4" />,
-    description: "Add your closed-won and closed-lost deals for pattern analysis",
+    description: "Drop your closed-won and closed-lost CSVs for pattern analysis",
   },
   pain: {
     label: "Find Discoverable Pain",
@@ -58,9 +62,9 @@ const STEP_META: Record<
     description: "Unique data sources your competitors don't have",
   },
   context: {
-    label: "Build Context",
+    label: "Load Context",
     icon: <FolderOpen className="h-4 w-4" />,
-    description: "Assemble everything the AI needs to think like your best rep",
+    description: "Select client profiles and knowledge base files to load",
   },
   plan: {
     label: "Plan the Play",
@@ -176,6 +180,117 @@ function WizardInput({
   );
 }
 
+/* ── CSV drop zone ─────────────────────────────────── */
+
+function CsvDropZone({
+  label,
+  accentColor,
+  icon,
+  csv,
+  fileRef,
+  onUpload,
+  onClear,
+}: {
+  label: string;
+  accentColor: "emerald" | "red";
+  icon: React.ReactNode;
+  csv: CsvDealData | null;
+  fileRef: React.RefObject<HTMLInputElement | null>;
+  onUpload: (file: File) => void;
+  onClear: () => void;
+}) {
+  const borderColor =
+    accentColor === "emerald"
+      ? csv
+        ? "border-emerald-500/40 bg-emerald-500/5"
+        : "border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/5"
+      : csv
+        ? "border-red-500/40 bg-red-500/5"
+        : "border-red-500/20 hover:border-red-500/40 hover:bg-red-500/5";
+
+  const textColor =
+    accentColor === "emerald" ? "text-emerald-400" : "text-red-400";
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file?.name.endsWith(".csv")) onUpload(file);
+    },
+    [onUpload]
+  );
+
+  return (
+    <div
+      onDrop={handleDrop}
+      onDragOver={(e) => e.preventDefault()}
+      onClick={() => !csv && fileRef.current?.click()}
+      className={`border-2 border-dashed rounded-lg p-5 text-center transition-colors ${borderColor} ${
+        csv ? "" : "cursor-pointer"
+      }`}
+    >
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".csv"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onUpload(file);
+        }}
+      />
+      {csv ? (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-center gap-2">
+            <FileSpreadsheet className={`h-5 w-5 ${textColor}`} />
+            <span className={`text-xs font-medium tracking-wide uppercase ${textColor}`}>
+              {label}
+            </span>
+          </div>
+          <p className="text-sm font-medium text-clay-100">{csv.fileName}</p>
+          <p className="text-xs text-clay-300">
+            {csv.totalRows} deals &middot; {csv.headers.length} columns
+          </p>
+          <div className="flex flex-wrap justify-center gap-1 mt-1">
+            {csv.headers.slice(0, 6).map((h) => (
+              <Badge key={h} variant="secondary" className="text-[10px] font-mono">
+                {h}
+              </Badge>
+            ))}
+            {csv.headers.length > 6 && (
+              <Badge variant="secondary" className="text-[10px]">
+                +{csv.headers.length - 6} more
+              </Badge>
+            )}
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClear();
+            }}
+            className="text-xs text-clay-400 hover:text-clay-200 underline mt-1"
+          >
+            Replace file
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-center gap-2">
+            {icon}
+            <span className={`text-xs font-medium tracking-wide uppercase ${textColor}`}>
+              {label}
+            </span>
+          </div>
+          <Upload className="h-8 w-8 text-clay-400 mx-auto" />
+          <p className="text-xs text-clay-300">
+            Drop CSV or click to browse
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Step: Intro ───────────────────────────────────── */
 
 function IntroStep() {
@@ -214,94 +329,7 @@ function IntroStep() {
   );
 }
 
-/* ── Step: Invert Deals ────────────────────────────── */
-
-function DealCard({
-  deal,
-  onUpdate,
-  onRemove,
-}: {
-  deal: DealEntry;
-  onUpdate: (updates: Partial<DealEntry>) => void;
-  onRemove: () => void;
-}) {
-  const isWon = deal.outcome === "won";
-  return (
-    <div
-      className={`rounded-md border p-3 space-y-2 ${
-        isWon
-          ? "border-emerald-500/30 bg-emerald-500/5"
-          : "border-red-500/30 bg-red-500/5"
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {isWon ? (
-            <Trophy className="h-3.5 w-3.5 text-emerald-400" />
-          ) : (
-            <XCircle className="h-3.5 w-3.5 text-red-400" />
-          )}
-          <span
-            className={`text-xs font-medium tracking-wide uppercase ${
-              isWon ? "text-emerald-400" : "text-red-400"
-            }`}
-          >
-            {isWon ? "Won" : "Lost"}
-          </span>
-        </div>
-        <button
-          onClick={onRemove}
-          className="text-clay-500 hover:text-clay-300 transition-colors"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <WizardInput
-          value={deal.company}
-          onChange={(v) => onUpdate({ company: v })}
-          placeholder="Company name"
-        />
-        <WizardInput
-          value={deal.buyerTitle}
-          onChange={(v) => onUpdate({ buyerTitle: v })}
-          placeholder="Buyer title (e.g. VP Sales)"
-        />
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <WizardInput
-          value={deal.industry}
-          onChange={(v) => onUpdate({ industry: v })}
-          placeholder="Industry"
-        />
-        <WizardInput
-          value={deal.dealSize}
-          onChange={(v) => onUpdate({ dealSize: v })}
-          placeholder="Deal size (e.g. $25K)"
-        />
-        <WizardInput
-          value={deal.salesCycle}
-          onChange={(v) => onUpdate({ salesCycle: v })}
-          placeholder="Cycle (e.g. 45 days)"
-        />
-      </div>
-      <WizardInput
-        value={deal.signals}
-        onChange={(v) => onUpdate({ signals: v })}
-        placeholder="What signals appeared before this deal? (e.g. hired SDRs, raised Series B...)"
-      />
-      <WizardInput
-        value={deal.whyWonOrLost}
-        onChange={(v) => onUpdate({ whyWonOrLost: v })}
-        placeholder={
-          isWon
-            ? "Why did they buy? What tipped the decision?"
-            : "Why did you lose? What was the blocker?"
-        }
-      />
-    </div>
-  );
-}
+/* ── Step: Invert Deals (CSV) ──────────────────────── */
 
 function InvertStep({
   wiz,
@@ -311,69 +339,59 @@ function InvertStep({
   return (
     <div className="space-y-4">
       <p className="text-sm text-clay-300 leading-relaxed">
-        Add your recent closed deals — both won and lost. The AI compares
-        patterns across both to find what predicts conversion. Aim for{" "}
-        <span className="text-clay-100 font-medium">10+ won and 10+ lost</span>{" "}
-        in the same segment for the best analysis.
+        Drop your closed-won and closed-lost deal exports. The AI compares
+        patterns across both to find what predicts conversion. Any CSV columns
+        work — the more data, the better the analysis.
       </p>
 
+      {/* Two drop zones side by side */}
+      <div className="grid grid-cols-2 gap-3">
+        <CsvDropZone
+          label="Closed Won"
+          accentColor="emerald"
+          icon={<Trophy className="h-4 w-4 text-emerald-400" />}
+          csv={wiz.wonCsv}
+          fileRef={wiz.wonFileRef}
+          onUpload={wiz.uploadWonCsv}
+          onClear={wiz.clearWonCsv}
+        />
+        <CsvDropZone
+          label="Closed Lost"
+          accentColor="red"
+          icon={<XCircle className="h-4 w-4 text-red-400" />}
+          csv={wiz.lostCsv}
+          fileRef={wiz.lostFileRef}
+          onUpload={wiz.uploadLostCsv}
+          onClear={wiz.clearLostCsv}
+        />
+      </div>
+
       {/* Deal counts */}
-      <div className="flex items-center gap-3">
-        <Badge
-          variant="outline"
-          className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-        >
-          <Trophy className="h-3 w-3 mr-1" />
-          {wiz.wonCount} Won
-        </Badge>
-        <Badge
-          variant="outline"
-          className="bg-red-500/10 text-red-400 border-red-500/30"
-        >
-          <XCircle className="h-3 w-3 mr-1" />
-          {wiz.lostCount} Lost
-        </Badge>
-        <span className="text-xs text-clay-500">
-          {wiz.deals.length} total
-        </span>
-      </div>
-
-      {/* Deal cards */}
-      <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-        {wiz.deals.map((deal) => (
-          <DealCard
-            key={deal.id}
-            deal={deal}
-            onUpdate={(updates) => wiz.updateDeal(deal.id, updates)}
-            onRemove={() => wiz.removeDeal(deal.id)}
-          />
-        ))}
-      </div>
-
-      {/* Add deal buttons */}
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => wiz.addDeal("won")}
-          className="gap-1.5 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add Won Deal
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => wiz.addDeal("lost")}
-          className="gap-1.5 border-red-500/30 text-red-400 hover:bg-red-500/10"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add Lost Deal
-        </Button>
-      </div>
+      {(wiz.wonCsv || wiz.lostCsv) && (
+        <div className="flex items-center gap-3">
+          {wiz.wonCsv && (
+            <Badge
+              variant="outline"
+              className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+            >
+              <Trophy className="h-3 w-3 mr-1" />
+              {wiz.wonCsv.totalRows} Won
+            </Badge>
+          )}
+          {wiz.lostCsv && (
+            <Badge
+              variant="outline"
+              className="bg-red-500/10 text-red-400 border-red-500/30"
+            >
+              <XCircle className="h-3 w-3 mr-1" />
+              {wiz.lostCsv.totalRows} Lost
+            </Badge>
+          )}
+        </div>
+      )}
 
       {/* Analyze button */}
-      {wiz.deals.filter((d) => d.company).length >= 2 && (
+      {(wiz.wonCsv || wiz.lostCsv) && (
         <Button
           variant="outline"
           size="sm"
@@ -386,7 +404,8 @@ function InvertStep({
           ) : (
             <Sparkles className="h-3.5 w-3.5" />
           )}
-          Analyze {wiz.deals.filter((d) => d.company).length} deals
+          Analyze{" "}
+          {(wiz.wonCsv?.totalRows || 0) + (wiz.lostCsv?.totalRows || 0)} deals
         </Button>
       )}
 
@@ -502,74 +521,201 @@ function PainStep({
   );
 }
 
-/* ── Step: Context ─────────────────────────────────── */
+/* ── Step: Load Context (from existing KB + clients) ─ */
 
 function ContextStep({
   wiz,
 }: {
   wiz: ReturnType<typeof useCampaignWizard>;
 }) {
+  const [clients, setClients] = useState<ClientSummary[]>([]);
+  const [kbFiles, setKbFiles] = useState<Record<string, KnowledgeBaseFile[]>>({});
+  const [loading, setLoading] = useState(true);
+
+  // Load existing clients and KB files
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [clientRes, kbRes] = await Promise.all([
+          fetchClients(),
+          fetchKnowledgeBase(),
+        ]);
+        if (!cancelled) {
+          setClients(clientRes.clients);
+          setKbFiles(kbRes.knowledge_base);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const { campaignContext, setCampaignContext, contextAnalysis, analyzeContext } = wiz;
+
+  // Toggle a client selection
+  const toggleClient = (slug: string) => {
+    const current = campaignContext.selectedClients || [];
+    const next = current.includes(slug)
+      ? current.filter((s: string) => s !== slug)
+      : [...current, slug];
+    setCampaignContext({ ...campaignContext, selectedClients: next });
+  };
+
+  // Toggle a KB file selection
+  const toggleKbFile = (path: string) => {
+    const current = campaignContext.selectedKbFiles || [];
+    const next = current.includes(path)
+      ? current.filter((p: string) => p !== path)
+      : [...current, path];
+    setCampaignContext({ ...campaignContext, selectedKbFiles: next });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12 text-clay-300">
+        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+        Loading your context files...
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-clay-300 leading-relaxed">
-        Before writing a single message, assemble everything the AI needs. This
-        context compounds — every future campaign builds on it.
+        Select which client profiles and knowledge base files to load into this
+        campaign. The AI uses these as context when generating messages.
       </p>
-      <div className="space-y-3">
-        <WizardField
-          label="ICP description"
-          value={wiz.campaignContext.icpDescription}
-          onChange={(v) =>
-            wiz.setCampaignContext({ ...wiz.campaignContext, icpDescription: v })
-          }
-          placeholder="e.g. B2B SaaS, 50-500 employees, post-Series A, building outbound for the first time..."
-          rows={3}
-        />
-        <WizardField
-          label="Competitive intelligence"
-          value={wiz.campaignContext.competitiveIntel}
-          onChange={(v) =>
-            wiz.setCampaignContext({ ...wiz.campaignContext, competitiveIntel: v })
-          }
-          placeholder="e.g. Main competitors: Outreach, Salesloft. We win on personalization quality..."
-          rows={3}
-        />
-        <WizardField
-          label="Common objections"
-          value={wiz.campaignContext.objections}
-          onChange={(v) =>
-            wiz.setCampaignContext({ ...wiz.campaignContext, objections: v })
-          }
-          placeholder="e.g. 'We already have a tool', 'Budget locked until Q3'..."
-          rows={2}
-        />
-        <WizardField
-          label="Industry notes"
-          value={wiz.campaignContext.industryNotes}
-          onChange={(v) =>
-            wiz.setCampaignContext({ ...wiz.campaignContext, industryNotes: v })
-          }
-          placeholder="e.g. Regulatory changes Q2, conference in April, seasonal buying..."
-          rows={2}
-        />
+
+      {/* Client profiles */}
+      {clients.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-xs font-medium text-clay-400 tracking-wide uppercase">
+            Client Profiles
+          </h4>
+          <div className="grid grid-cols-2 gap-2">
+            {clients.map((client) => {
+              const selected = (campaignContext.selectedClients || []).includes(
+                client.slug
+              );
+              return (
+                <button
+                  key={client.slug}
+                  onClick={() => toggleClient(client.slug)}
+                  className={`flex items-center gap-2 rounded-md border p-2.5 text-left transition-colors ${
+                    selected
+                      ? "border-kiln-teal/50 bg-kiln-teal/10"
+                      : "border-clay-600 bg-clay-800/50 hover:border-clay-500"
+                  }`}
+                >
+                  <div
+                    className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 ${
+                      selected
+                        ? "border-kiln-teal bg-kiln-teal"
+                        : "border-clay-500"
+                    }`}
+                  >
+                    {selected && <Check className="h-3 w-3 text-clay-900" />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-clay-100 truncate">
+                      {client.name}
+                    </p>
+                    <p className="text-[10px] text-clay-400 truncate">
+                      {client.industry}
+                      {client.stage ? ` · ${client.stage}` : ""}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Knowledge base files by category */}
+      <div className="space-y-2">
+        <h4 className="text-xs font-medium text-clay-400 tracking-wide uppercase">
+          Knowledge Base
+        </h4>
+        <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
+          {Object.entries(kbFiles).map(([category, files]) => (
+            <div key={category} className="space-y-1.5">
+              <p className="text-xs font-medium text-clay-300 capitalize">
+                {category.replace(/_/g, " ")}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {files.map((file) => {
+                  const path = `${category}/${file.name}`;
+                  const selected = (
+                    campaignContext.selectedKbFiles || []
+                  ).includes(path);
+                  return (
+                    <button
+                      key={path}
+                      onClick={() => toggleKbFile(path)}
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs transition-colors ${
+                        selected
+                          ? "bg-kiln-teal/15 text-kiln-teal border border-kiln-teal/30"
+                          : "bg-clay-800 text-clay-300 border border-clay-600 hover:border-clay-500"
+                      }`}
+                    >
+                      {selected && <Check className="h-3 w-3" />}
+                      {file.name.replace(".md", "")}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Selection summary */}
+      {((campaignContext.selectedClients?.length || 0) > 0 ||
+        (campaignContext.selectedKbFiles?.length || 0) > 0) && (
+        <div className="flex items-center gap-2 text-xs text-clay-400">
+          <FolderOpen className="h-3.5 w-3.5" />
+          {campaignContext.selectedClients?.length || 0} client
+          {(campaignContext.selectedClients?.length || 0) !== 1 ? "s" : ""},{" "}
+          {campaignContext.selectedKbFiles?.length || 0} KB file
+          {(campaignContext.selectedKbFiles?.length || 0) !== 1 ? "s" : ""}{" "}
+          selected
+        </div>
+      )}
+
+      {/* Optional extra notes */}
+      <WizardField
+        label="Additional context (optional)"
+        value={campaignContext.additionalNotes || ""}
+        onChange={(v) =>
+          setCampaignContext({ ...campaignContext, additionalNotes: v })
+        }
+        placeholder="Any extra context not covered by your existing files..."
+        rows={2}
+      />
+
       <Button
         variant="outline"
         size="sm"
-        onClick={wiz.analyzeContext}
+        onClick={analyzeContext}
         disabled={
-          wiz.contextAnalysis.loading || !wiz.campaignContext.icpDescription
+          contextAnalysis.loading ||
+          (!(campaignContext.selectedClients?.length) &&
+            !(campaignContext.selectedKbFiles?.length))
         }
         className="gap-2"
       >
-        {wiz.contextAnalysis.loading ? (
+        {contextAnalysis.loading ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
         ) : (
           <Sparkles className="h-3.5 w-3.5" />
         )}
         Check for gaps
       </Button>
-      <AnalysisPanel analysis={wiz.contextAnalysis} />
+      <AnalysisPanel analysis={contextAnalysis} />
     </div>
   );
 }
@@ -729,16 +875,22 @@ function ReviewStep({
         single biggest improvement.
       </p>
 
-      {/* Summary */}
       <div className="rounded-md border border-clay-600 bg-clay-800/50 p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-medium text-clay-400 tracking-wide uppercase">
             Campaign Summary
           </h4>
           <div className="flex gap-2">
-            <Badge variant="secondary" className="text-[10px]">
-              {wiz.wonCount} won / {wiz.lostCount} lost analyzed
-            </Badge>
+            {wiz.wonCsv && (
+              <Badge variant="secondary" className="text-[10px]">
+                {wiz.wonCsv.totalRows} won
+              </Badge>
+            )}
+            {wiz.lostCsv && (
+              <Badge variant="secondary" className="text-[10px]">
+                {wiz.lostCsv.totalRows} lost
+              </Badge>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
@@ -757,13 +909,18 @@ function ReviewStep({
             <div key={label} className="flex gap-2">
               <span className="text-clay-400 shrink-0 w-16">{label}:</span>
               <span className="text-clay-200 truncate">
-                {val || (
-                  <span className="text-clay-500 italic">not set</span>
-                )}
+                {val || <span className="text-clay-500 italic">not set</span>}
               </span>
             </div>
           ))}
         </div>
+        {((wiz.campaignContext.selectedClients?.length || 0) > 0 ||
+          (wiz.campaignContext.selectedKbFiles?.length || 0) > 0) && (
+          <div className="text-xs text-clay-400 border-t border-clay-600 pt-2 mt-2">
+            Context: {wiz.campaignContext.selectedClients?.length || 0} clients,{" "}
+            {wiz.campaignContext.selectedKbFiles?.length || 0} KB files loaded
+          </div>
+        )}
       </div>
 
       <Button
@@ -851,9 +1008,7 @@ export function CampaignWizard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  wiz.reset();
-                }}
+                onClick={() => wiz.reset()}
                 className="text-clay-400"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -868,10 +1023,7 @@ export function CampaignWizard({
                 <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             ) : (
-              <Button
-                size="sm"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button size="sm" onClick={() => onOpenChange(false)}>
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Done
               </Button>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
+import Papa from "papaparse";
 import { runWebhook } from "@/lib/api";
 
 export type CampaignStep =
@@ -11,20 +12,13 @@ export type CampaignStep =
   | "plan"
   | "review";
 
-/* ── Deal entry for inversion step ─────────────────── */
+/* ── CSV deal data ─────────────────────────────────── */
 
-export type DealOutcome = "won" | "lost";
-
-export interface DealEntry {
-  id: string;
-  company: string;
-  outcome: DealOutcome;
-  dealSize: string;
-  salesCycle: string;
-  buyerTitle: string;
-  industry: string;
-  signals: string;
-  whyWonOrLost: string;
+export interface CsvDealData {
+  fileName: string;
+  headers: string[];
+  rows: Record<string, string>[];
+  totalRows: number;
 }
 
 export interface PainSource {
@@ -34,10 +28,9 @@ export interface PainSource {
 }
 
 export interface CampaignContext {
-  icpDescription: string;
-  competitiveIntel: string;
-  objections: string;
-  industryNotes: string;
+  selectedClients: string[];
+  selectedKbFiles: string[];
+  additionalNotes: string;
 }
 
 export interface CampaignPlan {
@@ -69,15 +62,17 @@ export interface UseCampaignWizardReturn {
   canGoNext: boolean;
   canGoBack: boolean;
 
-  // Step 1: Invert from best deals
-  deals: DealEntry[];
-  addDeal: (outcome: DealOutcome) => void;
-  updateDeal: (id: string, deal: Partial<DealEntry>) => void;
-  removeDeal: (id: string) => void;
+  // Step 1: Invert from best deals — CSV upload
+  wonCsv: CsvDealData | null;
+  lostCsv: CsvDealData | null;
+  wonFileRef: React.RefObject<HTMLInputElement | null>;
+  lostFileRef: React.RefObject<HTMLInputElement | null>;
+  uploadWonCsv: (file: File) => void;
+  uploadLostCsv: (file: File) => void;
+  clearWonCsv: () => void;
+  clearLostCsv: () => void;
   dealAnalysis: StepAnalysis;
   analyzeDeals: () => Promise<void>;
-  wonCount: number;
-  lostCount: number;
 
   // Step 2: Find discoverable pain
   painSources: PainSource[];
@@ -109,29 +104,10 @@ export interface UseCampaignWizardReturn {
 
 const STEPS: CampaignStep[] = ["intro", "invert", "pain", "context", "plan", "review"];
 
-function makeDealId(): string {
-  return `deal-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-}
-
-function newDeal(outcome: DealOutcome): DealEntry {
-  return {
-    id: makeDealId(),
-    company: "",
-    outcome,
-    dealSize: "",
-    salesCycle: "",
-    buyerTitle: "",
-    industry: "",
-    signals: "",
-    whyWonOrLost: "",
-  };
-}
-
 const emptyContext: CampaignContext = {
-  icpDescription: "",
-  competitiveIntel: "",
-  objections: "",
-  industryNotes: "",
+  selectedClients: [],
+  selectedKbFiles: [],
+  additionalNotes: "",
 };
 
 const emptyPlan: CampaignPlan = {
@@ -148,30 +124,66 @@ const emptyPlan: CampaignPlan = {
 
 const emptyAnalysis: StepAnalysis = { content: "", loading: false, error: null };
 
+function parseCsvFile(
+  file: File,
+  setter: (data: CsvDealData) => void,
+) {
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (result) => {
+      const headers = result.meta.fields || [];
+      const rows = result.data as Record<string, string>[];
+      setter({
+        fileName: file.name,
+        headers,
+        rows,
+        totalRows: rows.length,
+      });
+    },
+  });
+}
+
+/** Summarize CSV rows for the AI prompt — include all columns, sample first rows */
+function summarizeCsv(label: string, csv: CsvDealData | null, maxRows = 20): string {
+  if (!csv || csv.rows.length === 0) return `${label}: (no data)\n`;
+  const sample = csv.rows.slice(0, maxRows);
+  const lines = sample.map((row) => {
+    return csv.headers
+      .map((h) => `${h}: ${row[h] || "—"}`)
+      .join(" | ");
+  });
+  return `${label} (${csv.totalRows} deals, columns: ${csv.headers.join(", ")}):\n${lines.join("\n")}\n`;
+}
+
 export function useCampaignWizard(): UseCampaignWizardReturn {
   const [step, setStep] = useState<CampaignStep>("intro");
 
-  // Step 1 — deals
-  const [deals, setDeals] = useState<DealEntry[]>([]);
+  // Step 1 — CSV uploads
+  const [wonCsv, setWonCsv] = useState<CsvDealData | null>(null);
+  const [lostCsv, setLostCsv] = useState<CsvDealData | null>(null);
+  const wonFileRef = useRef<HTMLInputElement | null>(null);
+  const lostFileRef = useRef<HTMLInputElement | null>(null);
   const [dealAnalysis, setDealAnalysis] = useState<StepAnalysis>(emptyAnalysis);
 
-  // Step 2 — pain sources
+  // Step 2
   const [painSources, setPainSources] = useState<PainSource[]>([
     { dataSource: "", description: "", signalType: "" },
   ]);
   const [painAnalysis, setPainAnalysis] = useState<StepAnalysis>(emptyAnalysis);
 
-  // Step 3 — context
+  // Step 3
   const [campaignContext, setCampaignContext] = useState<CampaignContext>(emptyContext);
   const [contextAnalysis, setContextAnalysis] = useState<StepAnalysis>(emptyAnalysis);
 
-  // Step 4 — plan
+  // Step 4
   const [campaignPlan, setCampaignPlan] = useState<CampaignPlan>(emptyPlan);
   const [planAnalysis, setPlanAnalysis] = useState<StepAnalysis>(emptyAnalysis);
 
-  // Step 5 — review
+  // Step 5
   const [reviewAnalysis, setReviewAnalysis] = useState<StepAnalysis>(emptyAnalysis);
 
+  // Navigation
   const stepIndex = STEPS.indexOf(step);
   const canGoNext = stepIndex < STEPS.length - 1;
   const canGoBack = stepIndex > 0;
@@ -188,22 +200,16 @@ export function useCampaignWizard(): UseCampaignWizardReturn {
 
   const goToStep = useCallback((s: CampaignStep) => setStep(s), []);
 
-  // Deal management
-  const wonCount = deals.filter((d) => d.outcome === "won").length;
-  const lostCount = deals.filter((d) => d.outcome === "lost").length;
-
-  const addDeal = useCallback((outcome: DealOutcome) => {
-    setDeals((prev) => [...prev, newDeal(outcome)]);
+  // CSV uploads
+  const uploadWonCsv = useCallback((file: File) => parseCsvFile(file, setWonCsv), []);
+  const uploadLostCsv = useCallback((file: File) => parseCsvFile(file, setLostCsv), []);
+  const clearWonCsv = useCallback(() => {
+    setWonCsv(null);
+    if (wonFileRef.current) wonFileRef.current.value = "";
   }, []);
-
-  const updateDeal = useCallback((id: string, updates: Partial<DealEntry>) => {
-    setDeals((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, ...updates } : d))
-    );
-  }, []);
-
-  const removeDeal = useCallback((id: string) => {
-    setDeals((prev) => prev.filter((d) => d.id !== id));
+  const clearLostCsv = useCallback(() => {
+    setLostCsv(null);
+    if (lostFileRef.current) lostFileRef.current.value = "";
   }, []);
 
   // AI analysis runner
@@ -215,7 +221,7 @@ export function useCampaignWizard(): UseCampaignWizardReturn {
           skill: "classify",
           data: { raw_text: prompt },
           instructions:
-            "You are a GTM campaign strategist helping build a high-conversion outbound campaign. Analyze the data provided and give specific, actionable recommendations. Use bullet points. Be opinionated — tell them what to do, not what they could do. No fluff, no hedging.",
+            "You are a GTM campaign strategist helping build a high-conversion outbound campaign. Analyze the data provided and give specific, actionable recommendations. Use bullet points and headers. Be opinionated — tell them what to do, not what they could do. No fluff, no hedging.",
           model: "sonnet",
         });
         const content =
@@ -238,84 +244,84 @@ export function useCampaignWizard(): UseCampaignWizardReturn {
 
   // Step 1 — Analyze deals
   const analyzeDeals = useCallback(async () => {
-    const wonDeals = deals.filter((d) => d.outcome === "won" && d.company);
-    const lostDeals = deals.filter((d) => d.outcome === "lost" && d.company);
+    const wonSummary = summarizeCsv("CLOSED-WON", wonCsv);
+    const lostSummary = summarizeCsv("CLOSED-LOST", lostCsv);
 
-    const formatDeal = (d: DealEntry) =>
-      `- ${d.company} | ${d.buyerTitle} | ${d.industry} | $${d.dealSize} | ${d.salesCycle} cycle | Signals: ${d.signals} | Why: ${d.whyWonOrLost}`;
+    const prompt = `Analyze these closed deals to find patterns that predict future conversions. Compare won vs lost to find the differentiators.
 
-    const prompt = `Analyze these closed deals to find patterns that predict future conversions.
-
-CLOSED-WON (${wonDeals.length} deals):
-${wonDeals.map(formatDeal).join("\n")}
-
-CLOSED-LOST (${lostDeals.length} deals):
-${lostDeals.map(formatDeal).join("\n")}
+${wonSummary}
+${lostSummary}
 
 Analyze and provide:
 
-1. **WINNING PATTERN** — What do won deals have in common that lost deals don't? Look at: buyer titles, industries, deal sizes, sales cycles, signals, and reasons.
+1. **WINNING PATTERN** — What do won deals have in common that lost deals don't? Look across all available columns — company attributes, buyer titles, industries, deal sizes, sales cycles, signals, and close reasons.
 
-2. **PREDICTIVE SIGNALS** — What public/observable signals appeared before won deals? Which of these could you detect BEFORE they enter pipeline?
+2. **PREDICTIVE SIGNALS** — What observable/public signals appeared before won deals? Which could you detect BEFORE they enter pipeline?
 
 3. **LOSS PATTERN** — What characterizes losses? Is it pricing, timing, competition, or wrong buyer?
 
-4. **ICP REFINEMENT** — Based on this data, who should you target? Be specific: title, company size, industry, and what trigger signals to watch for.
+4. **ICP REFINEMENT** — Based on this data, who exactly should you target? Be specific: title, company size/type, industry, and trigger signals.
 
-5. **DATA SOURCES** — What databases, APIs, or public records could surface these predictive signals early? Think beyond standard enrichment (everyone has job changes and funding rounds).
+5. **DATA SOURCES** — What databases, APIs, or public records could surface these predictive signals early? Think beyond standard enrichment.
 
-6. **PVP SEED** — Based on won deals, what market intelligence would be so valuable to this buyer that they'd respond to a cold email delivering it?`;
+6. **PVP SEED** — Based on won deals, what market intelligence would be so valuable to this buyer persona that they'd respond to a cold email delivering it?`;
 
     await runAiAnalysis(prompt, setDealAnalysis);
-  }, [deals, runAiAnalysis]);
+  }, [wonCsv, lostCsv, runAiAnalysis]);
 
   // Step 2 — Analyze pain sources
   const analyzePain = useCallback(async () => {
-    const wonDeals = deals.filter((d) => d.outcome === "won" && d.company);
     const sourcesText = painSources
       .filter((s) => s.dataSource || s.description)
-      .map(
-        (s, i) =>
-          `Source ${i + 1}: ${s.dataSource} — ${s.description} (signal type: ${s.signalType})`
-      )
+      .map((s, i) => `Source ${i + 1}: ${s.dataSource} — ${s.description} (signal type: ${s.signalType})`)
       .join("\n");
+
+    const wonSample = wonCsv?.rows.slice(0, 5).map((r) =>
+      Object.entries(r).map(([k, v]) => `${k}: ${v}`).join(", ")
+    ).join("\n") || "(no deal data)";
 
     const prompt = `Evaluate these discoverable pain data sources for a GTM campaign:
 
 ${sourcesText}
 
-Context from deal analysis — won deals had these patterns:
-${wonDeals.map((d) => `${d.company}: ${d.signals} → ${d.whyWonOrLost}`).join("\n")}
+Context from won deals (sample):
+${wonSample}
 
-For each data source, tell me:
+For each data source:
 1. **Uniqueness** — Does everyone have this data, or is it a proprietary edge?
 2. **Pain signal** — What specific pain does this data prove?
 3. **PVP potential** — What insight from this data would the prospect pay to receive?
 4. **Verdict** — Go deeper on this source, or find something better?
 
-Then recommend: which combination of these sources creates the strongest campaign angle?`;
+Then recommend the strongest campaign angle from these sources.`;
     await runAiAnalysis(prompt, setPainAnalysis);
-  }, [painSources, deals, runAiAnalysis]);
+  }, [painSources, wonCsv, runAiAnalysis]);
 
   // Step 3 — Analyze context
   const analyzeContext = useCallback(async () => {
-    const prompt = `Review this campaign context and identify gaps:
+    const clientList = campaignContext.selectedClients.length
+      ? `Client profiles loaded: ${campaignContext.selectedClients.join(", ")}`
+      : "No client profiles selected";
+    const kbList = campaignContext.selectedKbFiles.length
+      ? `KB files loaded: ${campaignContext.selectedKbFiles.join(", ")}`
+      : "No KB files selected";
 
-ICP: ${campaignContext.icpDescription}
-Competitive intel: ${campaignContext.competitiveIntel}
-Common objections: ${campaignContext.objections}
-Industry notes: ${campaignContext.industryNotes}
+    const prompt = `Review the context selection for this campaign and identify gaps:
 
-Deal context: ${deals.filter((d) => d.outcome === "won").map((d) => `${d.company}: ${d.whyWonOrLost}`).join("; ")}
+${clientList}
+${kbList}
+${campaignContext.additionalNotes ? `Additional notes: ${campaignContext.additionalNotes}` : ""}
+
+Deals analyzed: ${wonCsv?.totalRows || 0} won, ${lostCsv?.totalRows || 0} lost
 Data sources: ${painSources.map((s) => s.dataSource).filter(Boolean).join(", ")}
 
-Tell me:
-1. What context is missing that would make messages stronger?
-2. Which objections should we preempt in messaging?
-3. Which persona should we target first and why?
-4. Biggest risk with this campaign?`;
+Based on the files selected, tell me:
+1. What context is missing that would make messages stronger? (e.g. missing competitive intel, missing persona docs, missing industry context)
+2. Which objections should we preempt based on the loaded context?
+3. Which persona to target first and why?
+4. Biggest risk with this campaign given the loaded context?`;
     await runAiAnalysis(prompt, setContextAnalysis);
-  }, [campaignContext, deals, painSources, runAiAnalysis]);
+  }, [campaignContext, wonCsv, lostCsv, painSources, runAiAnalysis]);
 
   // Step 4 — Generate plan
   const generatePlan = useCallback(async () => {
@@ -331,8 +337,8 @@ Sequence: ${campaignPlan.sequence}
 Signals: ${campaignPlan.signals}
 Batch size: ${campaignPlan.initialBatchSize}
 
-Context: ICP is ${campaignContext.icpDescription}.
-Won deal patterns: ${deals.filter((d) => d.outcome === "won").map((d) => `${d.company}: ${d.whyWonOrLost}`).join("; ")}
+Context loaded: ${campaignContext.selectedClients.length} client profiles, ${campaignContext.selectedKbFiles.length} KB files.
+Deals analyzed: ${wonCsv?.totalRows || 0} won, ${lostCsv?.totalRows || 0} lost.
 
 Provide:
 1. A sample first-touch message using the ${campaignPlan.framework} framework
@@ -341,7 +347,7 @@ Provide:
 4. Success metrics and thresholds
 5. When to scale vs. iterate`;
     await runAiAnalysis(prompt, setPlanAnalysis);
-  }, [campaignPlan, campaignContext, deals, runAiAnalysis]);
+  }, [campaignPlan, campaignContext, wonCsv, lostCsv, runAiAnalysis]);
 
   // Step 5 — Generate review
   const generateReview = useCallback(async () => {
@@ -355,8 +361,8 @@ PERSONA: ${campaignPlan.persona}
 FRAMEWORK: ${campaignPlan.framework}
 SEQUENCE: ${campaignPlan.sequence}
 
-Based on ${deals.length} analyzed deals (${deals.filter((d) => d.outcome === "won").length} won, ${deals.filter((d) => d.outcome === "lost").length} lost).
-ICP: ${campaignContext.icpDescription}
+Based on ${(wonCsv?.totalRows || 0) + (lostCsv?.totalRows || 0)} analyzed deals (${wonCsv?.totalRows || 0} won, ${lostCsv?.totalRows || 0} lost).
+Context: ${campaignContext.selectedClients.length} client profiles, ${campaignContext.selectedKbFiles.length} KB files loaded.
 Data sources: ${painSources.map((s) => s.dataSource).filter(Boolean).join(", ")}
 
 Score on:
@@ -368,24 +374,25 @@ Score on:
 
 Then give the ONE thing that would most improve this campaign.`;
     await runAiAnalysis(prompt, setReviewAnalysis);
-  }, [campaignPlan, campaignContext, deals, painSources, runAiAnalysis]);
+  }, [campaignPlan, campaignContext, wonCsv, lostCsv, painSources, runAiAnalysis]);
 
   // Pain source management
   const addPainSource = useCallback(() => {
     setPainSources((prev) => [...prev, { dataSource: "", description: "", signalType: "" }]);
   }, []);
-
   const updatePainSource = useCallback((idx: number, source: PainSource) => {
     setPainSources((prev) => prev.map((s, i) => (i === idx ? source : s)));
   }, []);
-
   const removePainSource = useCallback((idx: number) => {
     setPainSources((prev) => prev.filter((_, i) => i !== idx));
   }, []);
 
   const reset = useCallback(() => {
     setStep("intro");
-    setDeals([]);
+    setWonCsv(null);
+    setLostCsv(null);
+    if (wonFileRef.current) wonFileRef.current.value = "";
+    if (lostFileRef.current) lostFileRef.current.value = "";
     setPainSources([{ dataSource: "", description: "", signalType: "" }]);
     setCampaignContext(emptyContext);
     setCampaignPlan(emptyPlan);
@@ -405,14 +412,16 @@ Then give the ONE thing that would most improve this campaign.`;
     goToStep,
     canGoNext,
     canGoBack,
-    deals,
-    addDeal,
-    updateDeal,
-    removeDeal,
+    wonCsv,
+    lostCsv,
+    wonFileRef,
+    lostFileRef,
+    uploadWonCsv,
+    uploadLostCsv,
+    clearWonCsv,
+    clearLostCsv,
     dealAnalysis,
     analyzeDeals,
-    wonCount,
-    lostCount,
     painSources,
     addPainSource,
     updatePainSource,
