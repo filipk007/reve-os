@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
+  useEffect(() => {
+    if (searchParams.get("error") === "unauthorized_domain") {
+      setError("Access restricted to @thekiln.com accounts");
+    }
+  }, [searchParams]);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -16,6 +24,9 @@ export default function LoginPage() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          hd: "thekiln.com",
+        },
       },
     });
 

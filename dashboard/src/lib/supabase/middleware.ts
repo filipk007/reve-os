@@ -50,5 +50,14 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Domain restriction — only @thekiln.com emails allowed
+  if (user.email && !user.email.endsWith("@thekiln.com")) {
+    await supabase.auth.signOut();
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("error", "unauthorized_domain");
+    return NextResponse.redirect(url);
+  }
+
   return supabaseResponse;
 }
