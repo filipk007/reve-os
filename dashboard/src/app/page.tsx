@@ -854,6 +854,24 @@ function FunctionBuilderPanel({
               />
             </div>
 
+            {/* Folder */}
+            <div>
+              <label className="text-xs font-medium text-clay-300 mb-1 block">Folder <span className="text-red-400">*</span></label>
+              <Select value={folder} onValueChange={setFolder}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a folder..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableFolders.map(f => (
+                    <SelectItem key={f.name} value={f.name}>{f.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {availableFolders.length === 0 && (
+                <p className="text-[10px] text-clay-300 mt-1">No folders yet — create one first using the &quot;New Folder&quot; button above</p>
+              )}
+            </div>
+
             {/* Inputs */}
             <div>
               <div className="flex items-center justify-between mb-1">
