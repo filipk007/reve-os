@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Copy, ChevronRight, X, Terminal, Key, Clock, Globe, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Copy, ChevronRight, X, Terminal, Key, Clock, Globe, Search, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import type {
   FunctionDefinition,
@@ -71,6 +72,17 @@ function ToolCatalogPanel({
     );
   }, [catalogSearch, allTools]);
 
+  // Sort categories: Recommended first, then the rest
+  const sortedCategories = useMemo(
+    () =>
+      [...toolCategories].sort((a, b) => {
+        if (a.category === "Recommended") return -1;
+        if (b.category === "Recommended") return 1;
+        return 0;
+      }),
+    [toolCategories]
+  );
+
   return (
     <Card className="border-clay-600">
       <CardHeader className="pb-3">
@@ -112,7 +124,12 @@ function ToolCatalogPanel({
                   onClick={() => onAddStep(tool.id)}
                   className="w-full text-left px-2 py-1.5 rounded text-xs hover:bg-clay-700 transition-colors"
                 >
-                  <div className="font-medium text-clay-100">{tool.name}</div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-clay-100">{tool.name}</span>
+                    {tool.alias_of && (
+                      <span className="text-[9px] text-clay-400">via Claude</span>
+                    )}
+                  </div>
                   <div className="text-[10px] text-clay-300 line-clamp-1">
                     {tool.description}
                   </div>
@@ -125,30 +142,62 @@ function ToolCatalogPanel({
               )}
             </div>
           ) : (
-            /* Category-grouped list */
-            toolCategories.map((cat) => (
-              <div key={cat.category} className="mb-3">
-                <div className="text-[10px] text-clay-300 uppercase tracking-wider mb-1">
-                  {cat.category}
+            /* Category-grouped list — Recommended first */
+            sortedCategories.map((cat) => {
+              const isRecommended = cat.category === "Recommended";
+              return (
+                <div
+                  key={cat.category}
+                  className={
+                    isRecommended
+                      ? "mb-4 rounded-lg border border-purple-500/20 bg-purple-500/5 p-2"
+                      : "mb-3"
+                  }
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    {isRecommended && (
+                      <Sparkles className="h-3 w-3 text-purple-400" />
+                    )}
+                    <span className="text-[10px] text-clay-300 uppercase tracking-wider">
+                      {cat.category}
+                    </span>
+                    {isRecommended && (
+                      <Badge
+                        variant="outline"
+                        className="text-[8px] px-1 py-0 h-3.5 bg-purple-500/10 text-purple-400 border-purple-500/30"
+                      >
+                        Powered by Claude
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    {cat.tools.map((tool) => (
+                      <button
+                        key={tool.id}
+                        onClick={() => onAddStep(tool.id)}
+                        className={
+                          isRecommended
+                            ? "w-full text-left px-2 py-2 rounded text-xs hover:bg-purple-500/10 transition-colors"
+                            : "w-full text-left px-2 py-1.5 rounded text-xs hover:bg-clay-700 transition-colors"
+                        }
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-clay-100">
+                            {tool.name}
+                          </span>
+                          {tool.alias_of && (
+                            <span className="text-[9px] text-clay-400">via Claude</span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-clay-300 line-clamp-1">
+                          {tool.description}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  {cat.tools.map((tool) => (
-                    <button
-                      key={tool.id}
-                      onClick={() => onAddStep(tool.id)}
-                      className="w-full text-left px-2 py-1.5 rounded text-xs hover:bg-clay-700 transition-colors"
-                    >
-                      <div className="font-medium text-clay-100">
-                        {tool.name}
-                      </div>
-                      <div className="text-[10px] text-clay-300 line-clamp-1">
-                        {tool.description}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </CardContent>

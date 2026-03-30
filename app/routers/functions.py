@@ -142,14 +142,14 @@ Request: "Research a company and find the VP of Sales contact info"
 ```json
 {{
   "reasoning": {{
-    "thought_process": "First enrich the company to get firmographics, then search for VP of Sales, then find and verify their email.",
+    "thought_process": "Use web_search (Claude's native web research) to find company info and VP of Sales in one step, then find their email with findymail's native API.",
     "tools_considered": [
-      {{"tool_id": "apollo_org", "name": "Apollo Org Enrich", "why": "Company enrichment for firmographics", "selected": true}},
-      {{"tool_id": "apollo_people", "name": "Apollo People Search", "why": "Find people by title at company", "selected": true}},
-      {{"tool_id": "findymail", "name": "Findymail", "why": "High-accuracy email finding with native API (fastest)", "selected": true}},
-      {{"tool_id": "hunter", "name": "Hunter.io", "why": "Alternative email finder but no native API", "selected": false}}
+      {{"tool_id": "web_search", "name": "Claude Web Search", "why": "Native web research — can find company info, LinkedIn profiles, and people in one search", "selected": true}},
+      {{"tool_id": "apollo_org", "name": "Apollo Org Enrich", "why": "Company enrichment but no native API — web_search covers this", "selected": false}},
+      {{"tool_id": "apollo_people", "name": "Apollo People Search", "why": "People search but no native API — web_search covers this", "selected": false}},
+      {{"tool_id": "findymail", "name": "Findymail", "why": "High-accuracy email finding with native API (fastest)", "selected": true}}
     ],
-    "confidence": 0.85
+    "confidence": 0.9
   }},
   "function": {{
     "name": "VP Sales Finder",
@@ -165,8 +165,7 @@ Request: "Research a company and find the VP of Sales contact info"
       {{"key": "contact_email", "type": "string", "description": "Verified email address"}}
     ],
     "steps": [
-      {{"tool": "apollo_org", "params": {{"domain": "{{{{domain}}}}"}}}},
-      {{"tool": "apollo_people", "params": {{"domain": "{{{{domain}}}}", "title": "VP Sales"}}}},
+      {{"tool": "web_search", "params": {{"query": "{{{{company_name}}}} {{{{domain}}}} VP Sales OR Vice President Sales LinkedIn"}}}},
       {{"tool": "findymail", "params": {{"first_name": "{{{{contact_name}}}}", "last_name": "", "domain": "{{{{domain}}}}"}}}}
     ]
   }}
@@ -176,7 +175,10 @@ Request: "Research a company and find the VP of Sales contact info"
 # Rules
 - Use `{{{{input_name}}}}` syntax in step params to reference function inputs
 - Later steps can reference outputs from earlier steps the same way
-- Prefer tools with speed: fast (native API) when available
+- PREFER `web_search` for any step that needs real-time data: company research, LinkedIn lookups, people search, domain finding, news, or any web content. It's Claude's native web research — most reliable and no external API needed
+- Only use provider-specific tools (exa, apollo_people, apollo_org, etc.) when the user explicitly names them. These all use the same underlying web search — `web_search` is the honest, first-class version
+- Prefer tools with speed: fast (native API) when available — e.g. findymail for email finding
+- Combine multiple research needs into fewer `web_search` steps when possible (it can find company info + people + LinkedIn in one search)
 - Keep functions focused — 2-5 steps is ideal
 - Mark inputs as required only if the function can't work without them
 - Output keys should be snake_case

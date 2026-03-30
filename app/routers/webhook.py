@@ -790,7 +790,7 @@ async def _run_function_stream(body: WebhookRequest, request: Request):
                 f"- Return ONLY a valid JSON object. No markdown, no explanation, no code fences.\n"
             )
 
-            data_categories = {"Research", "People Search", "Company Enrichment"}
+            data_categories = {"Research", "People Search", "Company Enrichment", "Recommended", "Scraping"}
             use_agent = tool_meta.get("category") in data_categories
             trace["executor"] = "ai_agent" if use_agent else "ai_fallback"
             trace["ai_prompt"] = ai_prompt
@@ -1092,9 +1092,17 @@ async def _run_function_consolidated(body: WebhookRequest, request: Request) -> 
     if accumulated_output:
         prompt += f"\n\n---\n\n# Data from Native API Steps\n\n{__import__('json').dumps(accumulated_output, default=str)}"
 
-    # Execute the mega-prompt — ONE claude --print call
+    # Execute the mega-prompt — agent executor when web search is needed
     ai_start = time.time()
-    result = await pool.submit(prompt, consolidated.model, 180)
+    if consolidated.needs_agent:
+        result = await pool.submit(
+            prompt, consolidated.model, 300,
+            executor_type="agent",
+            max_turns=5,
+            allowed_tools=["WebSearch", "WebFetch"],
+        )
+    else:
+        result = await pool.submit(prompt, consolidated.model, 180)
     ai_duration = int((time.time() - ai_start) * 1000)
 
     raw_output = result.get("result", {})
@@ -1388,7 +1396,7 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
                 f"- Return ONLY a valid JSON object. No markdown, no explanation, no code fences.\n"
             )
 
-            data_categories = {"Research", "People Search", "Company Enrichment"}
+            data_categories = {"Research", "People Search", "Company Enrichment", "Recommended", "Scraping"}
             use_agent = tool_meta.get("category") in data_categories
             trace["executor"] = "ai_agent" if use_agent else "ai_fallback"
             trace["ai_prompt"] = ai_prompt

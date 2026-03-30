@@ -25,7 +25,7 @@ logger = logging.getLogger("clay-webhook-os")
 class ConsolidatedResult:
     """Return value from build_consolidated_prompt."""
 
-    __slots__ = ("prompt", "model", "task_keys", "output_keys", "native_step_indices")
+    __slots__ = ("prompt", "model", "task_keys", "output_keys", "native_step_indices", "needs_agent")
 
     def __init__(
         self,
@@ -34,18 +34,20 @@ class ConsolidatedResult:
         task_keys: list[str],
         output_keys: list[str],
         native_step_indices: list[int],
+        needs_agent: bool = False,
     ):
         self.prompt = prompt
         self.model = model
         self.task_keys = task_keys
         self.output_keys = output_keys
         self.native_step_indices = native_step_indices
+        self.needs_agent = needs_agent
 
 
 class TaskSectionsResult:
     """Intermediate result from building task sections."""
 
-    __slots__ = ("sections", "context", "seen_paths", "task_keys", "output_hints", "native_step_indices")
+    __slots__ = ("sections", "context", "seen_paths", "task_keys", "output_hints", "native_step_indices", "needs_agent")
 
     def __init__(self):
         self.sections: list[str] = []
@@ -54,6 +56,7 @@ class TaskSectionsResult:
         self.task_keys: list[str] = []
         self.output_hints: list[str] = []
         self.native_step_indices: list[int] = []
+        self.needs_agent: bool = False
 
 
 # ── Shared helpers (used by both execute and preview paths) ──────────
@@ -156,8 +159,22 @@ def build_task_sections(func: FunctionDefinition, data: dict) -> TaskSectionsRes
             if has_native and tool_id == "findymail" and settings.findymail_api_key:
                 ts.native_step_indices.append(step_idx)
             else:
+                # Mark that this function needs agent executor for web search
+                if provider.get("execution_mode") == "ai_agent":
+                    ts.needs_agent = True
+
                 ts.task_keys.append(task_key)
                 output_summary = ", ".join(o.key for o in func.outputs if o.description)
+
+                # Enhanced prompt for web_search / agent tools
+                search_instruction = (
+                    "You MUST use WebSearch to find real-time data for this task. "
+                    "Do NOT rely on training data alone — search the web and return verified results."
+                ) if provider.get("execution_mode") == "ai_agent" else (
+                    "Use your knowledge to return accurate, real-world data. "
+                    "If you are not confident about a value, return null rather than guessing."
+                )
+
                 ts.sections.append(
                     f"===== {task_key.upper()}: {provider.get('name', tool_id)} =====\n\n"
                     f"You are a precise data lookup agent.\n\n"
@@ -166,8 +183,7 @@ def build_task_sections(func: FunctionDefinition, data: dict) -> TaskSectionsRes
                     + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
                     + f"\n\nExpected output keys:\n"
                     + "\n".join(ts.output_hints)
-                    + "\n\nUse your knowledge to return accurate, real-world data. "
-                    "If you are not confident about a value, return null rather than guessing."
+                    + f"\n\n{search_instruction}"
                 )
 
     return ts
@@ -342,6 +358,7 @@ def build_consolidated_prompt(
         task_keys=ts.task_keys,
         output_keys=output_keys,
         native_step_indices=ts.native_step_indices,
+        needs_agent=ts.needs_agent,
     )
 
 

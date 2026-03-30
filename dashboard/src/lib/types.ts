@@ -516,6 +516,7 @@ export interface ToolDefinition {
   has_native_api?: boolean;
   native_api_provider?: string;
   ai_fallback_description?: string;
+  alias_of?: string;
 }
 
 export interface StepTrace {
