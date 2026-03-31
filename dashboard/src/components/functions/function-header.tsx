@@ -11,7 +11,6 @@ import {
 import {
   ArrowLeft,
   CopyPlus,
-  FlaskConical,
   Play,
   Save,
   Pencil,
@@ -28,8 +27,8 @@ interface FunctionHeaderProps {
   func: FunctionDefinition;
   editing: boolean;
   saving: boolean;
-  testOpen: boolean;
-  onToggleTest: () => void;
+  testOpen?: boolean;
+  onToggleTest?: () => void;
   onEdit: () => void;
   onCancelEdit: () => void;
   onSave: () => void;
@@ -41,8 +40,6 @@ export function FunctionHeader({
   func,
   editing,
   saving,
-  testOpen,
-  onToggleTest,
   onEdit,
   onCancelEdit,
   onSave,
@@ -100,25 +97,6 @@ export function FunctionHeader({
             </Button>
           </TooltipTrigger>
           <TooltipContent>AI explanation of what this function does</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onToggleTest}
-              className={cn(
-                "border-clay-600 text-clay-300",
-                testOpen && "border-kiln-teal text-kiln-teal"
-              )}
-            >
-              <FlaskConical className="h-3.5 w-3.5 mr-1.5" />
-              Quick Test
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <kbd className="text-[10px]">{"\u2318"}+Enter</kbd> to run
-          </TooltipContent>
         </Tooltip>
         <Button
           variant="outline"

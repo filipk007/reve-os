@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,8 +12,6 @@ import {
   duplicateFunction,
   fetchToolCategories,
   generateFunctionClayConfig,
-  streamFunctionExecution,
-  previewFunction,
 } from "@/lib/api";
 import type {
   FunctionDefinition,
@@ -22,13 +20,10 @@ import type {
   FunctionStep,
   ToolCategory,
   ToolDefinition,
-  PreviewStep,
-  StepTrace,
 } from "@/lib/types";
 import { toast } from "sonner";
 
 import { FunctionHeader } from "@/components/functions/function-header";
-import { FunctionPlayground } from "@/components/functions/function-playground";
 import { FunctionBuilder } from "@/components/functions/function-builder";
 import { FunctionClayConfig } from "@/components/functions/function-clay-config";
 import { FunctionRunPanel } from "@/components/functions/function-run-panel";
@@ -51,26 +46,6 @@ export default function FunctionDetailPage() {
   // Step params viewer
   const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set());
   const [editingStepIdx, setEditingStepIdx] = useState<number | null>(null);
-
-  // Quick test panel
-  const [testOpen, setTestOpen] = useState(false);
-  const [testInputs, setTestInputs] = useState<Record<string, string>>({});
-  const [testResult, setTestResult] = useState<Record<string, unknown> | null>(null);
-  const [testing, setTesting] = useState(false);
-  const testInputsRef = useRef<Record<string, string>>({});
-  testInputsRef.current = testInputs;
-
-  // Streaming state
-  const [streamingTrace, setStreamingTrace] = useState<StepTrace[]>([]);
-  const abortRef = useRef<AbortController | null>(null);
-
-  // Preview state (Phase 4)
-  const [preview, setPreview] = useState<{
-    steps: PreviewStep[];
-    unresolved_variables: string[];
-    summary: Record<string, number>;
-  } | null>(null);
-  const [previewing, setPreviewing] = useState(false);
 
   // Editable fields
   const [name, setName] = useState("");
@@ -182,17 +157,12 @@ export default function FunctionDetailPage() {
         return;
       }
 
-      if (e.key === "Enter" && testOpen && !testing) {
-        e.preventDefault();
-        handleRunTest();
-        return;
-      }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editing, testOpen, testing, func, inputs]);
+  }, [editing, func, inputs]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -271,51 +241,6 @@ export default function FunctionDetailPage() {
     }
   };
 
-  const handleRunTest = () => {
-    if (!func) return;
-    // Abort any previous stream
-    abortRef.current?.abort();
-
-    setTesting(true);
-    setTestResult(null);
-    setStreamingTrace([]);
-
-    abortRef.current = streamFunctionExecution(
-      func.id,
-      testInputsRef.current,
-      (trace) => {
-        setStreamingTrace((prev) => [...prev, trace]);
-      },
-      (result) => {
-        setTestResult(result);
-        setTesting(false);
-      },
-      (error) => {
-        setTestResult({ error: true, message: error });
-        setTesting(false);
-      },
-    );
-  };
-
-  const handlePreview = async () => {
-    if (!func) return;
-    setPreviewing(true);
-    setPreview(null);
-    setTestResult(null);
-    try {
-      const result = await previewFunction(func.id, testInputsRef.current);
-      setPreview({
-        steps: result.steps,
-        unresolved_variables: result.unresolved_variables,
-        summary: result.summary,
-      });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Preview failed");
-    } finally {
-      setPreviewing(false);
-    }
-  };
-
   const handleAddStep = (tool: string) => {
     setSteps([...steps, { tool, params: {} }]);
     setCatalogOpen(false);
@@ -357,8 +282,6 @@ export default function FunctionDetailPage() {
             func={func}
             editing={editing}
             saving={saving}
-            testOpen={testOpen}
-            onToggleTest={() => setTestOpen(!testOpen)}
             onEdit={() => setEditing(true)}
             onCancelEdit={() => { setEditing(false); setEditingStepIdx(null); load(); }}
             onSave={handleSave}
@@ -421,27 +344,6 @@ export default function FunctionDetailPage() {
             </div>
           </div>
 
-          {/* Quick Test Panel */}
-          {testOpen && (
-            <div className="mt-6">
-              <ErrorBoundary>
-                <FunctionPlayground
-                  inputs={inputs}
-                  testInputs={testInputs}
-                  setTestInputs={setTestInputs}
-                  testResult={testResult}
-                  testing={testing}
-                  onRun={handleRunTest}
-                  onClose={() => setTestOpen(false)}
-                  preview={preview}
-                  previewing={previewing}
-                  onPreview={handlePreview}
-                  streamingTrace={streamingTrace}
-                  functionId={func.id}
-                />
-              </ErrorBoundary>
-            </div>
-          )}
         </div>
       </div>
     </TooltipProvider>

@@ -19,9 +19,13 @@ import {
   Clock,
   Zap,
   AlertTriangle,
+  Upload,
+  FileSpreadsheet,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import Papa from "papaparse";
 import type { FunctionDefinition, FunctionInput, StepTrace } from "@/lib/types";
 import { OutputRenderer } from "@/components/output/output-renderer";
 import { ExecutionTrace } from "./execution-trace";
@@ -57,6 +61,14 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
   const [localWaiting, setLocalWaiting] = useState(false);
   const [pasteMode, setPasteMode] = useState(false);
   const [pastedJson, setPastedJson] = useState("");
+
+  // Batch state
+  const [csvRows, setCsvRows] = useState<Record<string, string>[] | null>(null);
+  const [csvFileName, setCsvFileName] = useState("");
+  const [batchRunning, setBatchRunning] = useState(false);
+  const [batchProgress, setBatchProgress] = useState({ done: 0, total: 0, errors: 0 });
+  const [batchResults, setBatchResults] = useState<Array<{ input: Record<string, string>; output: Record<string, unknown> | null; error: string | null }>>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // UI state
   const [activeTab, setActiveTab] = useState<"output" | "trace" | "raw" | "history">("output");
@@ -172,6 +184,97 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
     setCopied(true);
     toast.success("Copied");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // ── Batch handlers ────────────────────────────────────
+
+  const handleCsvUpload = (file: File) => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const rows = results.data as Record<string, string>[];
+        if (rows.length === 0) {
+          toast.error("CSV is empty");
+          return;
+        }
+        setCsvRows(rows);
+        setCsvFileName(file.name);
+        toast.success(`Loaded ${rows.length} rows from ${file.name}`);
+      },
+      error: (err) => toast.error(`CSV parse error: ${err.message}`),
+    });
+  };
+
+  const handleBatchRun = async () => {
+    if (!csvRows || csvRows.length === 0) return;
+    setBatchRunning(true);
+    setBatchResults([]);
+    setBatchProgress({ done: 0, total: csvRows.length, errors: 0 });
+
+    const results: typeof batchResults = [];
+    let errors = 0;
+
+    for (let i = 0; i < csvRows.length; i++) {
+      const row = csvRows[i];
+      try {
+        const output = await new Promise<Record<string, unknown>>((resolve, reject) => {
+          streamFunctionExecution(
+            func.id,
+            row,
+            () => {}, // ignore step traces for batch
+            (res) => resolve(res),
+            (err) => reject(new Error(err)),
+          );
+        });
+        results.push({ input: row, output, error: null });
+      } catch (e) {
+        errors++;
+        results.push({ input: row, output: null, error: e instanceof Error ? e.message : "Failed" });
+      }
+      setBatchProgress({ done: i + 1, total: csvRows.length, errors });
+      setBatchResults([...results]);
+    }
+
+    setBatchRunning(false);
+    toast.success(`Batch complete: ${csvRows.length - errors} success, ${errors} errors`);
+  };
+
+  const handleBatchDownload = () => {
+    if (batchResults.length === 0) return;
+    // Collect all keys from inputs + outputs
+    const allKeys: string[] = [];
+    for (const r of batchResults) {
+      for (const k of Object.keys(r.input)) if (!allKeys.includes(k)) allKeys.push(k);
+      if (r.output) {
+        for (const k of Object.keys(r.output)) {
+          if (!k.startsWith("_") && !allKeys.includes(k)) allKeys.push(k);
+        }
+      }
+    }
+    allKeys.push("_status", "_error");
+
+    const csvContent = Papa.unparse(
+      batchResults.map((r) => {
+        const row: Record<string, unknown> = { ...r.input };
+        if (r.output) {
+          for (const [k, v] of Object.entries(r.output)) {
+            if (!k.startsWith("_")) row[k] = typeof v === "object" ? JSON.stringify(v) : v;
+          }
+        }
+        row._status = r.error ? "error" : "success";
+        row._error = r.error || "";
+        return row;
+      }),
+    );
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = csvFileName.replace(".csv", "_output.csv");
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // ── Derived state ─────────────────────────────────────
@@ -333,6 +436,136 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
             </div>
           </div>
         )}
+
+        {/* Batch CSV section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-clay-500 font-medium uppercase tracking-wide">Batch</span>
+            <div className="flex-1 h-px bg-clay-800" />
+          </div>
+
+          {!csvRows ? (
+            <div
+              onDrop={(e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) handleCsvUpload(file); }}
+              onDragOver={(e) => e.preventDefault()}
+              onClick={() => fileInputRef.current?.click()}
+              className="border border-dashed border-clay-700 rounded-lg p-4 text-center cursor-pointer hover:border-clay-600 hover:bg-clay-800/30 transition-colors"
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                className="hidden"
+                onChange={(e) => { const file = e.target.files?.[0]; if (file) handleCsvUpload(file); }}
+              />
+              <Upload className="h-5 w-5 text-clay-500 mx-auto mb-1" />
+              <div className="text-xs text-clay-400">Drop CSV or click to upload</div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-2 rounded bg-clay-800/50 border border-clay-700">
+                <FileSpreadsheet className="h-4 w-4 text-kiln-teal shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-clay-200 truncate">{csvFileName}</div>
+                  <div className="text-[10px] text-clay-500">{csvRows.length} rows</div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setCsvRows(null); setCsvFileName(""); setBatchResults([]); }}
+                  className="h-6 w-6 p-0 text-clay-500 hover:text-clay-300"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+
+              {/* Preview first 3 rows */}
+              <div className="overflow-x-auto rounded border border-clay-800">
+                <table className="w-full text-[10px]">
+                  <thead>
+                    <tr className="border-b border-clay-800 bg-clay-900">
+                      {Object.keys(csvRows[0]).slice(0, 5).map((h) => (
+                        <th key={h} className="text-left text-clay-500 px-2 py-1 font-medium">{h}</th>
+                      ))}
+                      {Object.keys(csvRows[0]).length > 5 && (
+                        <th className="text-clay-600 px-2 py-1">+{Object.keys(csvRows[0]).length - 5}</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {csvRows.slice(0, 3).map((row, i) => (
+                      <tr key={i} className="border-b border-clay-800/50">
+                        {Object.values(row).slice(0, 5).map((v, j) => (
+                          <td key={j} className="text-clay-300 px-2 py-1 truncate max-w-[120px]">{v}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleBatchRun}
+                  disabled={batchRunning}
+                  size="sm"
+                  className="bg-kiln-teal text-clay-950 hover:bg-kiln-teal-light"
+                >
+                  {batchRunning ? (
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  ) : (
+                    <Play className="h-3.5 w-3.5 mr-1.5" />
+                  )}
+                  {batchRunning ? `${batchProgress.done}/${batchProgress.total}` : `Run ${csvRows.length} Rows`}
+                </Button>
+                {batchResults.length > 0 && (
+                  <Button
+                    onClick={handleBatchDownload}
+                    variant="outline"
+                    size="sm"
+                    className="border-clay-700 text-clay-400 hover:text-clay-100"
+                  >
+                    Download CSV
+                  </Button>
+                )}
+              </div>
+
+              {/* Batch progress */}
+              {batchRunning && (
+                <div className="space-y-1">
+                  <div className="w-full bg-clay-800 rounded-full h-1.5">
+                    <div
+                      className="bg-kiln-teal h-1.5 rounded-full transition-all"
+                      style={{ width: `${(batchProgress.done / Math.max(batchProgress.total, 1)) * 100}%` }}
+                    />
+                  </div>
+                  <div className="text-[10px] text-clay-500">
+                    {batchProgress.done}/{batchProgress.total} complete
+                    {batchProgress.errors > 0 && (
+                      <span className="text-red-400 ml-2">{batchProgress.errors} errors</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Batch results summary */}
+              {!batchRunning && batchResults.length > 0 && (
+                <div className="flex items-center gap-2 text-xs">
+                  <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 text-[10px]">
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    {batchResults.filter((r) => !r.error).length} success
+                  </Badge>
+                  {batchResults.some((r) => r.error) && (
+                    <Badge variant="outline" className="border-red-500/30 text-red-400 text-[10px]">
+                      <XCircle className="h-3 w-3 mr-1" />
+                      {batchResults.filter((r) => r.error).length} errors
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Streaming progress */}
         {isStreaming && (
