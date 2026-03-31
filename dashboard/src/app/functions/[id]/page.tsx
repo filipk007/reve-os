@@ -31,6 +31,7 @@ import { FunctionHeader } from "@/components/functions/function-header";
 import { FunctionPlayground } from "@/components/functions/function-playground";
 import { FunctionBuilder } from "@/components/functions/function-builder";
 import { FunctionClayConfig } from "@/components/functions/function-clay-config";
+import { FunctionRunPanel } from "@/components/functions/function-run-panel";
 
 export default function FunctionDetailPage() {
   const params = useParams();
@@ -395,23 +396,29 @@ export default function FunctionDetailPage() {
               />
             </ErrorBoundary>
 
-            <ErrorBoundary>
-              <FunctionClayConfig
-                func={func}
-                inputs={inputs}
-                editing={editing}
-                catalogOpen={catalogOpen}
-                toolCategories={toolCategories}
-                onAddStep={handleAddStep}
-                clayWizardOpen={clayWizardOpen}
-                setClayWizardOpen={setClayWizardOpen}
-                clayConfig={clayConfig}
-                clayWizardStep={clayWizardStep}
-                setClayWizardStep={setClayWizardStep}
-                onCopyConfig={handleCopyClayConfig}
-                onOpenWizard={openClayWizard}
-              />
-            </ErrorBoundary>
+            <div className="space-y-6">
+              <ErrorBoundary>
+                <FunctionRunPanel func={func} inputs={inputs} />
+              </ErrorBoundary>
+
+              <ErrorBoundary>
+                <FunctionClayConfig
+                  func={func}
+                  inputs={inputs}
+                  editing={editing}
+                  catalogOpen={catalogOpen}
+                  toolCategories={toolCategories}
+                  onAddStep={handleAddStep}
+                  clayWizardOpen={clayWizardOpen}
+                  setClayWizardOpen={setClayWizardOpen}
+                  clayConfig={clayConfig}
+                  clayWizardStep={clayWizardStep}
+                  setClayWizardStep={setClayWizardStep}
+                  onCopyConfig={handleCopyClayConfig}
+                  onOpenWizard={openClayWizard}
+                />
+              </ErrorBoundary>
+            </div>
           </div>
 
           {/* Quick Test Panel */}
