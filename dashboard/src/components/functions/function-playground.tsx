@@ -21,6 +21,9 @@ import {
   Loader2,
   Clock,
   Zap,
+  Terminal,
+  Clipboard,
+  ClipboardPaste,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -28,7 +31,7 @@ import type { FunctionInput, StepTrace, PreviewStep } from "@/lib/types";
 import { ExecutionTrace } from "./execution-trace";
 import { ExecutionHistoryPanel } from "./execution-history";
 import { OutputRenderer } from "@/components/output/output-renderer";
-import { testFunctionStep } from "@/lib/api";
+import { testFunctionStep, prepareConsolidatedPrompt, queueLocalJob, submitLocalResult, fetchLocalJob } from "@/lib/api";
 
 interface FunctionPlaygroundProps {
   inputs: FunctionInput[];
@@ -92,6 +95,82 @@ export function FunctionPlayground({
 }: FunctionPlaygroundProps) {
   const [activeTab, setActiveTab] = useState<"output" | "trace" | "raw" | "history">("output");
   const [copied, setCopied] = useState(false);
+
+  // Local execution state
+  const [copyingPrompt, setCopyingPrompt] = useState(false);
+  const [localJobId, setLocalJobId] = useState<string | null>(null);
+  const [localWaiting, setLocalWaiting] = useState(false);
+  const [pasteMode, setPasteMode] = useState(false);
+  const [pastedJson, setPastedJson] = useState("");
+
+  const handleCopyPrompt = async () => {
+    if (!functionId) return;
+    setCopyingPrompt(true);
+    try {
+      const result = await prepareConsolidatedPrompt(functionId, testInputs);
+      await navigator.clipboard.writeText(result.prompt);
+      toast.success(`Prompt copied (${(result.prompt.length / 1000).toFixed(1)}k chars)`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to copy prompt");
+    } finally {
+      setCopyingPrompt(false);
+    }
+  };
+
+  const handleRunLocally = async () => {
+    if (!functionId) return;
+    setLocalWaiting(true);
+    try {
+      const job = await queueLocalJob(functionId, testInputs);
+      setLocalJobId(job.job_id);
+      toast.success(`Job queued: ${job.job_id}. Run clay-run --watch to pick it up.`);
+      setPasteMode(true);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to queue job");
+      setLocalWaiting(false);
+    }
+  };
+
+  const handleSubmitPastedResult = async () => {
+    if (!functionId || !localJobId) return;
+    try {
+      const parsed = JSON.parse(pastedJson);
+      const response = await submitLocalResult(functionId, localJobId, parsed);
+      toast.success(`Result saved: ${response.exec_id}`);
+      setPasteMode(false);
+      setPastedJson("");
+      setLocalJobId(null);
+      setLocalWaiting(false);
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        toast.error("Invalid JSON — check your pasted result");
+      } else {
+        toast.error(e instanceof Error ? e.message : "Failed to submit result");
+      }
+    }
+  };
+
+  // Poll for local job completion (when waiting)
+  useEffect(() => {
+    if (!localJobId || !localWaiting) return;
+    const interval = setInterval(async () => {
+      try {
+        const job = await fetchLocalJob(localJobId);
+        if (job.status === "completed" || job.status === "failed") {
+          setLocalWaiting(false);
+          if (job.status === "completed") {
+            toast.success("Local execution complete — check execution history");
+          } else {
+            toast.error("Local execution failed");
+          }
+          clearInterval(interval);
+        }
+      } catch {
+        // Job might not exist yet, keep polling
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [localJobId, localWaiting]);
 
   // Step-level testing
   const [testingStepIdx, setTestingStepIdx] = useState<number | null>(null);
@@ -247,6 +326,30 @@ export function FunctionPlayground({
                 <Play className="h-4 w-4 mr-1.5" />
                 {testing ? "Running..." : "Run"}
               </Button>
+              <div className="flex items-center gap-1 border-l border-clay-700 pl-2 ml-1">
+                <Button
+                  onClick={handleCopyPrompt}
+                  disabled={copyingPrompt || !functionId}
+                  variant="outline"
+                  size="sm"
+                  className="border-clay-600 text-clay-400 hover:text-clay-100 h-9 px-2"
+                  title="Copy assembled prompt to clipboard"
+                >
+                  <Clipboard className="h-3.5 w-3.5 mr-1" />
+                  {copyingPrompt ? "..." : "Prompt"}
+                </Button>
+                <Button
+                  onClick={handleRunLocally}
+                  disabled={localWaiting || !functionId}
+                  variant="outline"
+                  size="sm"
+                  className="border-clay-600 text-clay-400 hover:text-clay-100 h-9 px-2"
+                  title="Queue for local execution via clay-run"
+                >
+                  <Terminal className="h-3.5 w-3.5 mr-1" />
+                  {localWaiting ? "Queued..." : "Local"}
+                </Button>
+              </div>
               {testResult && (
                 <Button
                   variant="ghost"
@@ -266,6 +369,54 @@ export function FunctionPlayground({
                 to run
               </span>
             </div>
+
+            {/* Paste Result (shown when local job is queued) */}
+            {pasteMode && localJobId && (
+              <div className="space-y-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                <div className="flex items-center gap-2 text-xs text-amber-400">
+                  <ClipboardPaste className="h-3.5 w-3.5" />
+                  <span className="font-medium">Paste Result</span>
+                  {localWaiting && (
+                    <span className="flex items-center gap-1 ml-auto text-clay-500">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Waiting for clay-run...
+                    </span>
+                  )}
+                </div>
+                <textarea
+                  value={pastedJson}
+                  onChange={(e) => setPastedJson(e.target.value)}
+                  placeholder='Paste JSON result from Claude Code here...'
+                  className="w-full h-24 bg-clay-900 border border-clay-600 rounded text-xs text-clay-200 p-2 font-mono resize-y focus:outline-none focus:border-amber-500/50"
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleSubmitPastedResult}
+                    disabled={!pastedJson.trim()}
+                    size="sm"
+                    className="bg-amber-600 text-white hover:bg-amber-500 h-7 text-xs"
+                  >
+                    Submit Result
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setPasteMode(false);
+                      setPastedJson("");
+                      setLocalJobId(null);
+                      setLocalWaiting(false);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-clay-400 h-7 text-xs"
+                  >
+                    Cancel
+                  </Button>
+                  <span className="text-[10px] text-clay-500 ml-auto">
+                    Job: {localJobId}
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Preview panel */}
             {preview && !testResult && (

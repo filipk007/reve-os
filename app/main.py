@@ -23,6 +23,7 @@ from app.core.feedback_store import FeedbackStore
 from app.core.function_store import FunctionStore
 from app.core.job_queue import JobQueue
 from app.core.learning_engine import LearningEngine
+from app.core.local_job_queue import LocalJobQueue
 from app.core.memory_store import MemoryStore
 from app.core.pipeline_store import PipelineStore
 from app.core.play_store import PlayStore
@@ -171,6 +172,9 @@ async def startup():
 
     # Execution history (function run records)
     app.state.execution_history = ExecutionHistory(data_dir=settings.data_dir)
+
+    # Local job queue (CLI runner picks up jobs from here)
+    app.state.local_job_queue = LocalJobQueue(data_dir=settings.data_dir)
 
     # Channel store (chat session persistence)
     app.state.channel_store = ChannelStore(data_dir=settings.data_dir)

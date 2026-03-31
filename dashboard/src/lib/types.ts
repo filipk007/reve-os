@@ -966,3 +966,30 @@ export interface ChannelSessionSummary {
   status: "active" | "archived";
   client_slug?: string | null;
 }
+
+// Local execution (CLI runner / MCP server)
+export interface LocalJob {
+  id: string;
+  function_id: string;
+  function_name: string;
+  prompt: string;
+  model: string;
+  output_keys: string[];
+  task_keys: string[];
+  native_results: Record<string, unknown>;
+  status: "pending" | "running" | "completed" | "failed";
+  queued_at: number;
+  data: Record<string, unknown>;
+  instructions?: string | null;
+}
+
+export interface LocalJobSummary {
+  id: string;
+  function_id: string;
+  function_name: string;
+  model: string;
+  status: string;
+  queued_at: number;
+  prompt_chars: number;
+  output_keys: string[];
+}

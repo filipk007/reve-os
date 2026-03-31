@@ -1965,3 +1965,90 @@ export function streamClientChannelMessage(
 
   return controller;
 }
+
+
+// ── Local Execution (CLI runner / MCP server) ────────────
+
+export function queueLocalJob(
+  functionId: string,
+  data: Record<string, unknown>,
+  instructions?: string | null,
+  model?: string | null,
+): Promise<{
+  job_id: string;
+  function_id: string;
+  function_name: string;
+  prompt: string;
+  model: string;
+  output_keys: string[];
+  native_results: Record<string, unknown>;
+  status: string;
+  prompt_chars: number;
+  prompt_tokens_est: number;
+}> {
+  const body: Record<string, unknown> = { data };
+  if (instructions) body.instructions = instructions;
+  if (model) body.model = model;
+  return apiFetch(`/functions/${functionId}/queue-local`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function submitLocalResult(
+  functionId: string,
+  jobId: string,
+  result: Record<string, unknown>,
+  durationMs?: number,
+): Promise<{ exec_id: string; status: string; warnings: string[] }> {
+  const body: Record<string, unknown> = { job_id: jobId, result };
+  if (durationMs !== undefined) body.duration_ms = durationMs;
+  return apiFetch(`/functions/${functionId}/submit-result`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchLocalQueue(
+  status?: string,
+): Promise<{ jobs: import("./types").LocalJobSummary[]; count: number }> {
+  const qs = status ? `?status=${status}` : "";
+  return apiFetch(`/functions/local-queue${qs}`);
+}
+
+export function fetchLocalJob(
+  jobId: string,
+): Promise<import("./types").LocalJob> {
+  return apiFetch(`/functions/local-queue/${jobId}`);
+}
+
+export function updateLocalJobStatus(
+  jobId: string,
+  status: string,
+): Promise<Record<string, unknown>> {
+  return apiFetch(`/functions/local-queue/${jobId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export function prepareConsolidatedPrompt(
+  functionId: string,
+  data: Record<string, unknown>,
+  instructions?: string | null,
+  model?: string | null,
+): Promise<{
+  function_id: string;
+  function_name: string;
+  prompt: string;
+  model: string;
+  output_keys: string[];
+}> {
+  const body: Record<string, unknown> = { data };
+  if (instructions) body.instructions = instructions;
+  if (model) body.model = model;
+  return apiFetch(`/functions/${functionId}/prepare-consolidated`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}

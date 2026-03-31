@@ -19,9 +19,12 @@ from app.models.functions import (
     PreparedFunction,
     PreparedStep,
     PreviewRequest,
+    QueueLocalRequest,
     RenameFolderRequest,
     StepExecutionRequest,
+    SubmitResultRequest,
     UpdateFunctionRequest,
+    UpdateJobStatusRequest,
 )
 
 logger = logging.getLogger("clay-webhook-os")
@@ -1407,3 +1410,231 @@ async def preview_function(request: Request, func_id: str, body: PreviewRequest)
         "unresolved_variables": list(set(all_unresolved)),
         "summary": {k: v for k, v in executor_summary.items() if v > 0},
     }
+
+
+# ── Local execution endpoints (CLI runner + MCP server) ──────────────────
+
+
+@router.post("/functions/{func_id}/queue-local")
+async def queue_local_job(request: Request, func_id: str, body: QueueLocalRequest):
+    """Assemble prompt + run native steps, then queue for local CLI execution.
+
+    Returns the full prompt and native results so the local runner can
+    execute the AI call via Claude Code on the user's machine.
+    """
+    from app.core.consolidated_runner import assemble_prompt, build_task_sections
+    from app.core.tool_catalog import DEEPLINE_PROVIDERS
+
+    store = request.app.state.function_store
+    func = store.get(func_id)
+    if func is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Function '{func_id}' not found"},
+        )
+
+    local_queue = request.app.state.local_job_queue
+    model = body.model or settings.default_model
+    memory_store = getattr(request.app.state, "memory_store", None)
+    context_index = getattr(request.app.state, "context_index", None)
+    learning_engine = getattr(request.app.state, "learning_engine", None)
+
+    batch_rows = body.rows or [body.data]
+    data = dict(batch_rows[0])
+
+    # Build task sections and assemble prompt (reuse consolidated_runner)
+    ts = build_task_sections(func, data)
+    if not ts.sections:
+        return JSONResponse(
+            status_code=400,
+            content={"error": True, "error_message": "No AI steps found in this function"},
+        )
+
+    prompt = assemble_prompt(
+        ts, func, data, body.instructions,
+        memory_store, learning_engine, context_index,
+        batch_rows=batch_rows if len(batch_rows) > 1 else None,
+    )
+
+    output_keys = [o.key for o in func.outputs]
+
+    # Run native API steps server-side (findymail, etc.)
+    native_results = {}
+    if ts.native_step_indices:
+        for idx in ts.native_step_indices:
+            step = func.steps[idx]
+            resolved_params: dict[str, str] = {}
+            for key, val in step.params.items():
+                resolved = val
+                for inp_name, inp_val in data.items():
+                    resolved = resolved.replace("{{" + str(inp_name) + "}}", str(inp_val))
+                resolved_params[key] = resolved
+
+            if step.tool == "findymail" and settings.findymail_api_key:
+                from app.core import findymail_client
+                try:
+                    result = await findymail_client.enrich_company(
+                        name=resolved_params.get("name") or resolved_params.get("company_name"),
+                        domain=resolved_params.get("domain"),
+                        linkedin_url=resolved_params.get("linkedin_url"),
+                        api_key=settings.findymail_api_key,
+                        base_url=settings.findymail_base_url,
+                        timeout=settings.findymail_timeout,
+                    )
+                    if isinstance(result, dict) and not result.get("error"):
+                        native_results.update(result)
+                except Exception as e:
+                    logger.warning("[queue-local] Findymail step failed: %s", e)
+
+    # If we got native results, inject them into the prompt
+    if native_results:
+        native_block = "\n\n# Pre-fetched Data (from native API steps)\n"
+        native_block += json.dumps(native_results, indent=2)
+        prompt = prompt + native_block
+
+    # Queue the job
+    job = {
+        "function_id": func.id,
+        "function_name": func.name,
+        "prompt": prompt,
+        "model": model,
+        "output_keys": output_keys,
+        "task_keys": ts.task_keys,
+        "native_results": native_results,
+        "data": data,
+        "instructions": body.instructions,
+    }
+    job_id = local_queue.enqueue(job)
+
+    return {
+        "job_id": job_id,
+        "function_id": func.id,
+        "function_name": func.name,
+        "prompt": prompt,
+        "model": model,
+        "output_keys": output_keys,
+        "task_keys": ts.task_keys,
+        "native_results": native_results,
+        "status": "pending",
+        "prompt_chars": len(prompt),
+        "prompt_tokens_est": len(prompt) // 4,
+    }
+
+
+@router.post("/functions/{func_id}/submit-result")
+async def submit_local_result(request: Request, func_id: str, body: SubmitResultRequest):
+    """Accept execution result from the local CLI runner and save to history."""
+    store = request.app.state.function_store
+    func = store.get(func_id)
+    if func is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Function '{func_id}' not found"},
+        )
+
+    local_queue = request.app.state.local_job_queue
+    execution_history = request.app.state.execution_history
+
+    # Validate job exists
+    job = local_queue.get(body.job_id)
+    if job is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Job '{body.job_id}' not found"},
+        )
+
+    # Check expected output keys
+    expected_keys = set(job.get("output_keys", []))
+    result_keys = set(body.result.keys())
+    missing_keys = expected_keys - result_keys
+    warnings = []
+    if missing_keys:
+        warnings.append(f"Missing output keys: {', '.join(sorted(missing_keys))}")
+
+    # Save to execution history (same format as server-side runs)
+    record = {
+        "function_id": func.id,
+        "timestamp": time.time(),
+        "inputs": job.get("data", {}),
+        "outputs": body.result,
+        "trace": [{"executor": "local_cli", "job_id": body.job_id}],
+        "duration_ms": body.duration_ms or 0,
+        "status": "success",
+        "warnings": warnings,
+        "step_count": len(func.steps),
+        "execution_mode": "local",
+    }
+    exec_id = execution_history.save(record)
+
+    # Update job status
+    local_queue.update_status(body.job_id, "completed", {"exec_id": exec_id})
+
+    return {
+        "exec_id": exec_id,
+        "status": "saved",
+        "warnings": warnings,
+    }
+
+
+@router.get("/functions/local-queue")
+async def list_local_queue(request: Request, status: str | None = None, limit: int = 20):
+    """List jobs in the local execution queue. Used by clay-run --watch."""
+    local_queue = request.app.state.local_job_queue
+
+    if status == "pending":
+        jobs = local_queue.list_pending(limit=limit)
+    else:
+        jobs = local_queue.list_all(limit=limit)
+
+    # Strip prompt from list view to keep response small
+    summary = []
+    for job in jobs:
+        summary.append({
+            "id": job.get("id"),
+            "function_id": job.get("function_id"),
+            "function_name": job.get("function_name"),
+            "model": job.get("model"),
+            "status": job.get("status"),
+            "queued_at": job.get("queued_at"),
+            "prompt_chars": len(job.get("prompt", "")),
+            "output_keys": job.get("output_keys", []),
+        })
+
+    return {"jobs": summary, "count": len(summary)}
+
+
+@router.patch("/functions/local-queue/{job_id}")
+async def update_local_job(request: Request, job_id: str, body: UpdateJobStatusRequest):
+    """Update job status. Used by clay-run to mark jobs as running/completed/failed."""
+    local_queue = request.app.state.local_job_queue
+
+    job = local_queue.get(job_id)
+    if job is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Job '{job_id}' not found"},
+        )
+
+    if body.status not in ("running", "completed", "failed"):
+        return JSONResponse(
+            status_code=400,
+            content={"error": True, "error_message": f"Invalid status: {body.status}"},
+        )
+
+    updated = local_queue.update_status(job_id, body.status)
+    return updated or {"error": True, "error_message": "Failed to update job"}
+
+
+@router.get("/functions/local-queue/{job_id}")
+async def get_local_job(request: Request, job_id: str):
+    """Get a single local job by ID, including the full prompt."""
+    local_queue = request.app.state.local_job_queue
+
+    job = local_queue.get(job_id)
+    if job is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": True, "error_message": f"Job '{job_id}' not found"},
+        )
+
+    return job

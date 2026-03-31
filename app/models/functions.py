@@ -173,3 +173,38 @@ class ConsolidatedPrompt(BaseModel):
     output_keys: list[str] = Field(default_factory=list, description="Final output keys to extract")
     has_native_steps: bool = Field(False, description="Whether any steps require native API execution")
     native_steps: list[PreparedStep] = Field(default_factory=list, description="Native steps that must execute via backend")
+
+
+# ── Local execution models (CLI runner + MCP server) ─────
+
+
+class QueueLocalRequest(BaseModel):
+    data: dict = Field(default_factory=dict, description="Input data for the function")
+    rows: list[dict] | None = Field(None, description="Multiple rows for batch execution")
+    instructions: str | None = Field(None, description="Optional campaign instructions")
+    model: str | None = Field(None, description="Model override (opus/sonnet/haiku)")
+
+
+class SubmitResultRequest(BaseModel):
+    job_id: str = Field(..., description="Job ID from queue-local")
+    result: dict = Field(..., description="JSON result from Claude Code execution")
+    duration_ms: int | None = Field(None, description="Execution time in milliseconds")
+
+
+class LocalJob(BaseModel):
+    id: str = Field(..., description="Job ID")
+    function_id: str = Field(..., description="Function ID")
+    function_name: str = Field("", description="Function display name")
+    prompt: str = Field(..., description="Assembled prompt for Claude")
+    model: str = Field("sonnet", description="Model for execution")
+    output_keys: list[str] = Field(default_factory=list, description="Expected output keys")
+    task_keys: list[str] = Field(default_factory=list, description="Task keys in the prompt")
+    native_results: dict = Field(default_factory=dict, description="Results from server-side native API steps")
+    status: str = Field("pending", description="Job status: pending, running, completed, failed")
+    queued_at: float = Field(0, description="Timestamp when job was queued")
+    data: dict = Field(default_factory=dict, description="Original input data")
+    instructions: str | None = Field(None, description="Campaign instructions if provided")
+
+
+class UpdateJobStatusRequest(BaseModel):
+    status: str = Field(..., description="New status: running, completed, failed")
