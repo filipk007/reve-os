@@ -231,30 +231,63 @@ def run_claude(prompt: str, model: str = "sonnet") -> tuple[str, float]:
 
 
 def parse_json_output(text: str) -> dict | None:
-    """Extract JSON from Claude's response. Handles markdown fences."""
+    """Extract JSON from Claude's response. Handles markdown fences and task wrappers."""
+    import re
+
+    def _try_parse(candidate: str) -> dict | None:
+        try:
+            parsed = json.loads(candidate)
+            if isinstance(parsed, dict):
+                return _unwrap_tasks(parsed)
+        except (json.JSONDecodeError, TypeError):
+            pass
+        return None
+
     # Try direct parse first
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        pass
+    result = _try_parse(text)
+    if result:
+        return result
 
     # Try extracting from markdown code fence
-    import re
     patterns = [
         r"```json\s*\n(.*?)\n\s*```",
         r"```\s*\n(.*?)\n\s*```",
-        r"\{[\s\S]*\}",
     ]
     for pattern in patterns:
         match = re.search(pattern, text, re.DOTALL)
         if match:
-            candidate = match.group(1) if match.lastindex else match.group(0)
-            try:
-                return json.loads(candidate)
-            except json.JSONDecodeError:
-                continue
+            result = _try_parse(match.group(1))
+            if result:
+                return result
+
+    # Find the outermost JSON object by matching balanced braces
+    start = text.find("{")
+    if start >= 0:
+        depth = 0
+        for i in range(start, len(text)):
+            if text[i] == "{":
+                depth += 1
+            elif text[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    result = _try_parse(text[start:i + 1])
+                    if result:
+                        return result
+                    break
 
     return None
+
+
+def _unwrap_tasks(parsed: dict) -> dict:
+    """Unwrap consolidated task_1/task_2 wrapper into flat output keys."""
+    task_keys = [k for k in parsed if k.startswith("task_") and isinstance(parsed[k], dict)]
+    if not task_keys:
+        return parsed
+    # Merge all task outputs (later tasks override earlier)
+    merged: dict = {}
+    for tk in sorted(task_keys):
+        merged.update(parsed[tk])
+    return merged
 
 
 # ── Streaming Execution ──────────────────────────────────
