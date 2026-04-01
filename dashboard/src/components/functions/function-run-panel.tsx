@@ -9,7 +9,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Play,
   Clipboard,
-  Terminal,
   ClipboardPaste,
   Loader2,
   CheckCircle2,
@@ -36,7 +35,6 @@ import {
   submitLocalResult,
   fetchLocalJob,
   streamFunctionExecution,
-  streamConsolidatedExecution,
 } from "@/lib/api";
 
 interface FunctionRunPanelProps {
@@ -117,22 +115,6 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
   }, [running, localWaiting, func]);
 
   // ── Handlers ──────────────────────────────────────────
-
-  const handleRunServer = () => {
-    abortRef.current?.abort();
-    setRunning(true);
-    setResult(null);
-    setStreamingTrace([]);
-
-    // Use consolidated execution (single AI call) for speed
-    abortRef.current = streamConsolidatedExecution(
-      func.id,
-      testInputsRef.current,
-      (trace) => setStreamingTrace((prev) => [...prev, trace]),
-      (res) => { setResult(res); setRunning(false); },
-      (err) => { setResult({ error: true, message: err }); setRunning(false); },
-    );
-  };
 
   const handleCopyPrompt = async () => {
     setCopyingPrompt(true);
@@ -369,18 +351,6 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
           >
             <Clipboard className="h-3.5 w-3.5 mr-1.5" />
             {copyingPrompt ? "Copying..." : "Copy Prompt"}
-          </Button>
-
-          <Button
-            onClick={handleRunServer}
-            disabled={running}
-            variant="outline"
-            size="sm"
-            className="border-clay-700 text-clay-400 hover:text-clay-100"
-            title="Execute on server via VPS (uses server's Claude subscription)"
-          >
-            <Zap className="h-3.5 w-3.5 mr-1.5" />
-            {running ? "Running..." : "Server"}
           </Button>
 
           <span className="text-[10px] text-clay-600 ml-auto hidden sm:block">
