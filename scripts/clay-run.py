@@ -176,6 +176,16 @@ class ClayClient:
         r.raise_for_status()
         return r.json()
 
+    def push_logs(self, job_id: str, entries: list[dict]) -> None:
+        """Push log entries to the backend for live dashboard display."""
+        try:
+            requests.post(
+                f"{self.base}/functions/local-queue/{job_id}/log",
+                headers=self.headers, json={"entries": entries}, timeout=5,
+            )
+        except Exception:
+            pass  # Non-critical — execution continues even if log push fails
+
 
 # ── Claude Code Execution ─────────────────────────────────
 
@@ -245,6 +255,144 @@ def parse_json_output(text: str) -> dict | None:
                 continue
 
     return None
+
+
+# ── Streaming Execution ──────────────────────────────────
+
+
+def format_stream_event(event: dict, start_time: float) -> dict | None:
+    """Parse a stream-json event into a human-readable log entry."""
+    elapsed = int((time.time() - start_time) * 1000)
+    etype = event.get("type", "")
+    subtype = event.get("subtype", "")
+
+    if etype == "system" and subtype == "init":
+        model = event.get("model", "unknown")
+        return {"elapsed_ms": elapsed, "type": "init", "message": f"Session started (model: {model})"}
+
+    if etype == "assistant":
+        msg = event.get("message", {})
+        content = msg.get("content", [])
+        for block in content:
+            btype = block.get("type", "")
+
+            if btype == "tool_use":
+                name = block.get("name", "unknown")
+                inp = block.get("input", {})
+                # Extract the most useful param for display
+                detail = inp.get("query") or inp.get("url") or inp.get("command") or inp.get("pattern") or ""
+                if isinstance(detail, str) and len(detail) > 120:
+                    detail = detail[:120] + "..."
+                return {"elapsed_ms": elapsed, "type": "tool_use", "message": f"{name}: {detail}" if detail else name}
+
+            if btype == "tool_result":
+                content_text = block.get("content", "")
+                if isinstance(content_text, str):
+                    preview = content_text[:80].replace("\n", " ")
+                    return {"elapsed_ms": elapsed, "type": "tool_result", "message": f"Got result ({len(content_text)} chars)"}
+                return {"elapsed_ms": elapsed, "type": "tool_result", "message": "Got result"}
+
+            if btype == "text":
+                text = block.get("text", "")
+                if len(text) > 5:  # Skip tiny fragments
+                    preview = text[:100].replace("\n", " ").strip()
+                    return {"elapsed_ms": elapsed, "type": "text", "message": preview}
+
+        # Check for errors in the message
+        error = event.get("error")
+        if error:
+            error_text = msg.get("content", [{}])[0].get("text", str(error)) if content else str(error)
+            return {"elapsed_ms": elapsed, "type": "error", "message": error_text[:200]}
+
+    if etype == "result":
+        duration = event.get("duration_ms", 0)
+        result_text = event.get("result", "")
+        is_error = event.get("is_error", False)
+        if is_error:
+            return {"elapsed_ms": elapsed, "type": "error", "message": str(result_text)[:200]}
+        # Try to count output fields
+        try:
+            parsed = json.loads(result_text) if isinstance(result_text, str) else result_text
+            field_count = len(parsed) if isinstance(parsed, dict) else 0
+            return {"elapsed_ms": elapsed, "type": "result", "message": f"Done — {field_count} fields ({duration / 1000:.1f}s)"}
+        except (json.JSONDecodeError, TypeError):
+            return {"elapsed_ms": elapsed, "type": "result", "message": f"Done ({duration / 1000:.1f}s)"}
+
+    return None
+
+
+def run_claude_streaming(
+    prompt: str, model: str, job_id: str, client: "ClayClient",
+) -> tuple[str, float]:
+    """Run prompt through Claude Code with streaming output.
+
+    Uses Popen + stream-json to capture events line-by-line and push
+    them to the backend for live dashboard display.
+    Returns (final_output_text, duration_ms).
+    """
+    start = time.time()
+    cmd = [
+        "claude", "-p",
+        "--output-format", "stream-json",
+        "--verbose",
+        "--model", model,
+    ]
+    env = {k: v for k, v in os.environ.items() if k not in ("ANTHROPIC_API_KEY", "CLAUDECODE")}
+
+    try:
+        proc = subprocess.Popen(
+            cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, text=True, env=env,
+        )
+    except FileNotFoundError:
+        client.push_logs(job_id, [{"elapsed_ms": 0, "type": "error", "message": "claude CLI not found — install Claude Code"}])
+        return "", 0
+
+    proc.stdin.write(prompt)
+    proc.stdin.close()
+
+    final_text = ""
+    batch: list[dict] = []
+    BATCH_SIZE = 3
+
+    for line in proc.stdout:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        entry = format_stream_event(event, start)
+        if entry:
+            batch.append(entry)
+            if len(batch) >= BATCH_SIZE:
+                client.push_logs(job_id, batch)
+                batch = []
+
+        # Capture final result text
+        if event.get("type") == "result":
+            final_text = event.get("result", "")
+
+    # Flush remaining batch
+    if batch:
+        client.push_logs(job_id, batch)
+
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+
+    duration_ms = (time.time() - start) * 1000
+
+    # If no final text captured, check stderr
+    if not final_text:
+        stderr = proc.stderr.read().strip() if proc.stderr else ""
+        if stderr:
+            client.push_logs(job_id, [{"elapsed_ms": int(duration_ms), "type": "error", "message": stderr[:200]}])
+
+    return final_text, duration_ms
 
 
 # ── Commands ──────────────────────────────────────────────
@@ -399,8 +547,10 @@ def cmd_daemon(client: ClayClient) -> None:
                 job = client.get_job(job_summary["id"])
                 client.update_job_status(job["id"], "running")
 
-                log.info("Running in Claude Code (%s)...", job["model"])
-                output, duration_ms = run_claude(job["prompt"], model=job["model"])
+                log.info("Streaming execution in Claude Code (%s)...", job["model"])
+                output, duration_ms = run_claude_streaming(
+                    job["prompt"], job["model"], job["id"], client,
+                )
 
                 if not output:
                     client.update_job_status(job["id"], "failed")

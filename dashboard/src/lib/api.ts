@@ -67,6 +67,7 @@ import type {
   VariantDef,
   ExecutionRecord,
   StepTrace,
+  LogEntry,
   WebhookResponse,
 } from "./types";
 
@@ -2096,6 +2097,13 @@ export function fetchLocalJob(
   jobId: string,
 ): Promise<import("./types").LocalJob> {
   return apiFetch(`/functions/local-queue/${jobId}`);
+}
+
+export function fetchJobLogs(
+  jobId: string,
+  after = 0,
+): Promise<{ logs: LogEntry[]; total: number; status: string }> {
+  return apiFetch(`/functions/local-queue/${jobId}/logs?after=${after}`);
 }
 
 export function updateLocalJobStatus(

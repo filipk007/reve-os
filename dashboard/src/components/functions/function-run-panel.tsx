@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Papa from "papaparse";
-import type { FunctionDefinition, FunctionInput, StepTrace } from "@/lib/types";
+import type { FunctionDefinition, FunctionInput, StepTrace, LogEntry } from "@/lib/types";
 import { OutputRenderer } from "@/components/output/output-renderer";
 import { ExecutionTrace } from "./execution-trace";
 import { ExecutionHistoryPanel } from "./execution-history";
@@ -35,6 +35,7 @@ import {
   submitLocalResult,
   fetchLocalJob,
   fetchExecution,
+  fetchJobLogs,
   streamFunctionExecution,
 } from "@/lib/api";
 
@@ -61,6 +62,9 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
   const [localWaiting, setLocalWaiting] = useState(false);
   const [pasteMode, setPasteMode] = useState(false);
   const [pastedJson, setPastedJson] = useState("");
+  const [executionLogs, setExecutionLogs] = useState<LogEntry[]>([]);
+  const [elapsed, setElapsed] = useState(0);
+  const logScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Batch state
   const [csvRows, setCsvRows] = useState<Record<string, string>[] | null>(null);
@@ -79,44 +83,72 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
     if (result) setActiveTab("output");
   }, [result]);
 
-  // Poll for local job completion
+  // Poll for logs + job status (combined into one poll)
   useEffect(() => {
     if (!localJobId || !localWaiting) return;
+    let logIndex = 0;
+    let lastLogTime = Date.now();
     const interval = setInterval(async () => {
       try {
-        const job = await fetchLocalJob(localJobId);
-        if (job.status === "completed" || job.status === "failed") {
+        const { logs, status } = await fetchJobLogs(localJobId, logIndex);
+        if (logs.length > 0) {
+          setExecutionLogs((prev) => [...prev, ...logs]);
+          logIndex += logs.length;
+          lastLogTime = Date.now();
+          // Auto-scroll
+          setTimeout(() => logScrollRef.current?.scrollTo({ top: logScrollRef.current.scrollHeight, behavior: "smooth" }), 50);
+        }
+
+        if (status === "completed" || status === "failed") {
           setLocalWaiting(false);
-          setLocalJobId(null);
-          if (job.status === "completed" && job.exec_id) {
-            // Fetch the actual execution result
+          if (status === "completed") {
+            // Fetch result from execution history
             try {
-              const exec = await fetchExecution(func.id, job.exec_id);
-              if (exec?.outputs) {
-                setResult(exec.outputs as Record<string, unknown>);
-                toast.success(`Done in ${((exec.duration_ms || 0) / 1000).toFixed(1)}s`);
+              const job = await fetchLocalJob(localJobId);
+              if (job.exec_id) {
+                const exec = await fetchExecution(func.id, job.exec_id);
+                if (exec?.outputs) {
+                  setResult(exec.outputs as Record<string, unknown>);
+                  toast.success(`Done in ${((exec.duration_ms || 0) / 1000).toFixed(1)}s`);
+                } else {
+                  setActiveTab("history");
+                }
               } else {
-                toast.success("Local execution complete — check History tab");
                 setActiveTab("history");
               }
             } catch {
-              toast.success("Local execution complete — check History tab");
               setActiveTab("history");
             }
-          } else if (job.status === "completed") {
-            toast.success("Local execution complete — check History tab");
-            setActiveTab("history");
           } else {
             toast.error("Local execution failed");
           }
+          setLocalJobId(null);
           clearInterval(interval);
+          return;
+        }
+
+        // Stall detection: no logs for 90s while still "running"
+        if (status === "running" && Date.now() - lastLogTime > 90000) {
+          setExecutionLogs((prev) => [
+            ...prev,
+            { elapsed_ms: 0, type: "error" as const, message: "No activity for 90s — execution may have stalled. Check daemon logs." },
+          ]);
+          lastLogTime = Date.now(); // Reset so warning doesn't spam
         }
       } catch {
         // keep polling
       }
-    }, 3000);
+    }, 1000);
     return () => clearInterval(interval);
   }, [localJobId, localWaiting, func.id]);
+
+  // Elapsed timer while executing
+  useEffect(() => {
+    if (!localWaiting) { setElapsed(0); return; }
+    const start = Date.now();
+    const tick = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
+    return () => clearInterval(tick);
+  }, [localWaiting]);
 
   // Keyboard shortcut: Cmd+Enter to run locally
   useEffect(() => {
@@ -149,6 +181,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
   const handleRunLocally = async () => {
     setLocalWaiting(true);
     setResult(null);
+    setExecutionLogs([]);
     try {
       const job = await queueLocalJob(func.id, testInputs);
       setLocalJobId(job.job_id);
@@ -378,27 +411,75 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
           </span>
         </div>
 
-        {/* Local execution status */}
-        {localWaiting && localJobId && (
-          <div className="flex items-center gap-3 p-3 rounded-lg border border-kiln-teal/20 bg-kiln-teal/5">
-            <Loader2 className="h-4 w-4 animate-spin text-kiln-teal shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-xs text-clay-200 font-medium">Executing locally via Claude Code...</div>
-              <div className="text-[10px] text-clay-500 mt-0.5">
-                Picked up by local runner. Result will appear automatically.
+        {/* Live execution trace */}
+        {localJobId && (localWaiting || executionLogs.length > 0) && (
+          <div className="rounded-lg border border-clay-700/50 bg-clay-950/50 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-clay-800/50 bg-clay-900/30">
+              {localWaiting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-kiln-teal shrink-0" />
+              ) : (
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-400 shrink-0" />
+              )}
+              <span className="text-xs text-clay-200 font-medium">
+                {localWaiting ? "Executing locally..." : "Execution complete"}
+              </span>
+              {localWaiting && elapsed > 0 && (
+                <span className="text-[10px] text-clay-500 font-mono">{elapsed}s</span>
+              )}
+              <div className="ml-auto">
+                {localWaiting ? (
+                  <Button
+                    onClick={() => { setLocalJobId(null); setLocalWaiting(false); }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-clay-500 h-6 text-[10px] px-2"
+                  >
+                    Cancel
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => setExecutionLogs([])}
+                    variant="ghost"
+                    size="sm"
+                    className="text-clay-500 h-6 text-[10px] px-2"
+                  >
+                    Clear
+                  </Button>
+                )}
               </div>
             </div>
-            <Button
-              onClick={() => {
-                setLocalJobId(null);
-                setLocalWaiting(false);
-              }}
-              variant="ghost"
-              size="sm"
-              className="text-clay-500 h-7 text-xs shrink-0"
+            {/* Log entries */}
+            <div
+              ref={logScrollRef}
+              className="max-h-48 overflow-y-auto px-3 py-2 space-y-0.5 font-mono text-[11px]"
             >
-              Cancel
-            </Button>
+              {executionLogs.length === 0 && localWaiting && (
+                <div className="text-clay-600 text-[10px]">Waiting for daemon to pick up job...</div>
+              )}
+              {executionLogs.map((log, i) => (
+                <div key={i} className="flex gap-2 leading-relaxed">
+                  <span className="text-clay-600 shrink-0 w-12 text-right">
+                    {(log.elapsed_ms / 1000).toFixed(1)}s
+                  </span>
+                  <span className={cn(
+                    "break-all",
+                    log.type === "init" && "text-clay-500",
+                    log.type === "tool_use" && "text-cyan-400",
+                    log.type === "tool_result" && "text-clay-400",
+                    log.type === "text" && "text-clay-300",
+                    log.type === "result" && "text-green-400",
+                    log.type === "error" && "text-red-400",
+                  )}>
+                    {log.type === "tool_use" && "→ "}
+                    {log.type === "tool_result" && "← "}
+                    {log.type === "error" && "✗ "}
+                    {log.type === "result" && "✓ "}
+                    {log.message}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

@@ -96,6 +96,19 @@ class LocalJobQueue:
             logger.warning("[local_job_queue] Failed to update %s: %s", job_id, e)
             return None
 
+    def append_logs(self, job_id: str, entries: list[dict]) -> None:
+        """Append log entries to a job. Used by the daemon to push execution trace."""
+        path = self._base_dir / f"{job_id}.json"
+        if not path.exists():
+            return
+        try:
+            job = json.loads(path.read_text())
+            logs = job.setdefault("logs", [])
+            logs.extend(entries)
+            atomic_write_json(path, job)
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning("[local_job_queue] Failed to append logs to %s: %s", job_id, e)
+
     def _prune_completed(self) -> None:
         """Remove completed/failed jobs older than retention period."""
         cutoff = time.time() - (COMPLETED_RETENTION_HOURS * 3600)

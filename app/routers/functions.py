@@ -566,6 +566,28 @@ async def update_local_job(request: Request, job_id: str, body: UpdateJobStatusR
     return updated or {"error": True, "error_message": "Failed to update job"}
 
 
+@router.post("/functions/local-queue/{job_id}/log")
+async def push_job_logs(request: Request, job_id: str):
+    """Receive execution log entries from the local runner daemon."""
+    local_queue = request.app.state.local_job_queue
+    body = await request.json()
+    entries = body.get("entries", [])
+    if entries:
+        local_queue.append_logs(job_id, entries)
+    return {"ok": True, "count": len(entries)}
+
+
+@router.get("/functions/local-queue/{job_id}/logs")
+async def get_job_logs(request: Request, job_id: str, after: int = 0):
+    """Get execution log entries for a job. Supports incremental fetch via ?after=N."""
+    local_queue = request.app.state.local_job_queue
+    job = local_queue.get(job_id)
+    if job is None:
+        return {"logs": [], "total": 0, "status": "unknown"}
+    logs = job.get("logs", [])
+    return {"logs": logs[after:], "total": len(logs), "status": job.get("status", "unknown")}
+
+
 @router.get("/functions/local-queue/{job_id}")
 async def get_local_job(request: Request, job_id: str):
     """Get a single local job by ID, including the full prompt."""

@@ -982,6 +982,13 @@ export interface LocalJob {
   data: Record<string, unknown>;
   instructions?: string | null;
   exec_id?: string;
+  logs?: LogEntry[];
+}
+
+export interface LogEntry {
+  elapsed_ms: number;
+  type: "init" | "tool_use" | "tool_result" | "text" | "result" | "error";
+  message: string;
 }
 
 export interface LocalJobSummary {
