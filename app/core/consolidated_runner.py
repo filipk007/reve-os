@@ -47,16 +47,21 @@ class ConsolidatedResult:
 class TaskSectionsResult:
     """Intermediate result from building task sections."""
 
-    __slots__ = ("sections", "context", "seen_paths", "task_keys", "output_hints", "native_step_indices", "needs_agent")
+    __slots__ = (
+        "sections", "context", "seen_paths", "task_keys", "output_hints",
+        "native_step_indices", "needs_agent", "task_step_indices", "task_output_keys",
+    )
 
     def __init__(self):
         self.sections: list[str] = []
         self.context: list[dict[str, str]] = []
         self.seen_paths: set[str] = set()
         self.task_keys: list[str] = []
-        self.output_hints: list[str] = []
+        self.output_hints: list[str] = []  # function-level output hints (for final output format)
         self.native_step_indices: list[int] = []
         self.needs_agent: bool = False
+        self.task_step_indices: list[int] = []  # maps each task to its function step index
+        self.task_output_keys: list[list[str]] = []  # per-task output key names
 
 
 # ── Shared helpers (used by both execute and preview paths) ──────────
@@ -69,11 +74,18 @@ def build_task_sections(func: FunctionDefinition, data: dict) -> TaskSectionsRes
     - skill:* — loads skill.md content + context files
     - call_ai  — uses custom prompt if provided, else falls back to a skill
     - provider  — AI fallback prompt with task-aware goal description
+
+    For multi-step functions, intermediate steps use their catalog-level
+    output keys (e.g., 'content' for firecrawl) rather than the function's
+    final output keys. This allows inter-step data flow via {{variable}}.
     """
+    from app.core.tool_catalog import get_step_target_keys
+
     provider_map = {p["id"]: p for p in DEEPLINE_PROVIDERS}
     ts = TaskSectionsResult()
+    total_steps = len(func.steps)
 
-    # Build output hints once from function outputs
+    # Build function-level output hints (used for final step + output format)
     for o in func.outputs:
         hint = f"- {o.key}"
         if o.type:
@@ -94,6 +106,12 @@ def build_task_sections(func: FunctionDefinition, data: dict) -> TaskSectionsRes
                 resolved = resolved.replace("{{" + str(inp_name) + "}}", str(inp_val))
             resolved_params[key] = resolved
 
+        # Determine step-appropriate output keys
+        step_keys, step_hints = get_step_target_keys(
+            tool_id, step_idx, total_steps, func.outputs,
+        )
+        is_final = step_idx >= total_steps - 1
+
         if tool_id.startswith("skill:"):
             skill_name = tool_id.removeprefix("skill:")
             skill_content = load_skill(skill_name)
@@ -109,26 +127,40 @@ def build_task_sections(func: FunctionDefinition, data: dict) -> TaskSectionsRes
                     ts.seen_paths.add(ctx["path"])
 
             ts.task_keys.append(task_key)
+            ts.task_step_indices.append(step_idx)
+            ts.task_output_keys.append(step_keys)
             ts.sections.append(
                 f"===== {task_key.upper()}: {skill_name} =====\n\n"
                 f"{skill_content}\n\n"
                 f"Expected output keys for this task:\n"
-                + "\n".join(ts.output_hints)
+                + "\n".join(step_hints)
             )
 
         elif tool_id == "call_ai":
             custom_prompt = resolved_params.get("prompt")
+            # call_ai always targets function outputs (it's the analysis step)
+            call_ai_hints = ts.output_hints
+            prior_task_keys = [f"task_{i + 1}" for i in range(step_idx)]
+            prior_ref = ""
+            if prior_task_keys and not is_final:
+                prior_ref = ""
+            elif prior_task_keys:
+                prior_ref = (
+                    f"\n\nUse the output from prior tasks ({', '.join(prior_task_keys)}) "
+                    f"as context and input data for this analysis."
+                )
+
             if custom_prompt:
-                # Custom prompt provided — use directly, no skill/context loading
                 ts.task_keys.append(task_key)
+                ts.task_step_indices.append(step_idx)
+                ts.task_output_keys.append([o.key for o in func.outputs])
                 ts.sections.append(
                     f"===== {task_key.upper()}: AI Analysis =====\n\n"
-                    f"{custom_prompt}\n\n"
+                    f"{custom_prompt}{prior_ref}\n\n"
                     f"Expected output keys for this task:\n"
-                    + "\n".join(ts.output_hints)
+                    + "\n".join(call_ai_hints)
                 )
             else:
-                # No custom prompt — fall back to loading a skill
                 skill_name = resolved_params.get("skill", "quality-gate")
                 skill_content = load_skill(skill_name)
                 if skill_content is None:
@@ -143,11 +175,13 @@ def build_task_sections(func: FunctionDefinition, data: dict) -> TaskSectionsRes
                         ts.seen_paths.add(ctx["path"])
 
                 ts.task_keys.append(task_key)
+                ts.task_step_indices.append(step_idx)
+                ts.task_output_keys.append([o.key for o in func.outputs])
                 ts.sections.append(
                     f"===== {task_key.upper()}: AI Analysis ({skill_name}) =====\n\n"
-                    f"{skill_content}\n\n"
+                    f"{skill_content}{prior_ref}\n\n"
                     f"Expected output keys for this task:\n"
-                    + "\n".join(ts.output_hints)
+                    + "\n".join(call_ai_hints)
                 )
 
         else:
@@ -159,14 +193,14 @@ def build_task_sections(func: FunctionDefinition, data: dict) -> TaskSectionsRes
             if has_native and tool_id == "findymail" and settings.findymail_api_key:
                 ts.native_step_indices.append(step_idx)
             else:
-                # Mark that this function needs agent executor for web search
                 if provider.get("execution_mode") == "ai_agent":
                     ts.needs_agent = True
 
                 ts.task_keys.append(task_key)
-                output_summary = ", ".join(o.key for o in func.outputs if o.description)
+                ts.task_step_indices.append(step_idx)
+                ts.task_output_keys.append(step_keys)
+                output_summary = ", ".join(step_keys)
 
-                # Enhanced prompt for web_search / agent tools
                 search_instruction = (
                     "You MUST use WebSearch to find real-time data for this task. "
                     "Do NOT rely on training data alone — search the web and return verified results."
@@ -175,6 +209,14 @@ def build_task_sections(func: FunctionDefinition, data: dict) -> TaskSectionsRes
                     "If you are not confident about a value, return null rather than guessing."
                 )
 
+                # For intermediate steps, note that output feeds into later tasks
+                flow_note = ""
+                if not is_final:
+                    flow_note = (
+                        f"\n\nNote: This is an intermediate step. Your output ({output_summary}) "
+                        f"will be used as input for the next task."
+                    )
+
                 ts.sections.append(
                     f"===== {task_key.upper()}: {provider.get('name', tool_id)} =====\n\n"
                     f"You are a precise data lookup agent.\n\n"
@@ -182,8 +224,9 @@ def build_task_sections(func: FunctionDefinition, data: dict) -> TaskSectionsRes
                     f"Inputs:\n"
                     + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
                     + f"\n\nExpected output keys:\n"
-                    + "\n".join(ts.output_hints)
+                    + "\n".join(step_hints)
                     + f"\n\n{search_instruction}"
+                    + flow_note
                 )
 
     return ts
@@ -302,13 +345,24 @@ def assemble_prompt(
             + "\n\nNo markdown fences, no explanation — just the raw JSON object."
         )
     else:
-        task_schema = {tk: {o.key: f"<{o.type}>" for o in func.outputs} for tk in ts.task_keys}
+        # Build per-task schema using step-specific output keys
+        task_schema: dict = {}
+        func_output_map = {o.key: (o.type or "string") for o in func.outputs}
+        for i, tk in enumerate(ts.task_keys):
+            if i < len(ts.task_output_keys):
+                keys_for_task = ts.task_output_keys[i]
+            else:
+                keys_for_task = list(func_output_map.keys())
+            task_schema[tk] = {
+                k: f"<{func_output_map.get(k, 'string')}>" for k in keys_for_task
+            }
         parts.append(
             "\n\n---\n\n# Output Format\n\n"
             "Return ONLY a JSON object with this structure:\n"
             f"```\n{json.dumps(task_schema, indent=2)}\n```\n\n"
             "Each task key contains its own output. "
-            "Later tasks can refine/override earlier task outputs. "
+            "Later tasks should use earlier task outputs as context. "
+            "The FINAL task's output keys are the ones that matter most. "
             "No markdown fences around your actual response — just the raw JSON object."
         )
 

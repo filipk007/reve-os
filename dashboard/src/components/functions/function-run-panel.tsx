@@ -36,6 +36,7 @@ import {
   submitLocalResult,
   fetchLocalJob,
   streamFunctionExecution,
+  streamConsolidatedExecution,
 } from "@/lib/api";
 
 interface FunctionRunPanelProps {
@@ -123,7 +124,8 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
     setResult(null);
     setStreamingTrace([]);
 
-    abortRef.current = streamFunctionExecution(
+    // Use consolidated execution (single AI call) for speed
+    abortRef.current = streamConsolidatedExecution(
       func.id,
       testInputsRef.current,
       (trace) => setStreamingTrace((prev) => [...prev, trace]),

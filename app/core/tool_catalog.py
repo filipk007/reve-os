@@ -50,6 +50,58 @@ DEEPLINE_PROVIDERS: list[dict] = [
 SPEED_MAP = {"native": "fast", "ai_single": "medium", "ai_agent": "slow"}
 COST_MAP = {"native": "low", "ai_single": "medium", "ai_agent": "high"}
 
+# Lookup map for fast access
+_PROVIDER_MAP: dict[str, dict] = {p["id"]: p for p in DEEPLINE_PROVIDERS}
+
+
+def get_step_target_keys(
+    tool_id: str,
+    step_idx: int,
+    total_steps: int,
+    func_outputs: list,
+) -> tuple[list[str], list[str]]:
+    """Return (keys_to_find, output_hints) appropriate for this step.
+
+    For the FINAL step (or single-step functions), returns the function's
+    declared output keys — these are what the user expects.
+
+    For INTERMEDIATE steps, returns the tool's catalog-level output keys
+    (e.g., 'content' for firecrawl, 'people' for apollo_people). These
+    intermediate values flow into later steps via {{variable}} substitution.
+
+    Returns:
+        (keys_to_find, output_hints) — keys is a list of key names,
+        hints is a list of formatted strings like "- key (type): description"
+    """
+    is_final = step_idx >= total_steps - 1
+
+    if is_final:
+        keys = [o.key if hasattr(o, "key") else o["key"] for o in func_outputs]
+        hints = []
+        for o in func_outputs:
+            key = o.key if hasattr(o, "key") else o["key"]
+            otype = (o.type if hasattr(o, "type") else o.get("type", "")) or ""
+            desc = (o.description if hasattr(o, "description") else o.get("description", "")) or ""
+            hint = f"- {key}"
+            if otype:
+                hint += f" ({otype})"
+            if desc:
+                hint += f": {desc}"
+            hints.append(hint)
+        return keys, hints
+
+    # Intermediate step — use catalog outputs
+    provider = _PROVIDER_MAP.get(tool_id)
+    if provider:
+        catalog_outputs = provider.get("outputs", [])
+        if catalog_outputs:
+            keys = [o["key"] for o in catalog_outputs]
+            hints = [f"- {o['key']} ({o.get('type', 'string')})" for o in catalog_outputs]
+            return keys, hints
+
+    # Fallback: use function outputs (backward compat for unknown tools)
+    return get_step_target_keys(tool_id, total_steps - 1, total_steps, func_outputs)
+
 
 def get_tool_catalog() -> list[dict]:
     """Return all available tools: Deepline providers + existing skills."""

@@ -622,6 +622,208 @@ async def webhook_function_stream(function_id: str, body: FunctionWebhookRequest
     )
 
 
+@router.post("/webhook/functions/{function_id}/consolidated-stream")
+async def webhook_function_consolidated_stream(function_id: str, body: FunctionWebhookRequest, request: Request):
+    """SSE streaming for consolidated execution — single claude call for all steps.
+
+    Faster than step-by-step streaming because it makes one AI call instead of N.
+    Intermediate outputs flow naturally within the single prompt.
+    """
+    import time as _time
+    from app.core.consolidated_runner import (
+        build_consolidated_prompt,
+        parse_consolidated_output,
+    )
+
+    sub_monitor = getattr(request.app.state, "subscription_monitor", None)
+    if sub_monitor and sub_monitor.is_paused:
+        return JSONResponse(
+            status_code=503,
+            content={"error": True, "error_message": "Service temporarily paused due to subscription limits", "retry_after": 120},
+        )
+
+    function_store = getattr(request.app.state, "function_store", None)
+    if function_store is None:
+        return JSONResponse(status_code=500, content={"error": True, "error_message": "Function store not initialized"})
+
+    func = function_store.get(function_id)
+    if func is None:
+        return JSONResponse(status_code=404, content={"error": True, "error_message": f"Function '{function_id}' not found"})
+
+    model = body.model or settings.default_model
+    pool = request.app.state.pool
+
+    async def event_gen():
+        try:
+            start_time = _time.time()
+
+            # Step 1: Build consolidated prompt
+            yield f"event: step\ndata: {json.dumps({'step_index': 0, 'tool': 'prompt_assembly', 'tool_name': 'Building prompt', 'executor': 'system', 'status': 'success', 'duration_ms': 0, 'output_keys': []})}\n\n"
+
+            consolidated = build_consolidated_prompt(
+                func=func,
+                data=dict(body.data),
+                instructions=body.instructions,
+                model=model,
+                request=request,
+            )
+
+            accumulated_output: dict = {}
+            step_traces: list[dict] = []
+
+            # Step 2: Run native API steps (findymail)
+            for native_idx in consolidated.native_step_indices:
+                step = func.steps[native_idx]
+                tool_id = step.tool
+                step_start = _time.time()
+
+                resolved_params: dict[str, str] = {}
+                for key, val in step.params.items():
+                    resolved = val
+                    for inp_name, inp_val in {**body.data, **accumulated_output}.items():
+                        resolved = resolved.replace("{{" + str(inp_name) + "}}", str(inp_val))
+                    resolved_params[key] = resolved
+
+                trace: dict = {
+                    "step_index": native_idx, "tool": tool_id,
+                    "tool_name": "Findymail", "executor": "native_api",
+                    "status": "success", "duration_ms": 0, "output_keys": [],
+                }
+
+                if tool_id == "findymail" and settings.findymail_api_key:
+                    from app.core import findymail_client
+                    try:
+                        result = await findymail_client.enrich_company(
+                            name=resolved_params.get("name") or resolved_params.get("company_name"),
+                            domain=resolved_params.get("domain"),
+                            linkedin_url=resolved_params.get("linkedin_url"),
+                            api_key=settings.findymail_api_key,
+                            base_url=settings.findymail_base_url,
+                            timeout=settings.findymail_timeout,
+                        )
+                        if isinstance(result, dict) and not result.get("error"):
+                            accumulated_output.update(result)
+                            trace["output_keys"] = list(result.keys())
+                        else:
+                            trace["status"] = "error"
+                            trace["error_message"] = result.get("error_message", "API error") if isinstance(result, dict) else "API error"
+                    except Exception as e:
+                        trace["status"] = "error"
+                        trace["error_message"] = str(e)
+
+                trace["duration_ms"] = int((_time.time() - step_start) * 1000)
+                step_traces.append(trace)
+                yield f"event: step\ndata: {json.dumps(trace)}\n\n"
+
+            # Step 3: Execute consolidated AI call
+            prompt = consolidated.prompt
+            if accumulated_output:
+                prompt += f"\n\n---\n\n# Data from Native API Steps\n\n{json.dumps(accumulated_output, default=str)}"
+
+            ai_trace = {
+                "step_index": len(step_traces),
+                "tool": "consolidated",
+                "tool_name": f"{len(consolidated.task_keys)} AI tasks combined",
+                "executor": "agent" if consolidated.needs_agent else "consolidated",
+                "status": "running",
+                "duration_ms": 0,
+                "output_keys": [],
+            }
+            yield f"event: step\ndata: {json.dumps(ai_trace)}\n\n"
+
+            ai_start = _time.time()
+            if consolidated.needs_agent:
+                ai_result = await pool.submit(
+                    prompt, consolidated.model, 300,
+                    executor_type="agent",
+                    max_turns=5,
+                    allowed_tools=["WebSearch", "WebFetch"],
+                )
+            else:
+                ai_result = await pool.submit(prompt, consolidated.model, 180)
+            ai_duration = int((_time.time() - ai_start) * 1000)
+
+            raw_output = ai_result.get("result", {})
+            parsed = parse_consolidated_output(
+                raw_output, consolidated.task_keys, consolidated.output_keys,
+            )
+            accumulated_output.update(parsed)
+
+            ai_trace["status"] = "success"
+            ai_trace["duration_ms"] = ai_duration
+            ai_trace["output_keys"] = list(parsed.keys())
+            step_traces.append(ai_trace)
+            yield f"event: step\ndata: {json.dumps(ai_trace)}\n\n"
+
+            # Build final output
+            duration_ms = int((_time.time() - start_time) * 1000)
+            final_output: dict = {}
+            for out in func.outputs:
+                if out.key in accumulated_output:
+                    final_output[out.key] = accumulated_output[out.key]
+                else:
+                    flattened = _flatten_to_expected_keys(accumulated_output, [out.key])
+                    final_output[out.key] = flattened.get(out.key)
+
+            null_keys = [k for k, v in final_output.items() if v is None]
+            if null_keys:
+                final_output["_warnings"] = [f"Could not resolve '{k}'" for k in null_keys]
+
+            if not func.outputs:
+                final_output = {k: v for k, v in accumulated_output.items() if not k.startswith("_")}
+
+            result_dict = {
+                **final_output,
+                "_meta": {
+                    "function": func.id,
+                    "function_name": func.name,
+                    "execution_mode": "consolidated",
+                    "claude_calls": 1,
+                    "task_count": len(consolidated.task_keys),
+                    "steps": len(func.steps),
+                    "duration_ms": duration_ms,
+                    "cached": False,
+                    "trace": step_traces,
+                },
+            }
+
+            # Save execution record
+            try:
+                execution_history = getattr(request.app.state, "execution_history", None)
+                if execution_history:
+                    has_errors = any(t.get("status") == "error" for t in step_traces)
+                    has_null = bool(null_keys)
+                    status = "error" if has_errors and not any(t.get("status") == "success" for t in step_traces) else "partial" if has_errors or has_null else "success"
+                    execution_history.save({
+                        "function_id": func.id,
+                        "timestamp": _time.time(),
+                        "inputs": dict(body.data),
+                        "outputs": final_output,
+                        "trace": step_traces,
+                        "duration_ms": duration_ms,
+                        "status": status,
+                        "warnings": final_output.get("_warnings", []),
+                        "step_count": len(func.steps),
+                    })
+            except Exception:
+                pass
+
+            yield f"event: result\ndata: {json.dumps(result_dict)}\n\n"
+
+        except Exception as e:
+            yield f"event: error\ndata: {json.dumps({'error': True, 'error_message': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_gen(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
 async def _run_function_stream(body: WebhookRequest, request: Request):
     """Async generator variant of _run_function — yields (event_type, payload) tuples."""
     import time
@@ -776,13 +978,18 @@ async def _run_function_stream(body: WebhookRequest, request: Request):
                 yield ("step", trace)
                 continue
 
-            # AI fallback
-            already_found = {k: v for k, v in accumulated_output.items()
-                            if k in [o.key for o in func.outputs] and v is not None}
+            # AI fallback — use step-specific output keys for intermediate steps
+            from app.core.tool_catalog import get_step_target_keys
+
+            step_keys, step_hints = get_step_target_keys(
+                tool_id, step_idx, len(func.steps), func.outputs,
+            )
             keys_to_find = [
-                k for k in remaining_output_keys
+                k for k in step_keys
                 if k not in accumulated_output or accumulated_output[k] is None
             ]
+            already_found = {k: v for k, v in accumulated_output.items()
+                            if k in [o.key for o in func.outputs] and v is not None}
 
             if not keys_to_find:
                 trace["status"] = "skipped"
@@ -791,15 +998,10 @@ async def _run_function_stream(body: WebhookRequest, request: Request):
                 yield ("step", trace)
                 continue
 
-            output_hints = []
-            for o in func.outputs:
-                if o.key in keys_to_find:
-                    hint = f"- {o.key}"
-                    if o.type:
-                        hint += f" ({o.type})"
-                    if o.description:
-                        hint += f": {o.description}"
-                    output_hints.append(hint)
+            # Filter hints to only the keys we still need
+            output_hints = [h for h, k in zip(step_hints, step_keys) if k in keys_to_find]
+            if not output_hints:
+                output_hints = [f"- {k}" for k in keys_to_find]
 
             ai_prompt = (
                 f"You are a data lookup agent. Find real, accurate data for this query.\n\n"
@@ -1381,14 +1583,18 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
                 step_traces.append(trace)
                 continue
 
-            # --- AI fallback with web search for data lookup tools ---
-            # Only ask for keys we still need
-            already_found = {k: v for k, v in accumulated_output.items()
-                            if k in [o.key for o in func.outputs] and v is not None}
+            # --- AI fallback — use step-specific output keys for intermediate steps ---
+            from app.core.tool_catalog import get_step_target_keys
+
+            step_keys, step_hints = get_step_target_keys(
+                tool_id, step_idx, len(func.steps), func.outputs,
+            )
             keys_to_find = [
-                k for k in remaining_output_keys
+                k for k in step_keys
                 if k not in accumulated_output or accumulated_output[k] is None
             ]
+            already_found = {k: v for k, v in accumulated_output.items()
+                            if k in [o.key for o in func.outputs] and v is not None}
 
             if not keys_to_find:
                 trace["status"] = "skipped"
@@ -1396,16 +1602,10 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
                 step_traces.append(trace)
                 continue
 
-            # Build type hints per output key
-            output_hints = []
-            for o in func.outputs:
-                if o.key in keys_to_find:
-                    hint = f"- {o.key}"
-                    if o.type:
-                        hint += f" ({o.type})"
-                    if o.description:
-                        hint += f": {o.description}"
-                    output_hints.append(hint)
+            # Filter hints to only the keys we still need
+            output_hints = [h for h, k in zip(step_hints, step_keys) if k in keys_to_find]
+            if not output_hints:
+                output_hints = [f"- {k}" for k in keys_to_find]
 
             ai_prompt = (
                 f"You are a data lookup agent. Find real, accurate data for this query.\n\n"
