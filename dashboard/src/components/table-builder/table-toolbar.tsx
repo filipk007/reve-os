@@ -9,6 +9,7 @@ import {
   Play,
   Square,
   RefreshCw,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ interface TableToolbarProps {
   onDeleteSelected: () => void;
   onExecute?: (options?: { limit?: number }) => void;
   onStop?: () => void;
+  onSettings?: () => void;
 }
 
 export function TableToolbar({
@@ -46,6 +48,7 @@ export function TableToolbar({
   onDeleteSelected,
   onExecute,
   onStop,
+  onSettings,
 }: TableToolbarProps) {
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(table.name);
@@ -97,6 +100,19 @@ export function TableToolbar({
       <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">
         {totalRows} rows
       </span>
+
+      {/* Settings gear */}
+      {onSettings && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-zinc-400 hover:text-white h-7 w-7"
+          onClick={onSettings}
+          title="Function settings"
+        >
+          <Settings className="w-3.5 h-3.5" />
+        </Button>
+      )}
 
       <div className="flex-1" />
 

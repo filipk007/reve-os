@@ -261,6 +261,76 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
     )
 
 
+# --- Shadow table for functions ---
+
+
+@router.post("/for-function/{func_id}")
+async def get_or_create_function_table(func_id: str, request: Request):
+    """Get or create a shadow table for a function (idempotent).
+
+    If a table with source_function_id == func_id already exists, returns it.
+    Otherwise creates a new table and populates columns from the function definition.
+    """
+    table_store = request.app.state.table_store
+    function_store = request.app.state.function_store
+
+    # Check if shadow table already exists
+    for summary in table_store.list_all():
+        full = table_store.get(summary.id)
+        if full and full.source_function_id == func_id:
+            return full.model_dump()
+
+    # Function must exist
+    func = function_store.get(func_id)
+    if func is None:
+        return JSONResponse({"error": True, "error_message": "Function not found"}, status_code=404)
+
+    from app.models.tables import AddColumnRequest
+
+    # Create table
+    table = table_store.create(name=func.name, description=func.description)
+
+    # Add input columns from function inputs
+    for inp in func.inputs:
+        table_store.add_column(table.id, AddColumnRequest(
+            name=inp.name,
+            column_type="input",
+            width=160,
+        ))
+
+    # Add step columns from function steps
+    for step in func.steps:
+        if step.tool == "gate":
+            table_store.add_column(table.id, AddColumnRequest(
+                name=step.params.get("label", "Gate"),
+                column_type="gate",
+                condition=step.params.get("condition"),
+                condition_label=step.params.get("label"),
+                params=step.params,
+            ))
+        elif step.tool == "call_ai":
+            table_store.add_column(table.id, AddColumnRequest(
+                name=step.params.get("name", "AI Analysis"),
+                column_type="ai",
+                ai_prompt=step.params.get("prompt", ""),
+                ai_model=step.params.get("model", "sonnet"),
+                params=step.params,
+            ))
+        else:
+            tool_name = step.tool.replace("skill:", "").replace("function:", "").replace("_", " ").title()
+            table_store.add_column(table.id, AddColumnRequest(
+                name=tool_name,
+                column_type="enrichment",
+                tool=step.tool,
+                params=step.params,
+            ))
+
+    # Link to source function
+    table_store.update(table.id, source_function_id=func_id)
+    final = table_store.get(table.id)
+    return final.model_dump() if final else {}
+
+
 # --- Interop: Function ↔ Table conversion ---
 
 

@@ -2392,6 +2392,12 @@ export function streamTableExecution(
   return controller;
 }
 
+export function getOrCreateFunctionTable(
+  functionId: string,
+): Promise<TableDefinition> {
+  return apiFetch(`/tables/for-function/${functionId}`, { method: "POST" });
+}
+
 export function createTableFromFunction(
   tableId: string,
   functionId: string,
