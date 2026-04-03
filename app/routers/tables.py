@@ -162,6 +162,21 @@ async def add_row(table_id: str, request: Request):
     return row
 
 
+@router.patch("/{table_id}/rows")
+async def update_cells(table_id: str, request: Request):
+    """Update individual cells. Body: {updates: {row_id: {col_id__value: val, col_id__status: status}}}."""
+    store = request.app.state.table_store
+    table = store.get(table_id)
+    if not table:
+        return JSONResponse({"error": True, "error_message": "Table not found"}, status_code=404)
+    body = await request.json()
+    updates = body.get("updates", {})
+    if not updates:
+        return JSONResponse({"error": True, "error_message": "No updates provided"}, status_code=400)
+    count = store.update_cells(table_id, updates)
+    return {"updated": count}
+
+
 @router.delete("/{table_id}/rows")
 async def delete_rows(table_id: str, body: DeleteRowsRequest, request: Request):
     store = request.app.state.table_store

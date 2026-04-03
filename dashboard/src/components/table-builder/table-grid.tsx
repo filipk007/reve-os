@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useState, useCallback } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -13,25 +13,7 @@ import {
   type ColumnSizingState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import {
-  Plus,
-  Search,
-  Brain,
-  Calculator,
-  Filter,
-  Pencil,
-  Type,
-  MoreVertical,
-  Trash2,
-  ArrowUp,
-  ArrowDown,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Plus, ChevronDown, ChevronRight } from "lucide-react";
 import type {
   TableDefinition,
   TableRow,
@@ -42,16 +24,6 @@ import type { ColumnProgress } from "@/hooks/use-table-builder";
 import { getCellValue, getCellStatus } from "@/hooks/use-table-builder";
 import { EnrichmentCell } from "./enrichment-cell";
 import { TableColumnHeader } from "./table-column-header";
-
-// Column type → icon mapping
-const COLUMN_TYPE_ICONS: Record<string, typeof Search> = {
-  enrichment: Search,
-  ai: Brain,
-  formula: Calculator,
-  gate: Filter,
-  input: Pencil,
-  static: Type,
-};
 
 // Column type → color mapping
 const COLUMN_TYPE_COLORS: Record<string, string> = {
@@ -82,6 +54,14 @@ interface TableGridProps {
   onCellClick: (cell: { rowId: string; columnId: string } | null) => void;
   onAddColumn: () => void;
   onDeleteColumn: (columnId: string) => Promise<void>;
+  onRenameColumn?: (columnId: string, newName: string) => Promise<void>;
+  // Inline editing
+  onUpdateCell?: (rowId: string, columnId: string, value: unknown) => Promise<void>;
+  // Row expansion
+  expandedRowId?: string | null;
+  onToggleExpandRow?: (rowId: string) => void;
+  // Clipboard paste
+  onPasteRows?: (rows: Record<string, unknown>[]) => Promise<void>;
 }
 
 export function TableGrid({
@@ -101,8 +81,17 @@ export function TableGrid({
   onCellClick,
   onAddColumn,
   onDeleteColumn,
+  onUpdateCell,
+  expandedRowId,
+  onToggleExpandRow,
+  onPasteRows,
+  onRenameColumn,
 }: TableGridProps) {
   const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  // Inline editing state
+  const [editingCell, setEditingCell] = useState<{ rowId: string; columnId: string } | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   const reactTable = useReactTable({
     data: rows,
@@ -125,16 +114,81 @@ export function TableGrid({
   const rowVirtualizer = useVirtualizer({
     count: tableRows.length,
     getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 36,
+    estimateSize: (index) => {
+      const row = tableRows[index];
+      return row && expandedRowId === row.id ? 200 : 36;
+    },
     overscan: 20,
   });
 
   const visibleColumns = table.columns.filter((c) => !c.hidden);
 
+  // Start inline editing on double-click
+  const handleDoubleClick = useCallback(
+    (rowId: string, col: TableColumn) => {
+      if (col.column_type !== "input" && col.column_type !== "static") return;
+      const row = rows.find((r) => r._row_id === rowId);
+      const val = row ? getCellValue(row, col.id) : "";
+      setEditingCell({ rowId, columnId: col.id });
+      setEditValue(val !== null && val !== undefined ? String(val) : "");
+    },
+    [rows],
+  );
+
+  // Commit inline edit
+  const commitEdit = useCallback(async () => {
+    if (!editingCell || !onUpdateCell) return;
+    await onUpdateCell(editingCell.rowId, editingCell.columnId, editValue);
+    setEditingCell(null);
+  }, [editingCell, editValue, onUpdateCell]);
+
+  // Handle clipboard paste
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent) => {
+      if (!selectedCell || !onUpdateCell) return;
+      const text = e.clipboardData.getData("text/plain");
+      if (!text) return;
+
+      // Parse TSV
+      const lines = text.split("\n").filter((l) => l.trim());
+      if (lines.length === 0) return;
+
+      e.preventDefault();
+
+      // Find the column index of the selected cell
+      const selectedColIdx = visibleColumns.findIndex((c) => c.id === selectedCell.columnId);
+      if (selectedColIdx < 0) return;
+
+      // Find the row index
+      const selectedRowIdx = rows.findIndex((r) => r._row_id === selectedCell.rowId);
+      if (selectedRowIdx < 0) return;
+
+      // Apply paste data
+      for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+        const rowIdx = selectedRowIdx + lineIdx;
+        if (rowIdx >= rows.length) break;
+        const row = rows[rowIdx];
+        const cells = lines[lineIdx].split("\t");
+
+        for (let cellIdx = 0; cellIdx < cells.length; cellIdx++) {
+          const colIdx = selectedColIdx + cellIdx;
+          if (colIdx >= visibleColumns.length) break;
+          const col = visibleColumns[colIdx];
+          if (col.column_type === "input" || col.column_type === "static") {
+            await onUpdateCell(row._row_id, col.id, cells[cellIdx]);
+          }
+        }
+      }
+    },
+    [selectedCell, rows, visibleColumns, onUpdateCell],
+  );
+
   return (
     <div
       ref={tableContainerRef}
       className="flex-1 overflow-auto"
+      onPaste={handlePaste}
+      tabIndex={0}
     >
       <table className="w-full border-collapse text-sm">
         {/* Header */}
@@ -168,6 +222,7 @@ export function TableGrid({
                         column={tableCol}
                         progress={columnProgress[tableCol.id]}
                         onDelete={() => onDeleteColumn(tableCol.id)}
+                        onRename={onRenameColumn ? (name) => onRenameColumn(tableCol.id, name) : undefined}
                         onSort={() => {
                           onSortingChange(
                             sorting[0]?.id === tableCol.id
@@ -231,6 +286,7 @@ export function TableGrid({
             const row = tableRows[virtualRow.index];
             if (!row) return null;
             const rowId = row.id;
+            const isExpanded = expandedRowId === rowId;
 
             return (
               <tr
@@ -238,7 +294,6 @@ export function TableGrid({
                 className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 ${
                   rowSelection[rowId] ? "bg-kiln-teal/5" : ""
                 }`}
-                style={{ height: virtualRow.size }}
               >
                 {row.getVisibleCells().map((cell) => {
                   const tableCol = visibleColumns.find(
@@ -247,16 +302,25 @@ export function TableGrid({
                   const isSystem =
                     cell.column.id === "_select" ||
                     cell.column.id === "_row_num";
+                  const isRowNum = cell.column.id === "_row_num";
                   const isSelected =
                     selectedCell?.rowId === rowId &&
                     selectedCell?.columnId === cell.column.id;
+                  const isEditing =
+                    editingCell?.rowId === rowId &&
+                    editingCell?.columnId === cell.column.id;
+                  const isEditable =
+                    tableCol &&
+                    (tableCol.column_type === "input" || tableCol.column_type === "static");
 
                   return (
                     <td
                       key={cell.id}
-                      className={`px-3 py-1.5 truncate ${
+                      className={`px-3 py-1.5 ${
                         isSelected ? "ring-1 ring-kiln-teal ring-inset" : ""
-                      } ${isSystem ? "bg-zinc-950" : ""}`}
+                      } ${isSystem ? "bg-zinc-950" : ""} ${
+                        isEditable ? "cursor-text" : ""
+                      }`}
                       style={{
                         width: cell.column.getSize(),
                         maxWidth: cell.column.getSize(),
@@ -265,34 +329,103 @@ export function TableGrid({
                         left:
                           isSystem || tableCol?.frozen ? 0 : undefined,
                         zIndex: isSystem || tableCol?.frozen ? 5 : undefined,
+                        height: 36,
                       }}
                       onClick={() => {
-                        if (!isSystem && tableCol) {
+                        if (isRowNum && onToggleExpandRow) {
+                          onToggleExpandRow(rowId);
+                        } else if (!isSystem && tableCol) {
                           onCellClick({ rowId, columnId: tableCol.id });
                         }
                       }}
+                      onDoubleClick={() => {
+                        if (tableCol && isEditable) {
+                          handleDoubleClick(rowId, tableCol);
+                        }
+                      }}
                     >
-                      {tableCol &&
-                      tableCol.column_type !== "input" &&
-                      tableCol.column_type !== "static" ? (
+                      {/* Row number with expand toggle */}
+                      {isRowNum ? (
+                        <span className="flex items-center gap-0.5 text-zinc-500 text-xs cursor-pointer hover:text-zinc-300">
+                          {onToggleExpandRow && (
+                            isExpanded
+                              ? <ChevronDown className="w-3 h-3" />
+                              : <ChevronRight className="w-3 h-3" />
+                          )}
+                          {virtualRow.index + 1}
+                        </span>
+                      ) : isEditing ? (
+                        /* Inline editing input */
+                        <input
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={commitEdit}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") commitEdit();
+                            if (e.key === "Escape") setEditingCell(null);
+                            if (e.key === "Tab") {
+                              e.preventDefault();
+                              commitEdit();
+                            }
+                          }}
+                          autoFocus
+                          className="w-full bg-transparent text-white text-xs outline-none border-b border-kiln-teal"
+                        />
+                      ) : tableCol &&
+                        tableCol.column_type !== "input" &&
+                        tableCol.column_type !== "static" ? (
                         <EnrichmentCell
                           value={getCellValue(row.original, tableCol.id)}
                           status={getCellStatus(row.original, tableCol.id)}
                         />
                       ) : (
-                        flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )
+                        <span className="truncate text-xs">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </span>
                       )}
                     </td>
                   );
                 })}
                 {/* Empty cell for add-column column */}
-                <td className="w-10" />
+                <td className="w-10" style={{ height: 36 }} />
               </tr>
             );
           })}
+
+          {/* Expanded row detail */}
+          {expandedRowId && (() => {
+            const expandedRow = rows.find((r) => r._row_id === expandedRowId);
+            if (!expandedRow) return null;
+            return (
+              <tr className="bg-zinc-900/50 border-b border-zinc-700">
+                <td colSpan={columns.length + 1} className="p-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {visibleColumns.map((col) => {
+                      const val = getCellValue(expandedRow, col.id);
+                      const status = getCellStatus(expandedRow, col.id);
+                      return (
+                        <div key={col.id} className="min-w-0">
+                          <div className="text-[10px] text-zinc-500 mb-0.5 truncate">
+                            {col.name}
+                          </div>
+                          <div className="text-xs text-zinc-300 truncate">
+                            {val !== null && val !== undefined
+                              ? typeof val === "object"
+                                ? JSON.stringify(val).slice(0, 100)
+                                : String(val)
+                              : <span className="text-zinc-600">—</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </td>
+              </tr>
+            );
+          })()}
 
           {/* Bottom spacer for virtual scroll */}
           {rowVirtualizer.getVirtualItems().length > 0 && (

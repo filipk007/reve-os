@@ -247,6 +247,12 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
           onCellClick={ft.setSelectedCell}
           onAddColumn={handleAddColumnClick}
           onDeleteColumn={ft.deleteColumn}
+          onRenameColumn={async (colId, name) => ft.editColumn(colId, { name })}
+          onUpdateCell={ft.updateCell}
+          expandedRowId={ft.expandedRowId}
+          onToggleExpandRow={(id) =>
+            ft.setExpandedRowId(ft.expandedRowId === id ? null : id)
+          }
         />
 
         {/* Search overlay */}

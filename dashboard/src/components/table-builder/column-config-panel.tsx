@@ -279,6 +279,37 @@ export function ColumnConfigPanel({
             </>
           )}
 
+          {/* Only Run If — for enrichment and AI columns */}
+          {(columnType === "enrichment" || columnType === "ai") && (
+            <div className="border-t border-zinc-800 pt-4">
+              <button
+                className="flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-300 w-full"
+                onClick={() => setCondition(condition ? "" : " ")}
+              >
+                <div
+                  className={`w-3.5 h-3.5 rounded border ${
+                    condition
+                      ? "bg-amber-500/20 border-amber-500 text-amber-400"
+                      : "border-zinc-600"
+                  } flex items-center justify-center text-[8px]`}
+                >
+                  {condition ? "✓" : ""}
+                </div>
+                Only run if condition is met
+              </button>
+              {condition && (
+                <div className="mt-2">
+                  <ColumnReferenceInput
+                    value={condition}
+                    onChange={setCondition}
+                    availableColumns={availableColumns}
+                    placeholder="e.g. /domain is not empty"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Save button */}
           <div className="pt-4 flex gap-2">
             <Button

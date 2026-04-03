@@ -2323,6 +2323,16 @@ export function deleteTableRows(
   });
 }
 
+export function updateTableCells(
+  tableId: string,
+  updates: Record<string, Record<string, unknown>>,
+): Promise<{ updated: number }> {
+  return apiFetch(`/tables/${tableId}/rows`, {
+    method: "PATCH",
+    body: JSON.stringify({ updates }),
+  });
+}
+
 /** Stream table execution via SSE — returns AbortController for cancellation */
 export function streamTableExecution(
   tableId: string,

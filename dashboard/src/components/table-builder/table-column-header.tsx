@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import {
   Search,
   Brain,
@@ -11,10 +12,6 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
-  Play,
-  RotateCcw,
-  Pin,
-  EyeOff,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -50,6 +47,7 @@ interface TableColumnHeaderProps {
   progress?: ColumnProgress;
   onDelete: () => void;
   onSort: () => void;
+  onRename?: (newName: string) => void;
   sortDir: "asc" | "desc" | null;
 }
 
@@ -58,6 +56,7 @@ export function TableColumnHeader({
   progress,
   onDelete,
   onSort,
+  onRename,
   sortDir,
 }: TableColumnHeaderProps) {
   const Icon = TYPE_ICONS[column.column_type] || Type;
@@ -69,13 +68,73 @@ export function TableColumnHeader({
     ? Math.round((progress.errors / progress.total) * 100)
     : 0;
 
+  // Inline rename state
+  const [editing, setEditing] = useState(false);
+  const [nameValue, setNameValue] = useState(column.name);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editing]);
+
+  const startEditing = () => {
+    setNameValue(column.name);
+    setEditing(true);
+  };
+
+  const commitRename = () => {
+    setEditing(false);
+    const trimmed = nameValue.trim();
+    if (trimmed && trimmed !== column.name && onRename) {
+      onRename(trimmed);
+    } else {
+      setNameValue(column.name);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-1.5 group">
         <Icon className={`w-3 h-3 shrink-0 ${iconColor}`} />
-        <span className="truncate flex-1 text-zinc-300 font-medium">
-          {column.name}
-        </span>
+
+        {/* Column name — double-click to edit */}
+        {editing ? (
+          <input
+            ref={inputRef}
+            value={nameValue}
+            onChange={(e) => setNameValue(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitRename();
+              if (e.key === "Escape") {
+                setNameValue(column.name);
+                setEditing(false);
+              }
+            }}
+            className="flex-1 min-w-0 bg-transparent text-xs text-white font-medium outline-none border-b border-kiln-teal"
+            onClick={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <span
+            className="truncate flex-1 text-zinc-300 font-medium cursor-text"
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              startEditing();
+            }}
+          >
+            {column.name}
+          </span>
+        )}
+
+        {/* Condition indicator */}
+        {column.condition && (
+          <span className="shrink-0" title={`Condition: ${column.condition}`}>
+            <Filter className="w-2.5 h-2.5 text-amber-400" />
+          </span>
+        )}
         {sortDir === "asc" && <ArrowUp className="w-3 h-3 text-kiln-teal" />}
         {sortDir === "desc" && <ArrowDown className="w-3 h-3 text-kiln-teal" />}
 
@@ -86,6 +145,15 @@ export function TableColumnHeader({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="bg-zinc-900 border-zinc-700 text-sm">
+            {onRename && (
+              <DropdownMenuItem
+                onClick={startEditing}
+                className="text-zinc-300"
+              >
+                <Pencil className="w-3 h-3 mr-2" />
+                Rename column
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={onSort} className="text-zinc-300">
               {sortDir === "asc" ? (
                 <ArrowDown className="w-3 h-3 mr-2" />

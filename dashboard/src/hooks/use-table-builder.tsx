@@ -31,6 +31,7 @@ import {
   addTableRow,
   deleteTableRows,
   streamTableExecution,
+  updateTableCells,
 } from "@/lib/api";
 
 export interface ColumnProgress {
@@ -60,6 +61,12 @@ export interface UseTableBuilderReturn {
   importRows: (rows: Record<string, unknown>[]) => Promise<void>;
   addRow: (data: Record<string, unknown>) => Promise<void>;
   removeRows: (rowIds: string[]) => Promise<void>;
+  updateCell: (rowId: string, columnId: string, value: unknown) => Promise<void>;
+  duplicateRow: (rowId: string) => Promise<void>;
+
+  // Row expansion
+  expandedRowId: string | null;
+  setExpandedRowId: (id: string | null) => void;
 
   // Table meta
   rename: (name: string) => Promise<void>;
@@ -120,6 +127,7 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
 
   // Detail panel
   const [selectedCell, setSelectedCell] = useState<{ rowId: string; columnId: string } | null>(null);
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
   // TanStack state
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -215,6 +223,44 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
       await refresh();
     },
     [tableId, refresh],
+  );
+
+  // Update a single cell value
+  const updateCell = useCallback(
+    async (rowId: string, columnId: string, value: unknown) => {
+      await updateTableCells(tableId, {
+        [rowId]: {
+          [`${columnId}__value`]: value,
+          [`${columnId}__status`]: "done",
+        },
+      });
+      setRows((prev) =>
+        prev.map((r) =>
+          r._row_id === rowId
+            ? { ...r, [`${columnId}__value`]: value, [`${columnId}__status`]: "done" }
+            : r,
+        ),
+      );
+    },
+    [tableId],
+  );
+
+  // Duplicate a row (copies input values, clears enrichment)
+  const duplicateRow = useCallback(
+    async (rowId: string) => {
+      const row = rows.find((r) => r._row_id === rowId);
+      if (!row || !table) return;
+      const inputData: Record<string, unknown> = {};
+      for (const col of table.columns) {
+        if (col.column_type === "input" || col.column_type === "static") {
+          const val = row[`${col.id}__value`];
+          if (val !== undefined) inputData[col.name] = val;
+        }
+      }
+      await addTableRow(tableId, inputData);
+      await refresh();
+    },
+    [tableId, rows, table, refresh],
   );
 
   // Rename
@@ -391,6 +437,10 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
     importRows: importRowsFn,
     addRow: addRowFn,
     removeRows,
+    updateCell,
+    duplicateRow,
+    expandedRowId,
+    setExpandedRowId,
     rename,
     executing,
     columnProgress,
