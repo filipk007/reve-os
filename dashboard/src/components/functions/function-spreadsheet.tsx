@@ -17,6 +17,8 @@ import { FunctionSettingsPanel } from "./function-settings-panel";
 import { useBrowserNotification } from "@/hooks/use-browser-notification";
 import type { UseFunctionTableReturn } from "@/hooks/use-function-table";
 import type { ToolDefinition, TableColumn, TableExecutionEvent } from "@/lib/types";
+import { fetchTools } from "@/lib/api";
+import { autoMapInputs } from "@/lib/auto-map-inputs";
 
 interface FunctionSpreadsheetProps {
   ft: UseFunctionTableReturn;
@@ -31,6 +33,7 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
   const [editingColumn, setEditingColumn] = useState<TableColumn | null>(null);
   const [selectedTool, setSelectedTool] = useState<ToolDefinition | null>(null);
   const [initialType, setInitialType] = useState<string | null>(null);
+  const [initialParams, setInitialParams] = useState<Record<string, string> | undefined>(undefined);
 
   // Search state
   const [searchOpen, setSearchOpen] = useState(false);
@@ -109,6 +112,7 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
     setSelectedTool(tool);
     setInitialType("enrichment");
     setEditingColumn(null);
+    setInitialParams(undefined);
     setConfigOpen(true);
   }, []);
 
@@ -138,14 +142,84 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
   }, [ft]);
 
   const handleSaveColumn = useCallback(
-    async (config: Record<string, unknown>) => {
+    async (config: Record<string, unknown>): Promise<string | void> => {
       if (editingColumn) {
         await ft.editColumn(editingColumn.id, config);
-      } else {
-        await ft.addColumn(config);
+        return;
       }
+      return await ft.addColumn(config);
     },
     [ft, editingColumn],
+  );
+
+  // Edit column config — opens config panel pre-filled with existing column
+  const handleEditColumnConfig = useCallback(
+    async (column: TableColumn) => {
+      setEditingColumn(column);
+      setInitialParams(undefined);
+
+      if (column.column_type === "enrichment" && column.tool) {
+        try {
+          const res = await fetchTools();
+          const tool = res.tools.find((t: ToolDefinition) => t.id === column.tool);
+          setSelectedTool(tool || null);
+        } catch {
+          setSelectedTool(null);
+        }
+      } else {
+        setSelectedTool(null);
+      }
+
+      setInitialType(column.column_type);
+      setConfigOpen(true);
+    },
+    [],
+  );
+
+  // Duplicate a column
+  const handleDuplicateColumn = useCallback(
+    async (columnId: string) => {
+      const col = ft.table?.columns.find((c) => c.id === columnId);
+      if (!col) return;
+      const config: Record<string, unknown> = {
+        name: `${col.name} (copy)`,
+        column_type: col.column_type,
+      };
+      if (col.tool) config.tool = col.tool;
+      if (col.params) config.params = col.params;
+      if (col.output_key) config.output_key = col.output_key;
+      if (col.ai_prompt) config.ai_prompt = col.ai_prompt;
+      if (col.ai_model) config.ai_model = col.ai_model;
+      if (col.formula) config.formula = col.formula;
+      if (col.condition) config.condition = col.condition;
+      if (col.condition_label) config.condition_label = col.condition_label;
+      await ft.addColumn(config);
+    },
+    [ft],
+  );
+
+  // Hide a column
+  const handleHideColumn = useCallback(
+    async (columnId: string) => {
+      await ft.editColumn(columnId, { hidden: true });
+    },
+    [ft],
+  );
+
+  // Run a single column
+  const handleRunColumn = useCallback(
+    (columnId: string) => {
+      ft.executeTable({ columnIds: [columnId] });
+    },
+    [ft],
+  );
+
+  // Re-run failed rows for a column
+  const handleRerunColumnFailed = useCallback(
+    (columnId: string) => {
+      ft.executeTable({ columnIds: [columnId] });
+    },
+    [ft],
   );
 
   const handleAddAsColumn = useCallback(
@@ -248,6 +322,11 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
           onAddColumn={handleAddColumnClick}
           onDeleteColumn={ft.deleteColumn}
           onRenameColumn={async (colId, name) => ft.editColumn(colId, { name })}
+          onEditColumnConfig={handleEditColumnConfig}
+          onDuplicateColumn={handleDuplicateColumn}
+          onHideColumn={handleHideColumn}
+          onRunColumn={handleRunColumn}
+          onRerunColumnFailed={handleRerunColumnFailed}
           onUpdateCell={ft.updateCell}
           expandedRowId={ft.expandedRowId}
           onToggleExpandRow={(id) =>
@@ -307,6 +386,7 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
         selectedTool={selectedTool}
         initialType={initialType}
         availableColumns={availableColumns}
+        initialParams={initialParams}
       />
 
       {/* Cell detail panel */}
