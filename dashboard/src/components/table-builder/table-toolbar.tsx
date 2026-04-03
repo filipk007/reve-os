@@ -10,6 +10,7 @@ import {
   Square,
   RefreshCw,
   Settings,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ interface TableToolbarProps {
   onExecute?: (options?: { limit?: number }) => void;
   onStop?: () => void;
   onSettings?: () => void;
+  onSaveAsFunction?: () => void;
 }
 
 export function TableToolbar({
@@ -49,6 +51,7 @@ export function TableToolbar({
   onExecute,
   onStop,
   onSettings,
+  onSaveAsFunction,
 }: TableToolbarProps) {
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(table.name);
@@ -100,6 +103,20 @@ export function TableToolbar({
       <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">
         {totalRows} rows
       </span>
+
+      {/* Save as Function */}
+      {onSaveAsFunction && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-zinc-400 hover:text-white h-7 text-xs"
+          onClick={onSaveAsFunction}
+          title="Save table as reusable function"
+        >
+          <Layers className="w-3 h-3 mr-1" />
+          Save as Function
+        </Button>
+      )}
 
       {/* Settings gear */}
       {onSettings && (

@@ -20,6 +20,7 @@ import type { ToolDefinition, TableColumn, TableExecutionEvent } from "@/lib/typ
 import { fetchTools } from "@/lib/api";
 import { autoMapInputs } from "@/lib/auto-map-inputs";
 import { CsvImportDialog } from "@/components/table-builder/csv-import-dialog";
+import { AiBuilderDialog } from "@/components/table-builder/ai-builder-dialog";
 
 interface FunctionSpreadsheetProps {
   ft: UseFunctionTableReturn;
@@ -39,6 +40,9 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
   // Import dialog state
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+
+  // AI builder state
+  const [aiBuilderOpen, setAiBuilderOpen] = useState(false);
 
   // Search state
   const [searchOpen, setSearchOpen] = useState(false);
@@ -227,6 +231,29 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
     [ft],
   );
 
+  // AI builder: add generated columns to this table
+  const handleAIBuildColumns = useCallback(
+    async (
+      _tableName: string,
+      columns: Array<{
+        name: string;
+        column_type: string;
+        tool?: string;
+        params?: Record<string, string>;
+        ai_prompt?: string;
+        ai_model?: string;
+        condition?: string;
+        formula?: string;
+      }>,
+    ) => {
+      for (const col of columns) {
+        await ft.addColumn(col);
+      }
+      toast.success(`Added ${columns.length} columns from AI`);
+    },
+    [ft],
+  );
+
   const handleAddAsColumn = useCallback(
     async (path: string, _value: unknown) => {
       if (!ft.selectedCell) return;
@@ -383,6 +410,7 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
         onSelectFormula={handleSelectFormula}
         onSelectGate={handleSelectGate}
         onSelectStatic={handleSelectStatic}
+        onAIBuilder={() => setAiBuilderOpen(true)}
       />
 
       {/* Column config panel */}
@@ -418,6 +446,13 @@ export function FunctionSpreadsheet({ ft }: FunctionSpreadsheetProps) {
           onDuplicate={ft.duplicateFn}
         />
       )}
+
+      {/* AI Builder dialog */}
+      <AiBuilderDialog
+        open={aiBuilderOpen}
+        onClose={() => setAiBuilderOpen(false)}
+        onApplyColumns={handleAIBuildColumns}
+      />
 
       {/* CSV Import dialog */}
       <CsvImportDialog

@@ -9,10 +9,12 @@ import { ColumnConfigPanel } from "@/components/table-builder/column-config-pane
 import { ColumnSuggestionsBar } from "@/components/table-builder/column-suggestions-bar";
 import { CellDetailPanel } from "@/components/table-builder/cell-detail-panel";
 import { CsvImportDialog } from "@/components/table-builder/csv-import-dialog";
+import { AiBuilderDialog } from "@/components/table-builder/ai-builder-dialog";
 import { Loader2 } from "lucide-react";
 import type { ToolDefinition, TableColumn } from "@/lib/types";
-import { fetchTools } from "@/lib/api";
+import { fetchTools, exportTableToFunction } from "@/lib/api";
 import { autoMapInputs } from "@/lib/auto-map-inputs";
+import { toast } from "sonner";
 
 export default function TableBuilderPage({
   params,
@@ -25,6 +27,9 @@ export default function TableBuilderPage({
   // Import dialog state
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+
+  // AI builder state
+  const [aiBuilderOpen, setAiBuilderOpen] = useState(false);
 
   // Column palette state
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -183,6 +188,39 @@ export default function TableBuilderPage({
     [tb],
   );
 
+  // AI builder: add generated columns to this table
+  const handleAIBuildColumns = useCallback(
+    async (
+      _tableName: string,
+      columns: Array<{
+        name: string;
+        column_type: string;
+        tool?: string;
+        params?: Record<string, string>;
+        ai_prompt?: string;
+        ai_model?: string;
+        condition?: string;
+        formula?: string;
+      }>,
+    ) => {
+      for (const col of columns) {
+        await tb.addColumn(col);
+      }
+      toast.success(`Added ${columns.length} columns from AI`);
+    },
+    [tb],
+  );
+
+  // Save table as reusable function
+  const handleSaveAsFunction = useCallback(async () => {
+    try {
+      const func = await exportTableToFunction(id);
+      toast.success(`Saved as function: ${func.name}`);
+    } catch {
+      toast.error("Failed to save as function");
+    }
+  }, [id]);
+
   // "Add as column" from cell detail panel
   const handleAddAsColumn = useCallback(
     async (path: string, value: unknown) => {
@@ -242,6 +280,11 @@ export default function TableBuilderPage({
         }}
         onExecute={(options) => tb.executeTable(options)}
         onStop={tb.stopExecution}
+        onSaveAsFunction={
+          tb.table.columns.some((c) => c.column_type !== "input" && c.column_type !== "static")
+            ? handleSaveAsFunction
+            : undefined
+        }
       />
 
       <ColumnSuggestionsBar
@@ -285,6 +328,7 @@ export default function TableBuilderPage({
         onSelectFormula={handleSelectFormula}
         onSelectGate={handleSelectGate}
         onSelectStatic={handleSelectStatic}
+        onAIBuilder={() => setAiBuilderOpen(true)}
       />
 
       {/* Column config panel */}
@@ -307,6 +351,13 @@ export default function TableBuilderPage({
         row={selectedRow}
         columnId={tb.selectedCell?.columnId || null}
         onAddAsColumn={handleAddAsColumn}
+      />
+
+      {/* AI Builder dialog */}
+      <AiBuilderDialog
+        open={aiBuilderOpen}
+        onClose={() => setAiBuilderOpen(false)}
+        onApplyColumns={handleAIBuildColumns}
       />
 
       {/* CSV Import dialog */}

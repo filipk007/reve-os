@@ -2307,6 +2307,29 @@ export function importTableCsv(
   });
 }
 
+export function assembleTableColumns(body: {
+  description: string;
+}): Promise<{
+  table_name: string;
+  columns: Array<{
+    name: string;
+    id: string;
+    column_type: string;
+    tool?: string;
+    params?: Record<string, string>;
+    ai_prompt?: string;
+    ai_model?: string;
+    condition?: string;
+    formula?: string;
+  }>;
+  raw: string;
+}> {
+  return apiFetch("/tables/assemble-columns", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
 export function addTableRow(
   tableId: string,
   data: Record<string, unknown>,

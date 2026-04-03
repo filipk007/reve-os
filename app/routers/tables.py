@@ -508,3 +508,105 @@ async def duplicate_table(table_id: str, request: Request):
 
     final = store.get(new_table.id)
     return final.model_dump() if final else {}
+
+
+@router.post("/assemble-columns")
+async def assemble_columns(request: Request):
+    """AI-powered: describe what you want to achieve, get a column chain."""
+    import asyncio
+    from concurrent.futures import ThreadPoolExecutor
+
+    body = await request.json()
+    description = body.get("description", "")
+    if not description:
+        return JSONResponse({"error": True, "error_message": "Description required"}, status_code=400)
+
+    from app.core.tool_catalog import get_tool_categories
+
+    function_store = getattr(request.app.state, "function_store", None)
+    categories = get_tool_categories(function_store=function_store)
+
+    tool_block = ""
+    for cat in categories:
+        tool_block += f"\n## {cat['category']}\n"
+        for t in cat["tools"]:
+            inputs_str = ", ".join(f"{i['name']}:{i['type']}" for i in t.get("inputs", []))
+            outputs_str = ", ".join(f"{o['key']}:{o['type']}" for o in t.get("outputs", []))
+            mode = t.get("execution_mode", "ai_single")
+            speed = "fast" if mode == "native" else ("slow" if mode == "ai_agent" else "medium")
+            tool_block += f"  - `{t['id']}` — {t['description']} | in: ({inputs_str}) | out: ({outputs_str}) | speed: {speed}\n"
+
+    prompt = f"""You are a table builder for a GTM data platform. Design a sequence of columns for the user's goal.
+
+# Available Tools (by category)
+{tool_block}
+
+# Column Types
+- "input": Data the user provides (e.g., company domain, person name)
+- "enrichment": Calls a tool to fetch/enrich data. Has `tool` and `params`.
+- "ai": Uses Claude AI to analyze/transform data. Has `ai_prompt`.
+- "gate": Filters rows by condition. Has `condition`.
+- "formula": Computed from other columns. Has `formula`.
+
+# Rules
+- Start with input columns that the user needs to provide
+- Then add enrichment/AI/gate columns in logical order
+- Use `{{{{column_id}}}}` to reference values from previous columns in params and prompts
+- Column IDs should be snake_case
+- Keep it practical: 2-8 columns total
+- PREFER `web_search` for any real-time research needs
+
+# User's Goal
+{description}
+
+Respond with ONLY a JSON object:
+```json
+{{
+  "table_name": "descriptive name",
+  "columns": [
+    {{
+      "name": "Display Name",
+      "id": "snake_case_id",
+      "column_type": "input|enrichment|ai|gate|formula",
+      "tool": "tool_id (enrichment only)",
+      "params": {{"param": "{{{{other_column_id}}}}"}} ,
+      "ai_prompt": "prompt text (ai only)",
+      "ai_model": "sonnet (ai only)",
+      "condition": "condition (gate only)",
+      "formula": "template (formula only)"
+    }}
+  ]
+}}
+```"""
+
+    import subprocess
+    def run_claude():
+        result = subprocess.run(
+            ["claude", "--print", "-m", "sonnet", "-p", prompt],
+            capture_output=True, text=True, timeout=90,
+        )
+        return result.stdout
+
+    loop = asyncio.get_event_loop()
+    executor = ThreadPoolExecutor(max_workers=1)
+    try:
+        raw = await loop.run_in_executor(executor, run_claude)
+    except Exception as e:
+        return JSONResponse({"error": True, "error_message": str(e)}, status_code=500)
+
+    # Parse JSON from response
+    import re
+    json_match = re.search(r"\{[\s\S]*\}", raw)
+    if not json_match:
+        return JSONResponse({"error": True, "error_message": "Failed to parse AI response", "raw": raw}, status_code=500)
+
+    try:
+        parsed = json.loads(json_match.group())
+    except json.JSONDecodeError:
+        return JSONResponse({"error": True, "error_message": "Invalid JSON from AI", "raw": raw}, status_code=500)
+
+    return {
+        "table_name": parsed.get("table_name", "AI Table"),
+        "columns": parsed.get("columns", []),
+        "raw": raw,
+    }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Table2, Upload, Trash2, MoreVertical } from "lucide-react";
+import { Plus, Table2, Upload, Trash2, MoreVertical, Layers, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,9 +11,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog as DialogPrimitive } from "radix-ui";
 import { toast } from "sonner";
-import { fetchTables, createTable, deleteTable, importTableCsv } from "@/lib/api";
-import type { TableSummary } from "@/lib/types";
+import { fetchTables, createTable, deleteTable, importTableCsv, fetchFunctions, getOrCreateFunctionTable, addTableColumn } from "@/lib/api";
+import type { TableSummary, FunctionDefinition } from "@/lib/types";
+import { AiBuilderDialog } from "@/components/table-builder/ai-builder-dialog";
 import Papa from "papaparse";
 
 export default function TablesPage() {
@@ -21,6 +23,10 @@ export default function TablesPage() {
   const [tables, setTables] = useState<TableSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [funcPickerOpen, setFuncPickerOpen] = useState(false);
+  const [functions, setFunctions] = useState<FunctionDefinition[]>([]);
+  const [funcSearch, setFuncSearch] = useState("");
+  const [aiBuilderOpen, setAiBuilderOpen] = useState(false);
 
   useEffect(() => {
     fetchTables()
@@ -54,6 +60,72 @@ export default function TablesPage() {
     }
     if (fileRef.current) fileRef.current.value = "";
   };
+
+  const handleNewFromFunction = async () => {
+    try {
+      const res = await fetchFunctions();
+      setFunctions(res.functions);
+      setFuncSearch("");
+      setFuncPickerOpen(true);
+    } catch {
+      toast.error("Failed to load functions");
+    }
+  };
+
+  const handleSelectFunction = async (func: FunctionDefinition) => {
+    setFuncPickerOpen(false);
+    try {
+      const table = await getOrCreateFunctionTable(func.id);
+      toast.success(`Created table from "${func.name}"`);
+      router.push(`/tables/${table.id}`);
+    } catch {
+      toast.error("Failed to create table from function");
+    }
+  };
+
+  const handleAIBuildColumns = async (
+    tableName: string,
+    columns: Array<{
+      name: string;
+      id: string;
+      column_type: string;
+      tool?: string;
+      params?: Record<string, string>;
+      ai_prompt?: string;
+      ai_model?: string;
+      condition?: string;
+      formula?: string;
+    }>,
+  ) => {
+    try {
+      const table = await createTable({ name: tableName });
+      // Add each column sequentially
+      for (const col of columns) {
+        await addTableColumn(table.id, {
+          name: col.name,
+          column_type: col.column_type,
+          tool: col.tool,
+          params: col.params,
+          ai_prompt: col.ai_prompt,
+          ai_model: col.ai_model,
+          condition: col.condition,
+          formula: col.formula,
+        });
+      }
+      toast.success(`Created "${tableName}" with ${columns.length} columns`);
+      router.push(`/tables/${table.id}`);
+    } catch {
+      toast.error("Failed to create table");
+    }
+  };
+
+  const filteredFunctions = funcSearch
+    ? functions.filter(
+        (f) =>
+          f.name.toLowerCase().includes(funcSearch.toLowerCase()) ||
+          f.description.toLowerCase().includes(funcSearch.toLowerCase()),
+      )
+    : functions;
 
   const handleDelete = async (id: string) => {
     try {
@@ -100,6 +172,22 @@ export default function TablesPage() {
             >
               <Upload className="w-4 h-4 mr-2" />
               Import CSV
+            </Button>
+            <Button
+              variant="outline"
+              className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+              onClick={handleNewFromFunction}
+            >
+              <Layers className="w-4 h-4 mr-2" />
+              From Function
+            </Button>
+            <Button
+              variant="outline"
+              className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 hover:border-purple-500/50"
+              onClick={() => setAiBuilderOpen(true)}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              AI Builder
             </Button>
             <Button
               className="bg-kiln-teal text-black hover:bg-kiln-teal/90"
@@ -195,6 +283,65 @@ export default function TablesPage() {
           </div>
         )}
       </div>
+
+      {/* Function picker dialog */}
+      <DialogPrimitive.Root open={funcPickerOpen} onOpenChange={(o) => !o && setFuncPickerOpen(false)}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 bg-black/60 z-50" />
+          <DialogPrimitive.Content className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg z-50 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden">
+            <DialogPrimitive.Title className="sr-only">Choose a function</DialogPrimitive.Title>
+            <DialogPrimitive.Description className="sr-only">
+              Select a function to create a table from
+            </DialogPrimitive.Description>
+
+            <div className="border-b border-zinc-800 px-4 py-3 flex items-center gap-3">
+              <Search className="w-4 h-4 text-zinc-500 shrink-0" />
+              <input
+                value={funcSearch}
+                onChange={(e) => setFuncSearch(e.target.value)}
+                placeholder="Search functions..."
+                className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-zinc-500"
+                autoFocus
+              />
+            </div>
+
+            <div className="max-h-80 overflow-y-auto p-2">
+              {filteredFunctions.length === 0 ? (
+                <p className="text-center text-sm text-zinc-500 py-8">
+                  {functions.length === 0 ? "No functions found" : "No matching functions"}
+                </p>
+              ) : (
+                filteredFunctions.map((func) => (
+                  <button
+                    key={func.id}
+                    className="w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-zinc-800 transition-colors"
+                    onClick={() => handleSelectFunction(func)}
+                  >
+                    <Layers className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-white truncate">{func.name}</div>
+                      {func.description && (
+                        <div className="text-xs text-zinc-500 truncate mt-0.5">{func.description}</div>
+                      )}
+                      <div className="flex gap-3 mt-1 text-[10px] text-zinc-600">
+                        <span>{func.inputs.length} inputs</span>
+                        <span>{func.steps.length} steps</span>
+                      </div>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+
+      {/* AI Builder dialog */}
+      <AiBuilderDialog
+        open={aiBuilderOpen}
+        onClose={() => setAiBuilderOpen(false)}
+        onApplyColumns={handleAIBuildColumns}
+      />
     </div>
   );
 }
