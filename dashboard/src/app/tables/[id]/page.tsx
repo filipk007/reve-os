@@ -7,6 +7,7 @@ import { TableGrid } from "@/components/table-builder/table-grid";
 import { ColumnCommandPalette } from "@/components/table-builder/column-command-palette";
 import { ColumnConfigPanel } from "@/components/table-builder/column-config-panel";
 import { ColumnSuggestionsBar } from "@/components/table-builder/column-suggestions-bar";
+import { PipelineFlowStrip } from "@/components/table-builder/pipeline-flow-strip";
 import { CellDetailPanel } from "@/components/table-builder/cell-detail-panel";
 import { CsvImportDialog } from "@/components/table-builder/csv-import-dialog";
 import { AiBuilderDialog } from "@/components/table-builder/ai-builder-dialog";
@@ -285,6 +286,12 @@ export default function TableBuilderPage({
             ? handleSaveAsFunction
             : undefined
         }
+      />
+
+      <PipelineFlowStrip
+        table={tb.table}
+        columnProgress={tb.columnProgress}
+        executing={tb.executing}
       />
 
       <ColumnSuggestionsBar

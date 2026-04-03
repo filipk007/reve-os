@@ -417,6 +417,15 @@ export function TableGrid({
                         <EnrichmentCell
                           value={getCellValue(row.original, tableCol.id)}
                           status={getCellStatus(row.original, tableCol.id)}
+                          error={row.original[`${tableCol.id}__error`] as string | undefined}
+                          skipReason={row.original[`${tableCol.id}__skip_reason`] as string | undefined}
+                          upstreamColumnName={
+                            row.original[`${tableCol.id}__upstream_column_id`]
+                              ? table.columns.find(
+                                  (c) => c.id === row.original[`${tableCol.id}__upstream_column_id`],
+                                )?.name
+                              : undefined
+                          }
                         />
                       ) : (
                         <span className="truncate text-xs">

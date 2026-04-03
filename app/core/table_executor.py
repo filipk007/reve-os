@@ -157,9 +157,46 @@ async def execute_table_stream(
     # Track filtered rows (excluded by gates)
     filtered_row_ids: set[str] = set()
 
+    # Track errored rows per column (for cascade-skipping downstream)
+    errored_rows: dict[str, set[str]] = {}  # column_id -> set of row_ids
+
     for wave_idx, wave in enumerate(waves):
         for col in wave:
             col_rows = [r for r in active_rows if r.get("_row_id") not in filtered_row_ids]
+
+            # Cascade-skip: find rows where any upstream dependency errored
+            upstream_errored: dict[str, str] = {}  # row_id -> first errored upstream col_id
+            for dep_col_id in col.depends_on:
+                for rid in errored_rows.get(dep_col_id, set()):
+                    if rid not in upstream_errored:
+                        upstream_errored[rid] = dep_col_id
+
+            # Split into executable vs cascade-skipped
+            cascade_skipped = [r for r in col_rows if r["_row_id"] in upstream_errored]
+            col_rows = [r for r in col_rows if r["_row_id"] not in upstream_errored]
+
+            # Emit skip events for cascade-skipped rows
+            for row in cascade_skipped:
+                row_id = row["_row_id"]
+                row[f"{col.id}__status"] = "skipped"
+                row[f"{col.id}__skip_reason"] = "upstream_error"
+                yield _sse({
+                    "type": "cell_update",
+                    "row_id": row_id,
+                    "column_id": col.id,
+                    "status": "skipped",
+                    "skip_reason": "upstream_error",
+                    "upstream_column_id": upstream_errored[row_id],
+                })
+            if cascade_skipped:
+                updates = {
+                    r["_row_id"]: {
+                        f"{col.id}__status": "skipped",
+                        f"{col.id}__skip_reason": "upstream_error",
+                    }
+                    for r in cascade_skipped
+                }
+                table_store.update_cells(table.id, updates)
             rows_to_process = len(col_rows)
 
             yield _sse({
@@ -398,6 +435,14 @@ async def execute_table_stream(
                     }
                 table_store.update_cells(table.id, updates)
 
+            # Track errored rows for cascade-skipping downstream columns
+            col_errored_ids = set()
+            for row in col_rows:
+                if row.get(f"{col.id}__status") == "error":
+                    col_errored_ids.add(row["_row_id"])
+            if col_errored_ids:
+                errored_rows[col.id] = col_errored_ids
+
             # Column complete
             col_duration = int((time.time() - col_start) * 1000)
             yield _sse({
@@ -405,6 +450,7 @@ async def execute_table_stream(
                 "column_id": col.id,
                 "done": col_done,
                 "errors": col_errors,
+                "skipped": len(cascade_skipped),
                 "avg_duration_ms": col_duration // max(col_done, 1),
             })
 

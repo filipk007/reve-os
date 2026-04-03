@@ -1,13 +1,15 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, ExternalLink, Mail, Check, X } from "lucide-react";
+import { Loader2, ExternalLink, Mail, Check, X, Ban } from "lucide-react";
 import type { CellState } from "@/lib/types";
 
 interface EnrichmentCellProps {
   value: unknown;
   status: CellState;
   error?: string;
+  skipReason?: string;
+  upstreamColumnName?: string;
 }
 
 /** Detect value type for conditional formatting */
@@ -80,7 +82,7 @@ function FormattedValue({ value }: { value: unknown }) {
   }
 }
 
-export function EnrichmentCell({ value, status, error }: EnrichmentCellProps) {
+export function EnrichmentCell({ value, status, error, skipReason, upstreamColumnName }: EnrichmentCellProps) {
   return (
     <AnimatePresence mode="wait">
       {/* Empty */}
@@ -145,8 +147,22 @@ export function EnrichmentCell({ value, status, error }: EnrichmentCellProps) {
         </motion.div>
       )}
 
-      {/* Skipped */}
-      {status === "skipped" && (
+      {/* Skipped — upstream error cascade */}
+      {status === "skipped" && skipReason === "upstream_error" && (
+        <span
+          key="skipped-upstream"
+          className="flex items-center gap-1 text-zinc-500 text-xs"
+          title={upstreamColumnName ? `Skipped: ${upstreamColumnName} errored` : "Skipped: upstream error"}
+        >
+          <Ban className="w-3 h-3 shrink-0" />
+          <span className="truncate">
+            {upstreamColumnName ? `${upstreamColumnName} failed` : "Upstream error"}
+          </span>
+        </span>
+      )}
+
+      {/* Skipped — generic */}
+      {status === "skipped" && skipReason !== "upstream_error" && (
         <span key="skipped" className="text-zinc-600 text-xs">
           Skipped
         </span>

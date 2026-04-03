@@ -1102,6 +1102,8 @@ export interface TableCellUpdate {
   value?: unknown;
   error?: string;
   duration_ms?: number;
+  skip_reason?: "upstream_error";
+  upstream_column_id?: string;
 }
 
 export interface TableColumnProgress {
@@ -1121,3 +1123,16 @@ export type TableExecutionEvent =
   | { type: "column_complete"; column_id: string; done: number; errors: number; avg_duration_ms: number }
   | { type: "gate_result"; column_id: string; passed: number; filtered: number; total: number }
   | { type: "execute_complete"; total_duration_ms: number; cells_done: number; cells_errored: number };
+
+// Pipeline flow strip types
+export interface ExecutionWave {
+  index: number;
+  columns: TableColumn[];
+}
+
+export interface WaveEdge {
+  from: string; // column_id
+  to: string; // column_id
+  type: "data" | "gate";
+  condition?: string;
+}

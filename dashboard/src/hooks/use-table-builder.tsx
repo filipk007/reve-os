@@ -314,6 +314,19 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
                 : r,
             ),
           );
+        } else if (event.status === "skipped") {
+          setRows((prev) =>
+            prev.map((r) =>
+              r._row_id === event.row_id
+                ? {
+                    ...r,
+                    [`${event.column_id}__status`]: "skipped",
+                    [`${event.column_id}__skip_reason`]: event.skip_reason,
+                    [`${event.column_id}__upstream_column_id`]: event.upstream_column_id,
+                  }
+                : r,
+            ),
+          );
         }
         break;
 
