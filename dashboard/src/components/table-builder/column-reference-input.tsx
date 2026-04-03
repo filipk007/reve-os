@@ -154,7 +154,7 @@ export function ColumnReferenceInput({
     <div className="relative">
       {/* Pill display overlay (shown above the actual input) */}
       {value && value.includes("{{") && (
-        <div className="pointer-events-none absolute inset-0 flex items-center px-3 text-sm text-zinc-300 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 flex items-center px-3 text-sm text-zinc-300 overflow-hidden bg-zinc-900 rounded-md border border-transparent">
           {renderDisplay()}
         </div>
       )}
@@ -166,9 +166,10 @@ export function ColumnReferenceInput({
         onChange={handleInput}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
+        style={value.includes("{{") ? { color: "transparent", caretColor: "white" } : undefined}
         className={`w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-md text-sm text-white outline-none focus:border-kiln-teal transition-colors ${
-          value.includes("{{") ? "text-transparent caret-white" : ""
-        } ${multiline ? "min-h-[80px] resize-y" : ""}`}
+          multiline ? "min-h-[80px] resize-y" : ""
+        }`}
       />
 
       {/* "/" Autocomplete dropdown */}
