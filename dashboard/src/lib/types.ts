@@ -1170,6 +1170,32 @@ export interface TableSummary {
   updated_at: number;
 }
 
+// --- Workflow Templates (pre-built table configs for reps) ---
+
+export type WorkflowCategory = "enrichment" | "research" | "scoring" | "outbound";
+
+export interface WorkflowTemplateColumn {
+  name: string;
+  column_type: TableColumnType;
+  tool?: string;
+  params?: Record<string, string>;
+  ai_prompt?: string;
+  ai_model?: string;
+  output_key?: string;
+  depends_on_name?: string; // references another column by name
+}
+
+export interface WorkflowTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: WorkflowCategory;
+  icon: string; // lucide icon name
+  expected_inputs: { name: string; description: string }[];
+  produced_outputs: { name: string; description: string }[];
+  columns: WorkflowTemplateColumn[];
+}
+
 export interface TableRow {
   _row_id: string;
   [key: string]: unknown;

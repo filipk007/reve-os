@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getPersona, setPersona, onPreferencesChanged } from "@/lib/user-preferences";
+import type { UserPersona } from "@/lib/user-preferences";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -17,11 +19,13 @@ import {
   Bug,
   ClipboardCheck,
   FlaskConical,
+  Home,
   MessageSquare,
   Send,
   FolderTree,
   Table2,
   Users,
+  ArrowLeftRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -33,8 +37,12 @@ import {
 interface NavItem {
   href: string;
   label: string;
+  repLabel?: string; // Friendly label shown in rep mode
   icon: LucideIcon;
+  repIcon?: LucideIcon; // Different icon in rep mode
   shortcut?: string;
+  repOnly?: boolean;   // Only shown in rep mode
+  powerOnly?: boolean; // Only shown in power mode
 }
 
 interface NavSection {
@@ -45,16 +53,42 @@ interface NavSection {
   items: NavItem[];
 }
 
-const NAV_SECTIONS: NavSection[] = [
+// ── Rep mode: 5 items with friendly labels ───────────────
+
+const REP_NAV_SECTIONS: NavSection[] = [
   {
     id: "main",
     label: "Platform",
+    accentColor: "kiln-teal",
+    items: [
+      { href: "/", label: "Home", icon: Home, shortcut: "1" },
+      { href: "/tables", label: "Enrich", icon: Table2, shortcut: "T" },
+      { href: "/chat", label: "Chat", icon: MessageSquare, shortcut: "2" },
+      { href: "/review", label: "Review", icon: ClipboardCheck, shortcut: "4" },
+      { href: "/outbound", label: "Outbound", icon: Send, shortcut: "5" },
+    ],
+  },
+];
+
+// ── Power mode: all 9 items in two groups ────────────────
+
+const POWER_NAV_SECTIONS: NavSection[] = [
+  {
+    id: "build",
+    label: "Build",
     accentColor: "kiln-teal",
     items: [
       { href: "/", label: "Functions", icon: Blocks, shortcut: "1" },
       { href: "/chat", label: "Chat", icon: MessageSquare, shortcut: "2" },
       { href: "/workbench", label: "Workbench", icon: FlaskConical, shortcut: "3" },
       { href: "/tables", label: "Tables", icon: Table2, shortcut: "T" },
+    ],
+  },
+  {
+    id: "operate",
+    label: "Operate",
+    accentColor: "kiln-teal",
+    items: [
       { href: "/review", label: "Review", icon: ClipboardCheck, shortcut: "4" },
       { href: "/outbound", label: "Outbound", icon: Send, shortcut: "5" },
       { href: "/context", label: "Context", icon: FolderTree, shortcut: "6" },
@@ -64,12 +98,20 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-// Flat list for keyboard shortcuts
-const ALL_NAV_ITEMS = NAV_SECTIONS.flatMap((s) => s.items);
-const SHORTCUT_MAP = ALL_NAV_ITEMS.reduce<Record<string, string>>((acc, item) => {
-  if (item.shortcut) acc[item.shortcut] = item.href;
-  return acc;
-}, {});
+function getNavSections(persona: UserPersona): NavSection[] {
+  return persona === "rep" ? REP_NAV_SECTIONS : POWER_NAV_SECTIONS;
+}
+
+function getAllNavItems(persona: UserPersona): NavItem[] {
+  return getNavSections(persona).flatMap((s) => s.items);
+}
+
+function getShortcutMap(persona: UserPersona): Record<string, string> {
+  return getAllNavItems(persona).reduce<Record<string, string>>((acc, item) => {
+    if (item.shortcut) acc[item.shortcut] = item.href;
+    return acc;
+  }, {});
+}
 
 // Accent color classes per section
 const ACCENT_CLASSES: Record<string, { active: string; text: string }> = {
@@ -90,9 +132,25 @@ const ACCENT_CLASSES: Record<string, { active: string; text: string }> = {
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [persona, setPersonaState] = useState<UserPersona>("rep");
+
+  // Hydrate persona from localStorage
+  useEffect(() => {
+    setPersonaState(getPersona());
+    return onPreferencesChanged(() => setPersonaState(getPersona()));
+  }, []);
 
   // Hide sidebar on public portal view pages
   if (pathname.startsWith("/portal-view/")) return null;
+
+  const navSections = getNavSections(persona);
+  const shortcutMap = getShortcutMap(persona);
+
+  const handleTogglePersona = () => {
+    const next = persona === "rep" ? "power" : "rep";
+    setPersona(next);
+    setPersonaState(next);
+  };
 
   useEffect(() => {
     const handleToggle = () => setMobileOpen((prev) => !prev);
@@ -104,14 +162,14 @@ export function Sidebar() {
   // Keyboard shortcuts for navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && SHORTCUT_MAP[e.key]) {
+      if ((e.metaKey || e.ctrlKey) && shortcutMap[e.key]) {
         e.preventDefault();
-        window.location.href = SHORTCUT_MAP[e.key];
+        window.location.href = shortcutMap[e.key];
       }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [shortcutMap]);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -120,11 +178,24 @@ export function Sidebar() {
 
   const renderSectionNav = (compact: boolean, onNavigate?: () => void) => (
     <nav className="flex flex-col gap-1">
-      {NAV_SECTIONS.map((section) => {
+      {navSections.map((section, sectionIdx) => {
         const accent = ACCENT_CLASSES[section.accentColor] || ACCENT_CLASSES["kiln-teal"];
 
         return (
           <div key={section.id}>
+            {/* Section label — show for power mode with multiple sections */}
+            {persona === "power" && navSections.length > 1 && !compact && (
+              <p className={cn(
+                "px-3 text-[10px] font-semibold uppercase tracking-wider text-clay-400",
+                sectionIdx > 0 ? "mt-4 mb-1.5" : "mb-1.5"
+              )}>
+                {section.label}
+              </p>
+            )}
+            {persona === "power" && navSections.length > 1 && compact && sectionIdx > 0 && (
+              <div className="my-2 mx-2 border-t border-clay-600" />
+            )}
+
             {/* Section items */}
             <div className="flex flex-col gap-0.5">
               {section.items.map((item) => {
@@ -191,17 +262,44 @@ export function Sidebar() {
     </nav>
   );
 
-  // Mobile bottom nav — 4-item bar
-  const mobileBottomItems: { href: string; label: string; icon: LucideIcon }[] = [
-    { href: "/", label: "Functions", icon: Blocks },
-    { href: "/chat", label: "Chat", icon: MessageSquare },
-    { href: "/workbench", label: "Workbench", icon: FlaskConical },
-    { href: "/review", label: "Review", icon: ClipboardCheck },
-    { href: "/outbound", label: "Outbound", icon: Send },
-    { href: "/context", label: "Context", icon: FolderTree },
-    { href: "/debugger", label: "Debugger", icon: Bug },
-    { href: "/clients/twelve-labs", label: "Communication", icon: Users },
-  ];
+  const renderModeToggle = (compact: boolean) => (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={handleTogglePersona}
+          className={cn(
+            "flex items-center gap-2 rounded-lg px-3 py-2 text-clay-400 hover:text-clay-200 hover:bg-clay-700 transition-colors duration-150",
+            compact && "justify-center px-2"
+          )}
+        >
+          <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
+          {!compact && (
+            <span className="text-[11px]">
+              {persona === "rep" ? "Power mode" : "Rep mode"}
+            </span>
+          )}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side={compact ? "right" : "top"}>
+        Switch to {persona === "rep" ? "power" : "rep"} mode
+      </TooltipContent>
+    </Tooltip>
+  );
+
+  // Mobile bottom nav — persona-aware
+  const mobileBottomItems = persona === "rep"
+    ? [
+        { href: "/", label: "Home", icon: Home },
+        { href: "/tables", label: "Enrich", icon: Table2 },
+        { href: "/chat", label: "Chat", icon: MessageSquare },
+        { href: "/review", label: "Review", icon: ClipboardCheck },
+      ]
+    : [
+        { href: "/", label: "Functions", icon: Blocks },
+        { href: "/tables", label: "Tables", icon: Table2 },
+        { href: "/chat", label: "Chat", icon: MessageSquare },
+        { href: "/review", label: "Review", icon: ClipboardCheck },
+      ];
 
   return (
     <>
@@ -226,6 +324,12 @@ export function Sidebar() {
         {/* Nav - compact on md, full on lg */}
         <div className="hidden lg:block flex-1 overflow-y-auto">{renderSectionNav(false)}</div>
         <div className="lg:hidden flex-1 overflow-y-auto">{renderSectionNav(true)}</div>
+
+        {/* Mode toggle at bottom */}
+        <div className="mt-auto pt-3 border-t border-clay-700">
+          <div className="hidden lg:block">{renderModeToggle(false)}</div>
+          <div className="lg:hidden">{renderModeToggle(true)}</div>
+        </div>
       </aside>
 
       {/* Mobile drawer */}
@@ -248,10 +352,13 @@ export function Sidebar() {
             </h1>
           </div>
           {renderSectionNav(false, () => setMobileOpen(false))}
+          <div className="mt-6 pt-3 border-t border-clay-700">
+            {renderModeToggle(false)}
+          </div>
         </SheetContent>
       </Sheet>
 
-      {/* Mobile bottom nav — 4-item */}
+      {/* Mobile bottom nav — persona-aware 4-item bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-clay-600 bg-clay-800/95 backdrop-blur-sm">
         <nav className="flex items-center justify-around py-2">
           {mobileBottomItems.map((item) => {
@@ -280,5 +387,7 @@ export function Sidebar() {
   );
 }
 
-export { NAV_SECTIONS, ALL_NAV_ITEMS };
+// Export all nav sections for use by other components (e.g., keyboard shortcuts help)
+export const NAV_SECTIONS = POWER_NAV_SECTIONS;
+export const ALL_NAV_ITEMS = NAV_SECTIONS.flatMap((s) => s.items);
 export type { NavSection, NavItem };

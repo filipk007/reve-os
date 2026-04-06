@@ -40,6 +40,13 @@ export interface ColumnProgress {
   errors: number;
 }
 
+export interface ExecutionSummaryData {
+  totalDurationMs: number;
+  cellsDone: number;
+  cellsErrored: number;
+  halted: boolean;
+}
+
 export interface UseTableBuilderReturn {
   // Table definition
   table: TableDefinition | null;
@@ -95,6 +102,10 @@ export interface UseTableBuilderReturn {
 
   // Refresh
   refresh: () => Promise<void>;
+
+  // Execution summary
+  executionSummary: ExecutionSummaryData | null;
+  dismissSummary: () => void;
 }
 
 /** Get the display value for a cell from raw row data */
@@ -123,6 +134,7 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
   const [executing, setExecuting] = useState(false);
   const [columnProgress, setColumnProgress] = useState<Record<string, ColumnProgress>>({});
   const [cellStates, setCellStates] = useState<Record<string, Record<string, CellState>>>({});
+  const [executionSummary, setExecutionSummary] = useState<ExecutionSummaryData | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   // Detail panel
@@ -344,6 +356,12 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
       case "execute_complete":
         setExecuting(false);
         abortRef.current = null;
+        setExecutionSummary({
+          totalDurationMs: event.total_duration_ms,
+          cellsDone: event.cells_done,
+          cellsErrored: event.cells_errored,
+          halted: event.halted || false,
+        });
         break;
     }
   }, []);
@@ -353,6 +371,7 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
       if (executing) return;
       setExecuting(true);
       setColumnProgress({});
+      setExecutionSummary(null);
 
       const controller = streamTableExecution(
         tableId,
@@ -476,5 +495,7 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
     globalFilter,
     setGlobalFilter,
     refresh,
+    executionSummary,
+    dismissSummary: () => setExecutionSummary(null),
   };
 }

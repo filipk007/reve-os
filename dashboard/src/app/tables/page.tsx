@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Table2, Upload, Trash2, MoreVertical, Layers, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,14 @@ import {
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { toast } from "sonner";
 import { fetchTables, createTable, deleteTable, importTableCsv, fetchFunctions, getOrCreateFunctionTable, addTableColumn } from "@/lib/api";
-import type { TableSummary, FunctionDefinition } from "@/lib/types";
+import type { TableSummary, FunctionDefinition, WorkflowTemplate } from "@/lib/types";
 import { AiBuilderDialog } from "@/components/table-builder/ai-builder-dialog";
+import { TemplateGallery } from "@/components/templates/template-gallery";
 import Papa from "papaparse";
 
 export default function TablesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tables, setTables] = useState<TableSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -27,6 +29,7 @@ export default function TablesPage() {
   const [functions, setFunctions] = useState<FunctionDefinition[]>([]);
   const [funcSearch, setFuncSearch] = useState("");
   const [aiBuilderOpen, setAiBuilderOpen] = useState(false);
+  const [creatingFromTemplate, setCreatingFromTemplate] = useState(false);
 
   useEffect(() => {
     fetchTables()
@@ -34,6 +37,17 @@ export default function TablesPage() {
       .catch(() => toast.error("Failed to load tables"))
       .finally(() => setLoading(false));
   }, []);
+
+  // Handle URL actions from homepage quick actions
+  useEffect(() => {
+    const action = searchParams.get("action");
+    if (action === "import") {
+      // Small delay so the page renders first
+      setTimeout(() => fileRef.current?.click(), 200);
+    } else if (action === "ai-builder") {
+      setAiBuilderOpen(true);
+    }
+  }, [searchParams]);
 
   const handleCreate = async () => {
     try {
@@ -119,6 +133,30 @@ export default function TablesPage() {
     }
   };
 
+  const handleSelectTemplate = async (template: WorkflowTemplate) => {
+    if (creatingFromTemplate) return;
+    setCreatingFromTemplate(true);
+    try {
+      const table = await createTable({ name: template.name });
+      for (const col of template.columns) {
+        await addTableColumn(table.id, {
+          name: col.name,
+          column_type: col.column_type,
+          tool: col.tool,
+          params: col.params,
+          ai_prompt: col.ai_prompt,
+          ai_model: col.ai_model,
+        });
+      }
+      toast.success(`Created "${template.name}" table — upload a CSV to get started`);
+      router.push(`/tables/${table.id}`);
+    } catch {
+      toast.error("Failed to create table from template");
+    } finally {
+      setCreatingFromTemplate(false);
+    }
+  };
+
   const filteredFunctions = funcSearch
     ? functions.filter(
         (f) =>
@@ -197,6 +235,14 @@ export default function TablesPage() {
               New Table
             </Button>
           </div>
+        </div>
+
+        {/* Template Gallery */}
+        <div className="mb-8">
+          <TemplateGallery
+            onSelect={handleSelectTemplate}
+            compact
+          />
         </div>
 
         {/* Table Grid */}

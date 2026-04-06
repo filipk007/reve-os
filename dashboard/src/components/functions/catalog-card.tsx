@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Play, Table2, MessageSquareText, Loader2 } from "lucide-react";
 import type { FunctionDefinition } from "@/lib/types";
 import { explainFunction } from "@/lib/api";
+import { InputOutputPreview } from "@/components/shared/input-output-preview";
 
 interface CatalogCardProps {
   func: FunctionDefinition;
@@ -97,6 +98,16 @@ export function CatalogCard({
             )}
           </button>
         </div>
+
+        {/* Input → Output preview */}
+        {func.inputs.length > 0 && func.outputs.length > 0 && (
+          <div className="mb-2">
+            <InputOutputPreview
+              inputs={func.inputs.map((i) => ({ name: i.name, description: i.description }))}
+              outputs={func.outputs.map((o) => ({ name: o.key, description: o.description }))}
+            />
+          </div>
+        )}
 
         {/* AI Explanation */}
         {explanation && (

@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/header";
+import { MyWorkDashboard } from "@/components/home/my-work-dashboard";
+import { getPersona, onPreferencesChanged } from "@/lib/user-preferences";
+import type { UserPersona } from "@/lib/user-preferences";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -70,7 +73,20 @@ import {
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
 
-export default function FunctionsPage() {
+export default function HomePage() {
+  const [persona, setPersonaState] = useState<UserPersona>("rep");
+
+  useEffect(() => {
+    setPersonaState(getPersona());
+    return onPreferencesChanged(() => setPersonaState(getPersona()));
+  }, []);
+
+  if (persona === "rep") return <MyWorkDashboard />;
+
+  return <FunctionsCatalog />;
+}
+
+function FunctionsCatalog() {
   const router = useRouter();
   const [functions, setFunctions] = useState<FunctionDefinition[]>([]);
   const [folders, setFolders] = useState<FolderDefinition[]>([]);

@@ -11,9 +11,10 @@ import { PipelineFlowStrip } from "@/components/table-builder/pipeline-flow-stri
 import { CellDetailPanel } from "@/components/table-builder/cell-detail-panel";
 import { CsvImportDialog } from "@/components/table-builder/csv-import-dialog";
 import { AiBuilderDialog } from "@/components/table-builder/ai-builder-dialog";
+import { ExecutionSummary } from "@/components/table-builder/execution-summary";
 import { Loader2 } from "lucide-react";
 import type { ToolDefinition, TableColumn } from "@/lib/types";
-import { fetchTools, exportTableToFunction } from "@/lib/api";
+import { fetchTools, exportTableToFunction, exportDataset } from "@/lib/api";
 import { autoMapInputs } from "@/lib/auto-map-inputs";
 import { toast } from "sonner";
 
@@ -212,6 +213,23 @@ export default function TableBuilderPage({
     [tb],
   );
 
+  // Export table as CSV download
+  const handleExportCsv = useCallback(async () => {
+    try {
+      const blob = await exportDataset(id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${tb.table?.name || "export"}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("CSV exported");
+      tb.dismissSummary();
+    } catch {
+      toast.error("Failed to export CSV");
+    }
+  }, [id, tb]);
+
   // Save table as reusable function
   const handleSaveAsFunction = useCallback(async () => {
     try {
@@ -378,6 +396,22 @@ export default function TableBuilderPage({
         table={tb.table}
         file={importFile}
       />
+
+      {/* Execution summary overlay */}
+      {tb.executionSummary && (
+        <ExecutionSummary
+          summary={tb.executionSummary}
+          table={tb.table}
+          columnProgress={tb.columnProgress}
+          onDismiss={tb.dismissSummary}
+          onExport={handleExportCsv}
+          onRetryFailed={
+            tb.executionSummary.cellsErrored > 0
+              ? () => { tb.dismissSummary(); tb.executeTable(); }
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }

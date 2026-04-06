@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog";
+import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -40,6 +41,7 @@ export default function RootLayout({
           <Sidebar />
           <main id="main-content" className="relative flex-1 overflow-auto z-[2]">{children}</main>
           <KeyboardShortcutsDialog />
+          <OnboardingProvider />
         </TooltipProvider>
         <Toaster
           position="bottom-right"

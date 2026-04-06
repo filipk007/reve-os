@@ -18,6 +18,7 @@ import {
 import type { TableColumn, TableDefinition } from "@/lib/types";
 import type { ColumnProgress } from "@/hooks/use-table-builder";
 import { computeWaves } from "@/lib/compute-waves";
+import { getFriendlyLabel } from "@/components/shared/friendly-term";
 
 const TYPE_ICONS: Record<string, typeof Search> = {
   enrichment: Search,
@@ -89,7 +90,7 @@ function FlowNode({ column, status, progress, onClick }: FlowNodeProps) {
         min-w-[120px] max-w-[160px]
         ${typeColor} ${STATUS_STYLES[status]}
       `}
-      title={`${column.name} (${column.column_type})`}
+      title={`${column.name} — ${getFriendlyLabel(column.column_type)}`}
     >
       {/* Status indicator */}
       {status === "running" && (
