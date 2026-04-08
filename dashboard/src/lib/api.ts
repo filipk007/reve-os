@@ -2437,6 +2437,40 @@ export async function exportTableCsv(tableId: string): Promise<Blob> {
   return res.blob();
 }
 
+export function previewSheet(spreadsheetIdOrUrl: string, range = "Sheet1"): Promise<{
+  headers: string[];
+  rows: string[][];
+  totalRows: number;
+  spreadsheet_id: string;
+}> {
+  const encoded = encodeURIComponent(spreadsheetIdOrUrl);
+  return apiFetch(`/sheets/preview?spreadsheet_id=${encoded}&range=${encodeURIComponent(range)}`);
+}
+
+export function exportTableToSheet(tableId: string, title?: string): Promise<{
+  spreadsheet_id: string;
+  url: string;
+  title: string;
+  exported: number;
+}> {
+  return apiFetch(`/tables/${tableId}/export-sheet`, {
+    method: "POST",
+    body: JSON.stringify(title ? { title } : {}),
+  });
+}
+
+export function exportTableToDrive(tableId: string, folder = "Enrichments"): Promise<{
+  file_id: string;
+  url: string;
+  file_name: string;
+  rows: number;
+}> {
+  return apiFetch(`/tables/${tableId}/export-drive`, {
+    method: "POST",
+    body: JSON.stringify({ folder }),
+  });
+}
+
 export function getOrCreateFunctionTable(
   functionId: string,
 ): Promise<TableDefinition> {
@@ -2472,4 +2506,65 @@ export function validateTable(
 
 export function fetchBridgeStats(): Promise<import("./types").BridgeStats> {
   return apiFetch("/bridge/stats");
+}
+
+// --- Context Rack ---
+
+export interface RackSlot {
+  id?: string;
+  slot_name: string;
+  slot_order: number;
+  is_enabled: boolean;
+  provider: string;
+  config: Record<string, unknown>;
+}
+
+export interface ContextItem {
+  id: string;
+  slug: string;
+  category: string;
+  item_type: string;
+  title: string;
+  priority_weight: number;
+  is_default: boolean;
+  is_active: boolean;
+  source_path: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RackLoadEntry {
+  skill: string;
+  client_slug: string | null;
+  total_context_tokens: number;
+  total_prompt_tokens: number;
+  assembly_ms: number | null;
+  rack_slots: Array<{ slot: string; items: number; tokens: number; source: string }>;
+  source_mode: string;
+  created_at: string;
+}
+
+export function fetchRackConfig(): Promise<{ slots: RackSlot[]; source: string }> {
+  return apiFetch("/context/rack/config");
+}
+
+export function updateRackSlot(body: {
+  slot_name: string;
+  slot_order?: number;
+  is_enabled?: boolean;
+  provider?: string;
+}): Promise<{ ok: boolean; slot: RackSlot }> {
+  return apiFetch("/context/rack/config", {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchRackAnalytics(): Promise<{ analytics: RackLoadEntry[]; source: string }> {
+  return apiFetch("/context/rack/analytics");
+}
+
+export function fetchRackItems(): Promise<{ items: ContextItem[]; source: string }> {
+  return apiFetch("/context/rack/items");
 }

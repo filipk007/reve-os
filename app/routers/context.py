@@ -497,3 +497,131 @@ async def nl_update_context(body: NLUpdateRequest, request: Request):
         "updated_content": updated_content,
         "duration_ms": result["duration_ms"],
     }
+
+
+# ── Context Rack Management ─────────────────────────────────
+
+
+class RackSlotUpdate(BaseModel):
+    slot_name: str = Field(..., description="Slot to update")
+    slot_order: int | None = Field(None, description="New execution order")
+    is_enabled: bool | None = Field(None, description="Enable/disable slot")
+    provider: str | None = Field(None, description="file | supabase | inline | hybrid")
+
+
+@router.get("/context/rack/config")
+async def get_rack_config():
+    """Return the current rack pipeline configuration."""
+    from app.core.supabase_client import get_client
+    sb = get_client()
+    if sb is None:
+        # Fallback: return hardcoded defaults
+        from app.core.context_providers import build_default_slots
+        slots = build_default_slots()
+        return {
+            "slots": [
+                {
+                    "slot_name": s.name,
+                    "slot_order": s.order,
+                    "is_enabled": s.enabled,
+                    "provider": "inline" if s.name in ("system", "data", "campaign", "reminder") else "file",
+                    "config": {},
+                }
+                for s in slots
+            ],
+            "source": "defaults",
+        }
+
+    result = sb.table("context_rack_config").select("*").order("slot_order").execute()
+    return {"slots": result.data, "source": "supabase"}
+
+
+@router.put("/context/rack/config")
+async def update_rack_config(body: RackSlotUpdate):
+    """Update a single rack slot's configuration."""
+    from app.core.supabase_client import get_client
+    sb = get_client()
+    if sb is None:
+        return {"error": True, "error_message": "Supabase not configured"}
+
+    updates = {}
+    if body.slot_order is not None:
+        updates["slot_order"] = body.slot_order
+    if body.is_enabled is not None:
+        updates["is_enabled"] = body.is_enabled
+    if body.provider is not None:
+        updates["provider"] = body.provider
+
+    if not updates:
+        return {"error": True, "error_message": "No fields to update"}
+
+    result = (
+        sb.table("context_rack_config")
+        .update(updates)
+        .eq("slot_name", body.slot_name)
+        .execute()
+    )
+
+    if not result.data:
+        return {"error": True, "error_message": f"Slot '{body.slot_name}' not found"}
+
+    logger.info("[rack] Updated slot %s: %s", body.slot_name, updates)
+    return {"ok": True, "slot": result.data[0]}
+
+
+@router.get("/context/rack/analytics")
+async def get_rack_analytics():
+    """Return aggregated context load analytics."""
+    from app.core.supabase_client import get_client
+    sb = get_client()
+    if sb is None:
+        return {"analytics": [], "source": "unavailable"}
+
+    # Recent loads (last 7 days)
+    result = (
+        sb.table("context_load_log")
+        .select("skill, client_slug, total_context_tokens, total_prompt_tokens, assembly_ms, rack_slots, source_mode, created_at")
+        .order("created_at", desc=True)
+        .limit(100)
+        .execute()
+    )
+
+    return {"analytics": result.data, "source": "supabase"}
+
+
+@router.get("/context/rack/items")
+async def list_context_items():
+    """Return all context items from Supabase."""
+    from app.core.supabase_client import get_client
+    sb = get_client()
+    if sb is None:
+        return {"items": [], "source": "unavailable"}
+
+    result = (
+        sb.table("context_items")
+        .select("id, slug, category, item_type, title, priority_weight, is_default, is_active, source_path, version, created_at, updated_at")
+        .eq("is_active", True)
+        .order("priority_weight")
+        .execute()
+    )
+
+    return {"items": result.data, "source": "supabase"}
+
+
+@router.get("/context/rack/items/{item_id}")
+async def get_context_item(item_id: str):
+    """Return a single context item with full content."""
+    from app.core.supabase_client import get_client
+    sb = get_client()
+    if sb is None:
+        return {"error": True, "error_message": "Supabase not configured"}
+
+    result = (
+        sb.table("context_items")
+        .select("*")
+        .eq("id", item_id)
+        .single()
+        .execute()
+    )
+
+    return {"item": result.data}

@@ -26,6 +26,7 @@ import {
   Table2,
   Users,
   ArrowLeftRight,
+  Layers,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -92,6 +93,7 @@ const POWER_NAV_SECTIONS: NavSection[] = [
       { href: "/review", label: "Review", icon: ClipboardCheck, shortcut: "4" },
       { href: "/outbound", label: "Outbound", icon: Send, shortcut: "5" },
       { href: "/context", label: "Context", icon: FolderTree, shortcut: "6" },
+      { href: "/context/rack", label: "Rack", icon: Layers, shortcut: "" },
       { href: "/debugger", label: "Debugger", icon: Bug, shortcut: "7" },
       { href: "/clients/twelve-labs", label: "Communication", icon: Users, shortcut: "8" },
     ],
