@@ -15,7 +15,7 @@ LOG_PATH="$HOME/Library/Logs/clay-run.log"
 # Detect paths
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPT_PATH="$REPO_ROOT/scripts/clay-run.py"
-PYTHON_PATH="/opt/homebrew/bin/python3.11"
+PYTHON_PATH="/opt/homebrew/bin/python3.12"
 
 if [ ! -f "$SCRIPT_PATH" ]; then
     echo "Error: clay-run.py not found at $SCRIPT_PATH"

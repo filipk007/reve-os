@@ -1,0 +1,19 @@
+name: fivefox-outbound
+description: Full outbound pipeline for FiveFox Media fintech campaigns — research, qualify, select angle, write personalized email
+
+steps:
+  - skill: company-research
+    confidence_field: confidence_score
+
+  - skill: account-researcher
+    condition: "confidence_score >= 0.4"
+    confidence_field: confidence_score
+
+  - skill: email-gen
+    condition: "icp_fit != 'weak'"
+    confidence_field: confidence_score
+
+  - skill: quality-gate
+    confidence_field: confidence_score
+
+confidence_threshold: 0.75
