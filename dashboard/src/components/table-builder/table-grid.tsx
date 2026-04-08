@@ -73,6 +73,8 @@ interface TableGridProps {
   onToggleExpandRow?: (rowId: string) => void;
   // Clipboard paste
   onPasteRows?: (rows: Record<string, unknown>[]) => Promise<void>;
+  // Filter state
+  hasActiveFilters?: boolean;
 }
 
 export function TableGrid({
@@ -102,6 +104,7 @@ export function TableGrid({
   onHideColumn,
   onRunColumn,
   onRerunColumnFailed,
+  hasActiveFilters,
 }: TableGridProps) {
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
@@ -500,9 +503,13 @@ export function TableGrid({
       {/* Empty state */}
       {rows.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-clay-300">
-          <p className="text-sm mb-2">No rows yet</p>
+          <p className="text-sm mb-2">
+            {hasActiveFilters ? "No rows match your filters" : "No rows yet"}
+          </p>
           <p className="text-xs text-clay-300">
-            Import a CSV or add rows to get started
+            {hasActiveFilters
+              ? "Try adjusting or clearing your filters"
+              : "Import a CSV or add rows to get started"}
           </p>
         </div>
       )}

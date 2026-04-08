@@ -304,6 +304,10 @@ export default function TableBuilderPage({
             ? handleSaveAsFunction
             : undefined
         }
+        columns={tb.table.columns.filter((c) => !c.hidden)}
+        filters={tb.columnFilters}
+        onFiltersChange={tb.setColumnFilters}
+        filteredRowCount={tb.filteredRowCount}
       />
 
       <PipelineFlowStrip
@@ -320,7 +324,7 @@ export default function TableBuilderPage({
       <div className="flex-1 overflow-hidden">
         <TableGrid
           table={tb.table}
-          rows={tb.rows}
+          rows={tb.filteredRows}
           columns={tb.tanstackColumns}
           sorting={tb.sorting}
           onSortingChange={tb.setSorting}
@@ -341,6 +345,7 @@ export default function TableBuilderPage({
           onHideColumn={handleHideColumn}
           onRunColumn={handleRunColumn}
           onRerunColumnFailed={handleRerunColumnFailed}
+          hasActiveFilters={tb.columnFilters.some((f) => f.enabled && f.columnId)}
         />
       </div>
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import type { FilterCondition } from "@/components/table-builder/table-filter-types";
+import { applyFilters } from "@/components/table-builder/table-filter-utils";
 import {
   useReactTable,
   getCoreRowModel,
@@ -100,6 +102,12 @@ export interface UseTableBuilderReturn {
   globalFilter: string;
   setGlobalFilter: (s: string) => void;
 
+  // Column filters
+  columnFilters: FilterCondition[];
+  setColumnFilters: (filters: FilterCondition[]) => void;
+  filteredRows: TableRow[];
+  filteredRowCount: number;
+
   // Refresh
   refresh: () => Promise<void>;
 
@@ -146,6 +154,13 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
   const [globalFilter, setGlobalFilter] = useState("");
+  const [columnFilters, setColumnFilters] = useState<FilterCondition[]>([]);
+
+  // Compute filtered rows based on column filters
+  const filteredRows = useMemo(
+    () => applyFilters(rows, columnFilters),
+    [rows, columnFilters],
+  );
 
   // Load table + rows
   const refresh = useCallback(async () => {
@@ -494,6 +509,10 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
     setColumnSizing,
     globalFilter,
     setGlobalFilter,
+    columnFilters,
+    setColumnFilters,
+    filteredRows,
+    filteredRowCount: filteredRows.length,
     refresh,
     executionSummary,
     dismissSummary: () => setExecutionSummary(null),

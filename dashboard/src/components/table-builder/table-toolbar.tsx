@@ -11,16 +11,20 @@ import {
   RefreshCw,
   Settings,
   Layers,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { TableDefinition } from "@/lib/types";
+import type { TableDefinition, TableColumn } from "@/lib/types";
+import type { FilterCondition } from "./table-filter-types";
+import { TableFilterBuilder } from "./table-filter-builder";
 
 interface TableToolbarProps {
   table: TableDefinition;
@@ -36,6 +40,10 @@ interface TableToolbarProps {
   onStop?: () => void;
   onSettings?: () => void;
   onSaveAsFunction?: () => void;
+  columns?: TableColumn[];
+  filters?: FilterCondition[];
+  onFiltersChange?: (filters: FilterCondition[]) => void;
+  filteredRowCount?: number;
 }
 
 export function TableToolbar({
@@ -52,6 +60,10 @@ export function TableToolbar({
   onStop,
   onSettings,
   onSaveAsFunction,
+  columns = [],
+  filters = [],
+  onFiltersChange,
+  filteredRowCount,
 }: TableToolbarProps) {
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(table.name);
@@ -101,8 +113,37 @@ export function TableToolbar({
 
       {/* Row count badge */}
       <span className="text-xs text-clay-300 bg-clay-700 px-2 py-0.5 rounded">
-        {totalRows} rows
+        {filters.length > 0 && filters.some((f) => f.enabled) && filteredRowCount !== undefined
+          ? `${filteredRowCount} of ${totalRows} rows`
+          : `${totalRows} rows`}
       </span>
+
+      {/* Filter button */}
+      {onFiltersChange && (
+        <TableFilterBuilder
+          columns={columns}
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-7 text-xs gap-1 ${
+              filters.filter((f) => f.enabled && f.columnId).length > 0
+                ? "text-kiln-teal"
+                : "text-clay-200 hover:text-white"
+            }`}
+          >
+            <Filter className="w-3 h-3" />
+            Filter
+            {filters.filter((f) => f.enabled && f.columnId).length > 0 && (
+              <Badge variant="secondary" className="ml-0.5 h-4 px-1.5 text-[10px] rounded-full">
+                {filters.filter((f) => f.enabled && f.columnId).length}
+              </Badge>
+            )}
+          </Button>
+        </TableFilterBuilder>
+      )}
 
       {/* Save as Function */}
       {onSaveAsFunction && (
