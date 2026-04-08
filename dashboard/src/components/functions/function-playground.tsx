@@ -267,7 +267,7 @@ export function FunctionPlayground({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-clay-400 h-6 w-6 p-0"
+            className="text-clay-300 h-6 w-6 p-0"
           >
             <X className="h-3.5 w-3.5" />
           </Button>
@@ -278,16 +278,16 @@ export function FunctionPlayground({
           {/* Left pane — Inputs + Actions + Preview + Streaming */}
           <div className="lg:border-r lg:border-clay-700 pr-0 lg:pr-5 pb-4 lg:pb-0 space-y-4">
             {inputs.length === 0 ? (
-              <div className="text-sm text-clay-500">
+              <div className="text-sm text-clay-300">
                 No inputs defined — will run with empty data.
               </div>
             ) : (
               <div className="space-y-3">
                 {inputs.map((inp) => (
                   <div key={inp.name}>
-                    <label className="text-xs text-clay-400 mb-1 block">
+                    <label className="text-xs text-clay-300 mb-1 block">
                       {inp.name}{" "}
-                      <span className="text-clay-500">({inp.type})</span>
+                      <span className="text-clay-300">({inp.type})</span>
                       {inp.required && (
                         <span className="text-red-400 ml-1">*</span>
                       )}
@@ -332,7 +332,7 @@ export function FunctionPlayground({
                   disabled={copyingPrompt || !functionId}
                   variant="outline"
                   size="sm"
-                  className="border-clay-600 text-clay-400 hover:text-clay-100 h-9 px-2"
+                  className="border-clay-600 text-clay-300 hover:text-clay-100 h-9 px-2"
                   title="Copy assembled prompt to clipboard"
                 >
                   <Clipboard className="h-3.5 w-3.5 mr-1" />
@@ -343,7 +343,7 @@ export function FunctionPlayground({
                   disabled={localWaiting || !functionId}
                   variant="outline"
                   size="sm"
-                  className="border-clay-600 text-clay-400 hover:text-clay-100 h-9 px-2"
+                  className="border-clay-600 text-clay-300 hover:text-clay-100 h-9 px-2"
                   title="Queue for local execution via clay-run"
                 >
                   <Terminal className="h-3.5 w-3.5 mr-1" />
@@ -357,12 +357,12 @@ export function FunctionPlayground({
                   onClick={() => {
                     setTestInputs({});
                   }}
-                  className="text-clay-400 text-xs"
+                  className="text-clay-300 text-xs"
                 >
                   Clear
                 </Button>
               )}
-              <span className="text-xs text-clay-500 ml-auto">
+              <span className="text-xs text-clay-300 ml-auto">
                 <kbd className="px-1 py-0.5 rounded bg-clay-800 border border-clay-600 text-[10px]">
                   {"\u2318"}+Enter
                 </kbd>{" "}
@@ -377,7 +377,7 @@ export function FunctionPlayground({
                   <ClipboardPaste className="h-3.5 w-3.5" />
                   <span className="font-medium">Paste Result</span>
                   {localWaiting && (
-                    <span className="flex items-center gap-1 ml-auto text-clay-500">
+                    <span className="flex items-center gap-1 ml-auto text-clay-300">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       Waiting for clay-run...
                     </span>
@@ -407,11 +407,11 @@ export function FunctionPlayground({
                     }}
                     variant="ghost"
                     size="sm"
-                    className="text-clay-400 h-7 text-xs"
+                    className="text-clay-300 h-7 text-xs"
                   >
                     Cancel
                   </Button>
-                  <span className="text-[10px] text-clay-500 ml-auto">
+                  <span className="text-[10px] text-clay-300 ml-auto">
                     Job: {localJobId}
                   </span>
                 </div>
@@ -421,7 +421,7 @@ export function FunctionPlayground({
             {/* Preview panel */}
             {preview && !testResult && (
               <div className="space-y-2">
-                <div className="text-xs text-clay-500 font-medium uppercase tracking-wide">
+                <div className="text-xs text-clay-300 font-medium uppercase tracking-wide">
                   Execution Preview
                 </div>
                 {preview.unresolved_variables.length > 0 && (
@@ -439,7 +439,7 @@ export function FunctionPlayground({
                         key={step.step_index}
                         className="flex items-center gap-2 p-2 rounded bg-clay-900/50 border border-clay-700"
                       >
-                        <span className="text-xs text-clay-500 w-4">
+                        <span className="text-xs text-clay-300 w-4">
                           {step.step_index + 1}
                         </span>
                         <span className="text-sm text-clay-100 font-medium truncate">
@@ -463,7 +463,7 @@ export function FunctionPlayground({
                           <button
                             onClick={() => handleTestStep(step.step_index)}
                             disabled={isTestingThis || testingStepIdx !== null}
-                            className="ml-auto flex items-center gap-1 text-[10px] text-clay-400 hover:text-kiln-teal transition-colors disabled:opacity-40"
+                            className="ml-auto flex items-center gap-1 text-[10px] text-clay-300 hover:text-kiln-teal transition-colors disabled:opacity-40"
                           >
                             {isTestingThis ? (
                               <Loader2 className="h-3 w-3 animate-spin" />
@@ -495,7 +495,7 @@ export function FunctionPlayground({
                       <span className={stepResult.status === "success" ? "text-emerald-400" : "text-red-400"}>
                         Step {stepResult.step_index + 1}: {stepResult.tool}
                       </span>
-                      <span className="text-clay-500 ml-auto">{(stepResult.duration_ms / 1000).toFixed(1)}s</span>
+                      <span className="text-clay-300 ml-auto">{(stepResult.duration_ms / 1000).toFixed(1)}s</span>
                     </div>
                     {stepResult.status === "success" && stepResult.output && (
                       <pre className="text-clay-300 bg-clay-900/50 rounded p-2 overflow-auto max-h-32 whitespace-pre-wrap">
@@ -507,7 +507,7 @@ export function FunctionPlayground({
                     )}
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-xs text-clay-500">
+                <div className="flex items-center gap-2 text-xs text-clay-300">
                   {Object.entries(preview.summary).map(([key, val]) => (
                     <span key={key}>
                       {val}x {key.replace("_", " ")}
@@ -527,7 +527,7 @@ export function FunctionPlayground({
                     {stepsTotal > 0 ? `/${stepsTotal}` : ""}...
                   </span>
                   {streamingTrace[streamingTrace.length - 1] && (
-                    <span className="text-clay-500 truncate">
+                    <span className="text-clay-300 truncate">
                       {streamingTrace[streamingTrace.length - 1].tool_name ||
                         streamingTrace[streamingTrace.length - 1].tool}
                     </span>
@@ -587,7 +587,7 @@ export function FunctionPlayground({
                   )}
                   <button
                     onClick={handleCopy}
-                    className="ml-auto text-clay-400 hover:text-clay-200 p-1 rounded hover:bg-clay-800 transition-colors"
+                    className="ml-auto text-clay-300 hover:text-clay-200 p-1 rounded hover:bg-clay-800 transition-colors"
                     title="Copy clean output"
                   >
                     {copied ? (
@@ -645,13 +645,13 @@ export function FunctionPlayground({
               </div>
             ) : !hasRightContent ? (
               /* Empty state */
-              <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-clay-500">
+              <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-clay-300">
                 <FlaskConical className="h-8 w-8 mb-2 opacity-30" />
                 <span className="text-sm">Run to see results</span>
                 {functionId && (
                   <button
                     onClick={() => setActiveTab("history")}
-                    className="mt-2 text-xs text-clay-500 hover:text-kiln-teal transition-colors flex items-center gap-1"
+                    className="mt-2 text-xs text-clay-300 hover:text-kiln-teal transition-colors flex items-center gap-1"
                   >
                     <History className="h-3.5 w-3.5" />
                     View past runs

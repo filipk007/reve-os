@@ -109,9 +109,9 @@ export function AttentionStrip({ clientActions, overdueActions, onToggleAction, 
           )}
         </div>
         {expanded ? (
-          <ChevronUp className="h-4 w-4 text-clay-400 shrink-0" />
+          <ChevronUp className="h-4 w-4 text-clay-300 shrink-0" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-clay-400 shrink-0" />
+          <ChevronDown className="h-4 w-4 text-clay-300 shrink-0" />
         )}
       </button>
 
@@ -152,7 +152,7 @@ export function AttentionStrip({ clientActions, overdueActions, onToggleAction, 
                       dateCtx.urgency === "overdue" ? "text-red-400" :
                       dateCtx.urgency === "today" ? "text-amber-400" :
                       dateCtx.urgency === "soon" ? "text-amber-400/70" :
-                      "text-clay-500"
+                      "text-clay-300"
                     )}>
                       {dateCtx.label}
                     </p>
@@ -160,7 +160,7 @@ export function AttentionStrip({ clientActions, overdueActions, onToggleAction, 
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleSnooze(action.id); }}
-                  className="opacity-0 group-hover:opacity-100 mt-0.5 text-clay-500 hover:text-clay-300 transition-all shrink-0"
+                  className="opacity-0 group-hover:opacity-100 mt-0.5 text-clay-300 hover:text-clay-300 transition-all shrink-0"
                   title="Snooze for 24 hours"
                 >
                   <BellOff className="h-3 w-3" />

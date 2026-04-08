@@ -198,11 +198,11 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
               {config.label}
             </span>
             {update.author_name && (
-              <span className="text-[10px] text-clay-400 shrink-0 hidden sm:inline">{update.author_name}</span>
+              <span className="text-[10px] text-clay-300 shrink-0 hidden sm:inline">{update.author_name}</span>
             )}
-            <span className="text-[10px] text-clay-500 shrink-0">{formatRelativeTime(update.created_at)}</span>
+            <span className="text-[10px] text-clay-300 shrink-0">{formatRelativeTime(update.created_at)}</span>
             {activeReactionKeys.length > 0 && (
-              <span className="text-[10px] text-clay-500 shrink-0">
+              <span className="text-[10px] text-clay-300 shrink-0">
                 {REACTION_TYPES.filter((r) => (reactions[r.key]?.length ?? 0) > 0).map((r) => r.emoji).join("")}
               </span>
             )}
@@ -317,7 +317,7 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-clay-500 hover:text-clay-200 shrink-0">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-clay-300 hover:text-clay-200 shrink-0">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -429,7 +429,7 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
                 if (isVideo(m.mime_type)) {
                   return (
                     <div key={m.id} className="rounded-md bg-clay-900 aspect-video flex items-center justify-center">
-                      <Film className="h-6 w-6 text-clay-400" />
+                      <Film className="h-6 w-6 text-clay-300" />
                       <span className="text-xs text-clay-300 ml-2">{m.original_name}</span>
                     </div>
                   );
@@ -445,16 +445,16 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
                     download={driveUrl ? undefined : m.original_name}
                     className="flex items-center gap-2 rounded-md bg-clay-900 border border-clay-700 px-3 py-2 hover:border-clay-500 transition-colors"
                   >
-                    <FileIcon className="h-4 w-4 text-clay-400 shrink-0" />
+                    <FileIcon className="h-4 w-4 text-clay-300 shrink-0" />
                     <div className="min-w-0">
                       <p className="text-xs text-clay-200 truncate">{m.original_name}</p>
-                      <p className="text-[11px] text-clay-400">{formatBytes(m.size_bytes)}</p>
+                      <p className="text-[11px] text-clay-300">{formatBytes(m.size_bytes)}</p>
                     </div>
                   </a>
                 );
               })}
               {attachedMedia.length > 4 && (
-                <div className="rounded-md bg-clay-900 aspect-video flex items-center justify-center text-xs text-clay-400">
+                <div className="rounded-md bg-clay-900 aspect-video flex items-center justify-center text-xs text-clay-300">
                   +{attachedMedia.length - 4} more
                 </div>
               )}
@@ -528,7 +528,7 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
             {showCollapseHint && (
               <button
                 onClick={(e) => { e.stopPropagation(); setCompactExpanded(false); }}
-                className="text-[10px] text-clay-500 hover:text-clay-300 ml-auto transition-colors"
+                className="text-[10px] text-clay-300 hover:text-clay-300 ml-auto transition-colors"
               >
                 Collapse
               </button>

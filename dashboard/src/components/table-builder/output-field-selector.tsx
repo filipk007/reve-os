@@ -38,12 +38,12 @@ export function OutputFieldSelector({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label className="text-zinc-400 text-xs">Output Fields</label>
-        <span className="text-[10px] text-zinc-600">
+        <label className="text-clay-200 text-xs">Output Fields</label>
+        <span className="text-[10px] text-clay-300">
           {selectedOutputs.length} of {outputs.length} selected
         </span>
       </div>
-      <p className="text-[11px] text-zinc-600 -mt-1">
+      <p className="text-[11px] text-clay-300 -mt-1">
         Each checked field becomes its own column
       </p>
       <div className="rounded-md border border-zinc-800 divide-y divide-zinc-800/50 overflow-hidden">
@@ -59,7 +59,7 @@ export function OutputFieldSelector({
               className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
                 isSelected
                   ? "bg-zinc-800/50 text-zinc-200"
-                  : "text-zinc-500 hover:bg-zinc-900 hover:text-zinc-400"
+                  : "text-clay-300 hover:bg-zinc-900 hover:text-clay-200"
               }`}
             >
               {/* Checkbox */}
@@ -89,7 +89,7 @@ export function OutputFieldSelector({
                   )}
                 </div>
                 {out.description && (
-                  <p className="text-[11px] text-zinc-600 truncate mt-0.5">
+                  <p className="text-[11px] text-clay-300 truncate mt-0.5">
                     {out.description}
                   </p>
                 )}

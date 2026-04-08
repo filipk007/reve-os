@@ -84,7 +84,7 @@ export function SessionList({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search sessions…"
-              className="pl-7 h-8 text-xs bg-clay-900 border-clay-700 text-clay-100 placeholder:text-clay-400 focus-visible:ring-kiln-teal/50"
+              className="pl-7 h-8 text-xs bg-clay-900 border-clay-700 text-clay-100 placeholder:text-clay-300 focus-visible:ring-kiln-teal/50"
             />
           </div>
         </div>

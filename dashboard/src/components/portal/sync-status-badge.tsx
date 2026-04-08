@@ -8,7 +8,7 @@ export function SyncStatusBadge({ status }: { status: PortalSyncStatus | null })
 
   if (!status.synced) {
     return (
-      <span className="flex items-center gap-1.5 text-[11px] text-clay-400">
+      <span className="flex items-center gap-1.5 text-[11px] text-clay-300">
         <CloudOff className="h-3.5 w-3.5" />
         Not synced
       </span>

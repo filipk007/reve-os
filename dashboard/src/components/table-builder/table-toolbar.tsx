@@ -100,7 +100,7 @@ export function TableToolbar({
       )}
 
       {/* Row count badge */}
-      <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">
+      <span className="text-xs text-clay-300 bg-zinc-800 px-2 py-0.5 rounded">
         {totalRows} rows
       </span>
 
@@ -109,7 +109,7 @@ export function TableToolbar({
         <Button
           variant="ghost"
           size="sm"
-          className="text-zinc-400 hover:text-white h-7 text-xs"
+          className="text-clay-200 hover:text-white h-7 text-xs"
           onClick={onSaveAsFunction}
           title="Save table as reusable function"
         >
@@ -123,7 +123,7 @@ export function TableToolbar({
         <Button
           variant="ghost"
           size="icon"
-          className="text-zinc-400 hover:text-white h-7 w-7"
+          className="text-clay-200 hover:text-white h-7 w-7"
           onClick={onSettings}
           title="Function settings"
         >
@@ -157,7 +157,7 @@ export function TableToolbar({
       <Button
         variant="ghost"
         size="sm"
-        className="text-zinc-400 hover:text-white h-7 text-xs"
+        className="text-clay-200 hover:text-white h-7 text-xs"
         onClick={() => fileRef.current?.click()}
       >
         <Upload className="w-3 h-3 mr-1" />
@@ -168,7 +168,7 @@ export function TableToolbar({
       <Button
         variant="ghost"
         size="sm"
-        className="text-zinc-400 hover:text-white h-7 text-xs"
+        className="text-clay-200 hover:text-white h-7 text-xs"
         onClick={onAddRow}
       >
         <Plus className="w-3 h-3 mr-1" />
@@ -179,7 +179,7 @@ export function TableToolbar({
       <Button
         variant="ghost"
         size="icon"
-        className="text-zinc-400 hover:text-white h-7 w-7"
+        className="text-clay-200 hover:text-white h-7 w-7"
         onClick={onRefresh}
       >
         <RefreshCw className="w-3 h-3" />

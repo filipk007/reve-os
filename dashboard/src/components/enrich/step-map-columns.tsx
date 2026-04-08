@@ -108,7 +108,7 @@ export function StepMapColumns({
     <div className="space-y-6">
       <div className="text-center space-y-1">
         <h2 className="text-lg font-semibold text-clay-100">Map your columns</h2>
-        <p className="text-sm text-clay-400">
+        <p className="text-sm text-clay-300">
           We auto-detected most of these. Confirm or adjust.
         </p>
       </div>
@@ -127,7 +127,7 @@ export function StepMapColumns({
         {/* Required */}
         {requiredTargets.length > 0 && (
           <div className="space-y-1.5">
-            <div className="text-[10px] text-clay-500 uppercase tracking-wider font-medium">
+            <div className="text-[10px] text-clay-300 uppercase tracking-wider font-medium">
               Required
             </div>
             {requiredTargets.map((target) => (
@@ -147,7 +147,7 @@ export function StepMapColumns({
         {/* Optional */}
         {optionalTargets.length > 0 && (
           <div className="space-y-1.5">
-            <div className="text-[10px] text-clay-500 uppercase tracking-wider font-medium">
+            <div className="text-[10px] text-clay-300 uppercase tracking-wider font-medium">
               Optional
             </div>
             {optionalTargets.map((target) => (
@@ -167,14 +167,14 @@ export function StepMapColumns({
         {/* Unmapped CSV columns */}
         {unmappedHeaders.length > 0 && (
           <div className="pt-3 border-t border-clay-700">
-            <div className="text-[10px] text-clay-500 uppercase tracking-wider font-medium mb-1.5">
+            <div className="text-[10px] text-clay-300 uppercase tracking-wider font-medium mb-1.5">
               Additional columns (imported as-is)
             </div>
             <div className="flex flex-wrap gap-1.5">
               {unmappedHeaders.map((h) => (
                 <span
                   key={h}
-                  className="text-[11px] px-2 py-0.5 rounded bg-clay-800 text-clay-400 border border-clay-700"
+                  className="text-[11px] px-2 py-0.5 rounded bg-clay-800 text-clay-300 border border-clay-700"
                 >
                   {h}
                 </span>
@@ -191,7 +191,7 @@ export function StepMapColumns({
               Large dataset — {totalRows.toLocaleString()} rows may take a while
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-clay-400">Run first</span>
+              <span className="text-xs text-clay-300">Run first</span>
               {[50, 100, 250].map((n) => (
                 <button
                   key={n}
@@ -200,7 +200,7 @@ export function StepMapColumns({
                     "px-2 py-0.5 rounded text-xs border transition-colors",
                     limit === n
                       ? "border-kiln-teal text-kiln-teal bg-kiln-teal/10"
-                      : "border-clay-600 text-clay-400 hover:text-clay-200",
+                      : "border-clay-600 text-clay-300 hover:text-clay-200",
                   )}
                 >
                   {n} rows
@@ -212,12 +212,12 @@ export function StepMapColumns({
                   "px-2 py-0.5 rounded text-xs border transition-colors",
                   limit === undefined
                     ? "border-kiln-teal text-kiln-teal bg-kiln-teal/10"
-                    : "border-clay-600 text-clay-400 hover:text-clay-200",
+                    : "border-clay-600 text-clay-300 hover:text-clay-200",
                 )}
               >
                 All {totalRows.toLocaleString()}
               </button>
-              <span className="text-xs text-clay-500">as a test</span>
+              <span className="text-xs text-clay-300">as a test</span>
             </div>
           </div>
         )}
@@ -270,13 +270,13 @@ function MappingRow({
           {target.name}
         </span>
         {target.description && (
-          <span className="text-[10px] text-clay-500 truncate hidden sm:inline">
+          <span className="text-[10px] text-clay-300 truncate hidden sm:inline">
             {target.description}
           </span>
         )}
       </div>
 
-      <ArrowRight className="h-3 w-3 text-clay-500 shrink-0" />
+      <ArrowRight className="h-3 w-3 text-clay-300 shrink-0" />
 
       <div className="flex items-center gap-1 shrink-0">
         <DropdownMenu>
@@ -285,7 +285,7 @@ function MappingRow({
               className={`text-xs px-2 py-1 rounded border transition-colors min-w-[140px] text-left truncate ${
                 isMapped
                   ? "border-kiln-teal/30 text-kiln-teal bg-kiln-teal/5"
-                  : "border-clay-600 text-clay-400 hover:text-clay-300 hover:border-clay-500"
+                  : "border-clay-600 text-clay-300 hover:text-clay-300 hover:border-clay-500"
               }`}
             >
               {mappedTo || "Select column..."}
@@ -304,7 +304,7 @@ function MappingRow({
         {isMapped && (
           <button
             onClick={onClear}
-            className="p-0.5 text-clay-500 hover:text-clay-300 transition-colors"
+            className="p-0.5 text-clay-300 hover:text-clay-300 transition-colors"
             title="Clear mapping"
           >
             <X className="h-3 w-3" />

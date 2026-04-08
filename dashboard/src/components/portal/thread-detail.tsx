@@ -94,7 +94,7 @@ export function ThreadDetail({ slug, threadId, onBack, onDeleted }: ThreadDetail
 
   if (!thread) {
     return (
-      <div className="text-center py-8 text-clay-400">
+      <div className="text-center py-8 text-clay-300">
         <p>Thread not found.</p>
         <Button variant="ghost" size="sm" onClick={onBack} className="mt-2">Go back</Button>
       </div>
@@ -111,13 +111,13 @@ export function ThreadDetail({ slug, threadId, onBack, onDeleted }: ThreadDetail
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="text-clay-400 hover:text-clay-100 h-7 w-7 p-0"
+          className="text-clay-300 hover:text-clay-100 h-7 w-7 p-0"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-semibold text-clay-100 truncate">{thread.title}</h3>
-          <span className="text-[11px] text-clay-400">
+          <span className="text-[11px] text-clay-300">
             Started by {thread.created_by} | {thread.messages.length} message{thread.messages.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -125,7 +125,7 @@ export function ThreadDetail({ slug, threadId, onBack, onDeleted }: ThreadDetail
           variant="ghost"
           size="sm"
           onClick={handleDelete}
-          className="text-clay-400 hover:text-red-400 h-7 w-7 p-0"
+          className="text-clay-300 hover:text-red-400 h-7 w-7 p-0"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
@@ -154,7 +154,7 @@ export function ThreadDetail({ slug, threadId, onBack, onDeleted }: ThreadDetail
               )}>
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-[10px] font-medium text-clay-200">{msg.author}</span>
-                  <span className="text-[10px] text-clay-400">{formatTime(msg.created_at)}</span>
+                  <span className="text-[10px] text-clay-300">{formatTime(msg.created_at)}</span>
                 </div>
                 <p className="text-xs text-clay-100 whitespace-pre-wrap">{msg.body}</p>
               </div>
@@ -177,7 +177,7 @@ export function ThreadDetail({ slug, threadId, onBack, onDeleted }: ThreadDetail
             }
           }}
           placeholder="Type a reply..."
-          className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+          className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
         />
         <Button
           size="sm"

@@ -118,7 +118,7 @@ export function ColumnSuggestionsBar({
       >
         <div className="flex items-center gap-3">
           <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span className="text-xs text-zinc-400 shrink-0">
+          <span className="text-xs text-clay-200 shrink-0">
             Based on your data, try:
           </span>
 
@@ -140,7 +140,7 @@ export function ColumnSuggestionsBar({
 
           <button
             onClick={() => setDismissed(true)}
-            className="p-1 rounded hover:bg-zinc-800 text-zinc-600 hover:text-zinc-400 shrink-0"
+            className="p-1 rounded hover:bg-zinc-800 text-clay-300 hover:text-clay-200 shrink-0"
           >
             <X className="w-3 h-3" />
           </button>

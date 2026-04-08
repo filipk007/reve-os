@@ -79,7 +79,7 @@ export function ExecutionSummary({
               {/* Close button */}
               <button
                 onClick={onDismiss}
-                className="absolute top-3 right-3 text-clay-400 hover:text-clay-200 transition-colors"
+                className="absolute top-3 right-3 text-clay-300 hover:text-clay-200 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -118,7 +118,7 @@ export function ExecutionSummary({
                   <div className="text-lg font-bold text-clay-100">
                     {summary.cellsDone}
                   </div>
-                  <div className="text-[10px] text-clay-400 uppercase tracking-wider">
+                  <div className="text-[10px] text-clay-300 uppercase tracking-wider">
                     Succeeded
                   </div>
                 </div>
@@ -129,7 +129,7 @@ export function ExecutionSummary({
                   )}>
                     {summary.cellsErrored}
                   </div>
-                  <div className="text-[10px] text-clay-400 uppercase tracking-wider">
+                  <div className="text-[10px] text-clay-300 uppercase tracking-wider">
                     Errors
                   </div>
                 </div>
@@ -138,7 +138,7 @@ export function ExecutionSummary({
                     <Clock className="h-3.5 w-3.5 text-clay-300" />
                     {formatDuration(summary.totalDurationMs)}
                   </div>
-                  <div className="text-[10px] text-clay-400 uppercase tracking-wider">
+                  <div className="text-[10px] text-clay-300 uppercase tracking-wider">
                     Duration
                   </div>
                 </div>
@@ -169,7 +169,7 @@ export function ExecutionSummary({
               {/* Per-column breakdown (if multiple enrichment columns) */}
               {enrichmentCols.length > 1 && (
                 <div className="mb-4 space-y-1.5">
-                  <p className="text-[10px] text-clay-400 uppercase tracking-wider mb-1">
+                  <p className="text-[10px] text-clay-300 uppercase tracking-wider mb-1">
                     Per column
                   </p>
                   {enrichmentCols.map((col) => {
@@ -181,7 +181,7 @@ export function ExecutionSummary({
                     return (
                       <div key={col.id} className="flex items-center gap-2 text-xs">
                         <span className="text-clay-200 truncate flex-1">{col.name}</span>
-                        <span className="text-clay-400 shrink-0">
+                        <span className="text-clay-300 shrink-0">
                           {prog.done}/{prog.total}
                         </span>
                         {prog.errors > 0 && (

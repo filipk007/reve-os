@@ -339,9 +339,9 @@ export function StepProgress({
                 <Loader2 className="h-4 w-4 text-kiln-teal animate-spin shrink-0" />
                 <span className="text-sm text-clay-200">{retrying ? "Retrying..." : "Enriching..."}</span>
                 <div className="flex-1 h-1.5 rounded-full bg-clay-700 overflow-hidden max-w-xs"><div className="h-full rounded-full bg-kiln-teal transition-all duration-300" style={{ width: `${pct}%` }} /></div>
-                <span className="text-xs text-clay-400 tabular-nums shrink-0">{progress.done}/{progress.total}</span>
+                <span className="text-xs text-clay-300 tabular-nums shrink-0">{progress.done}/{progress.total}</span>
                 {progress.errors > 0 && <span className="text-xs text-amber-400 shrink-0">{progress.errors} err</span>}
-                {eta && <span className="text-xs text-clay-500 shrink-0 flex items-center gap-1"><Clock className="h-3 w-3" />{eta}</span>}
+                {eta && <span className="text-xs text-clay-300 shrink-0 flex items-center gap-1"><Clock className="h-3 w-3" />{eta}</span>}
               </>
             ) : (
               <>{showConfetti && <ConfettiBurst />}<CheckCircle2 className="h-4 w-4 text-kiln-teal shrink-0" /><span className="text-sm text-clay-200">Done — {progress.done} cells enriched{progress.errors > 0 && <span className="text-amber-400 ml-1">({progress.errors} errors)</span>}</span></>
@@ -353,7 +353,7 @@ export function StepProgress({
               <>
                 {errorRowCount > 0 && <Button variant="outline" size="sm" className="h-7 border-amber-500/30 text-amber-400 hover:bg-amber-500/10" onClick={handleRetry}><RefreshCw className="h-3 w-3 mr-1" />Retry {errorRowCount}</Button>}
                 <Button size="sm" className="h-7 bg-kiln-teal text-black hover:bg-kiln-teal/90" onClick={handleDownload}><Download className="h-3 w-3 mr-1" />{downloadLabel}</Button>
-                {approvedRows.size > 0 && <button onClick={() => { setApprovedRows(new Set()); handleDownload(); }} className="text-[10px] text-clay-500 hover:text-clay-300 underline">all</button>}
+                {approvedRows.size > 0 && <button onClick={() => { setApprovedRows(new Set()); handleDownload(); }} className="text-[10px] text-clay-300 hover:text-clay-300 underline">all</button>}
                 <Button variant="outline" size="sm" className="h-7 border-clay-600 text-clay-300" onClick={handleExportToSheets} disabled={exporting === "sheets"}>
                   {exporting === "sheets" ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <FileSpreadsheet className="h-3 w-3 mr-1" />}Sheets
                 </Button>
@@ -361,7 +361,7 @@ export function StepProgress({
                   {exporting === "drive" ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <FolderUp className="h-3 w-3 mr-1" />}Drive
                 </Button>
                 {tableId && <Button variant="outline" size="sm" className="h-7 border-clay-600 text-clay-300" asChild><a href={`/tables/${tableId}`}><ExternalLink className="h-3 w-3 mr-1" />Table Builder</a></Button>}
-                <button onClick={onStartOver} className="text-xs text-clay-500 hover:text-clay-300 ml-1"><RotateCcw className="h-3 w-3" /></button>
+                <button onClick={onStartOver} className="text-xs text-clay-300 hover:text-clay-300 ml-1"><RotateCcw className="h-3 w-3" /></button>
               </>
             )}
           </div>
@@ -376,7 +376,7 @@ export function StepProgress({
             const count = f === "all" ? rows.length : f === "errors" ? errorRowCount : rows.length - errorRowCount;
             return (
               <button key={f} onClick={() => setRowFilter(f)} className={cn("px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
-                rowFilter === f ? (f === "errors" ? "bg-red-500/15 text-red-400" : "bg-kiln-teal/15 text-kiln-teal") : "text-clay-400 hover:text-clay-200 hover:bg-clay-800",
+                rowFilter === f ? (f === "errors" ? "bg-red-500/15 text-red-400" : "bg-kiln-teal/15 text-kiln-teal") : "text-clay-300 hover:text-clay-200 hover:bg-clay-800",
               )}>{f === "all" ? "All" : f === "success" ? "Success" : "Errors"} ({count})</button>
             );
           })}
@@ -385,31 +385,31 @@ export function StepProgress({
 
           {/* Search */}
           <div className="flex items-center gap-1 px-2 py-1 rounded-md border border-clay-700 bg-clay-800/50 min-w-[160px]">
-            <SearchIcon className="h-3 w-3 text-clay-500 shrink-0" />
+            <SearchIcon className="h-3 w-3 text-clay-300 shrink-0" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
-              className="bg-transparent text-xs text-clay-200 placeholder:text-clay-500 outline-none flex-1 min-w-0"
+              className="bg-transparent text-xs text-clay-200 placeholder:text-clay-300 outline-none flex-1 min-w-0"
             />
-            {searchQuery && <button onClick={() => setSearchQuery("")} className="text-clay-500 hover:text-clay-300"><X className="h-3 w-3" /></button>}
+            {searchQuery && <button onClick={() => setSearchQuery("")} className="text-clay-300 hover:text-clay-300"><X className="h-3 w-3" /></button>}
           </div>
 
           <div className="w-px h-4 bg-clay-700" />
 
           {/* Bulk actions */}
-          <button onClick={handleSelectAllSuccess} className="text-xs text-clay-400 hover:text-clay-200 flex items-center gap-1">
+          <button onClick={handleSelectAllSuccess} className="text-xs text-clay-300 hover:text-clay-200 flex items-center gap-1">
             <CheckSquare className="h-3 w-3" />Select success
           </button>
           {approvedRows.size > 0 && (
             <>
-              <button onClick={handleClearSelection} className="text-xs text-clay-500 hover:text-clay-300">Clear</button>
+              <button onClick={handleClearSelection} className="text-xs text-clay-300 hover:text-clay-300">Clear</button>
               <span className="text-xs text-kiln-teal font-medium">{approvedRows.size} selected</span>
             </>
           )}
 
           {/* Summary */}
-          <div className="ml-auto text-[10px] text-clay-500 tabular-nums flex items-center gap-2">
+          <div className="ml-auto text-[10px] text-clay-300 tabular-nums flex items-center gap-2">
             <span>{rows.length} rows</span>
             <span className="text-clay-600">|</span>
             <span className="text-emerald-500">{completeCount} complete</span>
@@ -425,7 +425,7 @@ export function StepProgress({
         <div className="flex items-center justify-center py-24">
           <div className="text-center space-y-3">
             <div className="h-10 w-10 mx-auto rounded-full border-2 border-kiln-teal border-t-transparent animate-spin" />
-            <p className="text-sm text-clay-400">Preparing your data...</p>
+            <p className="text-sm text-clay-300">Preparing your data...</p>
           </div>
         </div>
       )}
@@ -444,7 +444,7 @@ export function StepProgress({
                   </th>
                 )}
                 {/* Row # header */}
-                <th className="px-2 py-2 text-left text-clay-500 font-medium bg-clay-800 border-b border-clay-700 w-12 text-[10px]">#</th>
+                <th className="px-2 py-2 text-left text-clay-300 font-medium bg-clay-800 border-b border-clay-700 w-12 text-[10px]">#</th>
                 {/* Column headers (sortable) */}
                 {columns.map((col) => {
                   const typeStyle = COLUMN_TYPE_STYLES[col.column_type];
@@ -460,14 +460,14 @@ export function StepProgress({
                       )}
                     >
                       <div className="flex items-center gap-1.5">
-                        {typeStyle && <typeStyle.icon className="h-3 w-3 text-clay-400 shrink-0" />}
+                        {typeStyle && <typeStyle.icon className="h-3 w-3 text-clay-300 shrink-0" />}
                         <span className="text-clay-200 truncate">{col.name}</span>
                         {isSorted && (sortConfig.direction === "asc"
                           ? <ChevronUp className="h-3 w-3 text-kiln-teal shrink-0" />
                           : <ChevronDown className="h-3 w-3 text-kiln-teal shrink-0" />
                         )}
                       </div>
-                      {col.column_type !== "input" && col.tool && <div className="text-[9px] text-clay-500 mt-0.5">{col.tool}</div>}
+                      {col.column_type !== "input" && col.tool && <div className="text-[9px] text-clay-300 mt-0.5">{col.tool}</div>}
                       {phase === "enriching" && cp && cp.total > 0 && (
                         <div className="h-0.5 rounded-full bg-clay-700 mt-1 overflow-hidden flex">
                           <div className="h-full bg-emerald-500 transition-all duration-300" style={{ width: `${((cp.done - cp.errors) / cp.total) * 100}%` }} />
@@ -567,10 +567,10 @@ export function StepProgress({
                 <div className="text-sm font-medium text-clay-100">{cellDetail.colName}</div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <div className={cn("h-2 w-2 rounded-full", cellDetail.status === "done" ? "bg-emerald-500" : cellDetail.status === "error" ? "bg-red-500" : cellDetail.status === "running" ? "bg-blue-400" : "bg-clay-500")} />
-                  <span className="text-[10px] text-clay-400 uppercase">{cellDetail.status}</span>
+                  <span className="text-[10px] text-clay-300 uppercase">{cellDetail.status}</span>
                 </div>
               </div>
-              <button onClick={() => setSelectedCell(null)} className="text-clay-500 hover:text-clay-300"><X className="h-4 w-4" /></button>
+              <button onClick={() => setSelectedCell(null)} className="text-clay-300 hover:text-clay-300"><X className="h-4 w-4" /></button>
             </div>
             <div className="flex-1 overflow-auto p-4 space-y-3">
               {cellDetail.status === "error" && cellDetail.error && (
@@ -581,13 +581,13 @@ export function StepProgress({
               )}
               {cellDetail.value != null && (
                 <div>
-                  <div className="text-[10px] text-clay-500 uppercase font-medium mb-1">Value</div>
+                  <div className="text-[10px] text-clay-300 uppercase font-medium mb-1">Value</div>
                   <pre className="text-xs text-clay-200 bg-clay-900 rounded-md p-3 overflow-auto max-h-96 whitespace-pre-wrap break-words">
                     {typeof cellDetail.value === "object" ? JSON.stringify(cellDetail.value, null, 2) : String(cellDetail.value)}
                   </pre>
                 </div>
               )}
-              {cellDetail.value == null && cellDetail.status !== "error" && <div className="text-sm text-clay-500 text-center py-8">No value yet</div>}
+              {cellDetail.value == null && cellDetail.status !== "error" && <div className="text-sm text-clay-300 text-center py-8">No value yet</div>}
             </div>
             {cellDetail.value != null && (
               <div className="px-4 py-3 border-t border-clay-700">

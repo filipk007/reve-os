@@ -150,7 +150,7 @@ export function PostFeed({
       return (
         <div className="rounded-lg border border-clay-700 bg-clay-800 p-8 text-center space-y-3">
           <MessageSquare className="h-8 w-8 text-clay-600 mx-auto" />
-          <p className="text-sm text-clay-400">No posts match your filters.</p>
+          <p className="text-sm text-clay-300">No posts match your filters.</p>
           {onClearFilters && (
             <button
               onClick={onClearFilters}
@@ -172,7 +172,7 @@ export function PostFeed({
           <h3 className="text-base font-semibold text-clay-200">
             Welcome to {clientName ? `${clientName}'s` : "this"} portal
           </h3>
-          <p className="text-sm text-clay-400">
+          <p className="text-sm text-clay-300">
             Start by posting your first update to build the activity feed.
           </p>
         </div>
@@ -233,7 +233,7 @@ export function PostFeed({
           <button
             onClick={() => { if (compact) toggleDensity(); }}
             className={`h-6 w-6 rounded flex items-center justify-center transition-colors ${
-              !compact ? "bg-clay-700 text-clay-200" : "text-clay-500 hover:text-clay-300"
+              !compact ? "bg-clay-700 text-clay-200" : "text-clay-300 hover:text-clay-300"
             }`}
             title="Comfortable view"
           >
@@ -242,7 +242,7 @@ export function PostFeed({
           <button
             onClick={() => { if (!compact) toggleDensity(); }}
             className={`h-6 w-6 rounded flex items-center justify-center transition-colors ${
-              compact ? "bg-clay-700 text-clay-200" : "text-clay-500 hover:text-clay-300"
+              compact ? "bg-clay-700 text-clay-200" : "text-clay-300 hover:text-clay-300"
             }`}
             title="Compact view"
           >
@@ -298,8 +298,8 @@ export function PostFeed({
               {earlierGroup.posts.length}
             </span>
             {earlierExpanded
-              ? <ChevronUp className="h-3 w-3 text-clay-400" />
-              : <ChevronDown className="h-3 w-3 text-clay-400" />
+              ? <ChevronUp className="h-3 w-3 text-clay-300" />
+              : <ChevronDown className="h-3 w-3 text-clay-300" />
             }
             <div className="h-px flex-1 bg-clay-700" />
           </button>

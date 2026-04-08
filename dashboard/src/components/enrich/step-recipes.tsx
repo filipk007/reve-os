@@ -197,7 +197,7 @@ export function StepRecipes({
         <h2 className="text-lg font-semibold text-clay-100">
           What do you want to find?
         </h2>
-        <p className="text-sm text-clay-400">
+        <p className="text-sm text-clay-300">
           Pick one or more. We&apos;ll handle the rest.
         </p>
       </div>
@@ -237,7 +237,7 @@ export function StepRecipes({
               >
                 <ComboIcon className="h-3.5 w-3.5" />
                 <span className="text-xs font-medium">{combo.name}</span>
-                <span className="text-[10px] text-clay-500">
+                <span className="text-[10px] text-clay-300">
                   {combo.recipeIds.length} recipes
                 </span>
               </button>
@@ -274,7 +274,7 @@ export function StepRecipes({
         <div className="space-y-2">
           {recommended.length > 0 && (
             <div className="flex items-center gap-2">
-              <div className="text-[10px] text-clay-500 uppercase tracking-wider font-medium">
+              <div className="text-[10px] text-clay-300 uppercase tracking-wider font-medium">
                 All recipes
               </div>
               <div className="flex-1 h-px bg-clay-700" />
@@ -346,14 +346,14 @@ function RecipeCard({
                 ? "bg-kiln-teal/15 text-kiln-teal"
                 : isRecommended
                   ? "bg-kiln-teal/10 text-kiln-teal/70"
-                  : "bg-clay-700/50 text-clay-400",
+                  : "bg-clay-700/50 text-clay-300",
             )}
           >
             <Icon className="h-4.5 w-4.5" />
           </div>
           <div className="min-w-0 space-y-1.5">
             <div className="text-sm font-medium text-clay-100">{recipe.name}</div>
-            <div className="text-xs text-clay-400 leading-relaxed">{recipe.description}</div>
+            <div className="text-xs text-clay-300 leading-relaxed">{recipe.description}</div>
             <div className="flex flex-wrap gap-1">
               {recipe.produced_outputs.map((o) => (
                 <Badge
@@ -375,7 +375,7 @@ function RecipeCard({
           e.stopPropagation();
           setPreviewOpen((prev) => !prev);
         }}
-        className="w-full flex items-center justify-center gap-1 py-1.5 text-[10px] text-clay-500 hover:text-clay-400 transition-colors border-t border-transparent hover:border-clay-700/50"
+        className="w-full flex items-center justify-center gap-1 py-1.5 text-[10px] text-clay-300 hover:text-clay-300 transition-colors border-t border-transparent hover:border-clay-700/50"
       >
         <span>Sample output</span>
         <ChevronDown
@@ -396,7 +396,7 @@ function RecipeCard({
                 "\u2014";
               return (
                 <div key={output.name} className="flex items-baseline gap-2 text-[11px]">
-                  <span className="font-mono text-clay-500 shrink-0">{output.name}</span>
+                  <span className="font-mono text-clay-300 shrink-0">{output.name}</span>
                   <span className="text-clay-600">:</span>
                   <span className="text-clay-300 truncate">{sampleValue}</span>
                 </div>

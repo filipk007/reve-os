@@ -77,7 +77,7 @@ export function TemplatePicker({ slug, open, onOpenChange, onCloned }: TemplateP
               ))}
             </div>
           ) : templates.length === 0 ? (
-            <p className="text-sm text-clay-400 py-4 text-center">No templates available.</p>
+            <p className="text-sm text-clay-300 py-4 text-center">No templates available.</p>
           ) : (
             templates.map((t) => (
               <label
@@ -92,7 +92,7 @@ export function TemplatePicker({ slug, open, onOpenChange, onCloned }: TemplateP
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-clay-100">{t.title}</p>
-                  <p className="text-[10px] text-clay-400">{t.category}</p>
+                  <p className="text-[10px] text-clay-300">{t.category}</p>
                 </div>
               </label>
             ))

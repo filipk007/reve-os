@@ -127,7 +127,7 @@ function ToolCatalogPanel({
                   <div className="flex items-center gap-1.5">
                     <span className="font-medium text-clay-100">{tool.name}</span>
                     {tool.alias_of && (
-                      <span className="text-[9px] text-clay-400">via Claude</span>
+                      <span className="text-[9px] text-clay-300">via Claude</span>
                     )}
                   </div>
                   <div className="text-[10px] text-clay-300 line-clamp-1">
@@ -186,7 +186,7 @@ function ToolCatalogPanel({
                             {tool.name}
                           </span>
                           {tool.alias_of && (
-                            <span className="text-[9px] text-clay-400">via Claude</span>
+                            <span className="text-[9px] text-clay-300">via Claude</span>
                           )}
                         </div>
                         <div className="text-[10px] text-clay-300 line-clamp-1">

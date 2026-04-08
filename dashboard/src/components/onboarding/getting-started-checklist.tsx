@@ -64,13 +64,13 @@ export function GettingStartedChecklist() {
             <h3 className="text-xs font-semibold text-clay-200 uppercase tracking-wider">
               Getting started
             </h3>
-            <span className="text-[10px] text-clay-400">
+            <span className="text-[10px] text-clay-300">
               {completedCount}/{ITEMS.length}
             </span>
           </div>
           <button
             onClick={handleDismiss}
-            className="text-clay-400 hover:text-clay-200 transition-colors"
+            className="text-clay-300 hover:text-clay-200 transition-colors"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -92,19 +92,19 @@ export function GettingStartedChecklist() {
                 {done ? (
                   <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                 ) : (
-                  <Circle className="h-4 w-4 text-clay-500 shrink-0 mt-0.5" />
+                  <Circle className="h-4 w-4 text-clay-300 shrink-0 mt-0.5" />
                 )}
                 <div>
                   <p
                     className={cn(
                       "text-xs font-medium",
-                      done ? "text-clay-400 line-through" : "text-clay-100"
+                      done ? "text-clay-300 line-through" : "text-clay-100"
                     )}
                   >
                     {item.label}
                   </p>
                   {!done && (
-                    <p className="text-[11px] text-clay-400">{item.description}</p>
+                    <p className="text-[11px] text-clay-300">{item.description}</p>
                   )}
                 </div>
               </div>

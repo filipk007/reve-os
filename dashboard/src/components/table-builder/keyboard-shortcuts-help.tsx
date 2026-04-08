@@ -33,7 +33,7 @@ export function KeyboardShortcutsHelp() {
       {/* Trigger button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-40 w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700 transition-colors shadow-lg"
+        className="fixed bottom-4 right-4 z-40 w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-clay-300 hover:text-zinc-300 hover:bg-zinc-700 transition-colors shadow-lg"
         title="Keyboard shortcuts"
       >
         <HelpCircle className="w-3.5 h-3.5" />
@@ -62,7 +62,7 @@ export function KeyboardShortcutsHelp() {
                 </h3>
                 <button
                   onClick={() => setOpen(false)}
-                  className="p-1 rounded hover:bg-zinc-800 text-zinc-500"
+                  className="p-1 rounded hover:bg-zinc-800 text-clay-300"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -74,7 +74,7 @@ export function KeyboardShortcutsHelp() {
                     key={i}
                     className="flex items-center justify-between gap-2"
                   >
-                    <span className="text-xs text-zinc-400">{s.desc}</span>
+                    <span className="text-xs text-clay-200">{s.desc}</span>
                     <div className="flex items-center gap-1">
                       {s.keys.map((k, j) => (
                         <KeyBadge key={j}>{k === "Cmd" ? "⌘" : k}</KeyBadge>

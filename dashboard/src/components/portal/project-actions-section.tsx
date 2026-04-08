@@ -88,7 +88,7 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
           variant="ghost"
           size="sm"
           onClick={() => setAdding(!adding)}
-          className="h-6 text-[11px] text-clay-400 hover:text-clay-200 hover:bg-clay-700 gap-1"
+          className="h-6 text-[11px] text-clay-300 hover:text-clay-200 hover:bg-clay-700 gap-1"
         >
           <Plus className="h-3 w-3" />
         </Button>
@@ -103,7 +103,7 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="Action title..."
-            className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+            className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
             autoFocus
           />
           <Button
@@ -119,7 +119,7 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
       )}
 
       {actions.length === 0 && !adding ? (
-        <p className="text-xs text-clay-400">No actions yet</p>
+        <p className="text-xs text-clay-300">No actions yet</p>
       ) : (
         <div className="space-y-1">
           {visible.map((action) => (
@@ -134,7 +134,7 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
                 {action.status === "done" ? (
                   <CheckSquare className="h-3.5 w-3.5 text-emerald-500" />
                 ) : (
-                  <Square className="h-3.5 w-3.5 text-clay-400 hover:text-clay-200" />
+                  <Square className="h-3.5 w-3.5 text-clay-300 hover:text-clay-200" />
                 )}
               </button>
 
@@ -148,7 +148,7 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
               <span
                 className={cn(
                   "text-sm flex-1 truncate",
-                  action.status === "done" ? "text-clay-400 line-through" : "text-clay-100",
+                  action.status === "done" ? "text-clay-300 line-through" : "text-clay-100",
                 )}
               >
                 {action.title}
@@ -161,7 +161,7 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
               )}
 
               {action.due_date && (
-                <span className="text-[10px] text-clay-400 flex items-center gap-0.5 flex-shrink-0">
+                <span className="text-[10px] text-clay-300 flex items-center gap-0.5 flex-shrink-0">
                   <Calendar className="h-2.5 w-2.5" />
                   {new Date(action.due_date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                 </span>
@@ -169,7 +169,7 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
 
               <button
                 onClick={() => handleDelete(action.id)}
-                className="opacity-0 group-hover:opacity-100 text-clay-500 hover:text-red-400 transition-opacity flex-shrink-0"
+                className="opacity-0 group-hover:opacity-100 text-clay-300 hover:text-red-400 transition-opacity flex-shrink-0"
               >
                 <Trash2 className="h-3 w-3" />
               </button>
@@ -181,7 +181,7 @@ export function ProjectActionsSection({ slug, projectId, actions, onToggle, onRe
       {sorted.length > COLLAPSE_THRESHOLD && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1 mt-2 text-[10px] text-clay-400 hover:text-clay-200 transition-colors"
+          className="flex items-center gap-1 mt-2 text-[10px] text-clay-300 hover:text-clay-200 transition-colors"
         >
           {expanded ? (
             <>

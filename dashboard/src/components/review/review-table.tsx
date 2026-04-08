@@ -90,7 +90,7 @@ function ExpandedRow({
           <div className="p-4 bg-clay-800/50 border-b border-clay-600">
             {/* Input details */}
             <div className="mb-3">
-              <div className="text-[10px] font-medium text-clay-400 uppercase tracking-wider mb-1.5">
+              <div className="text-[10px] font-medium text-clay-300 uppercase tracking-wider mb-1.5">
                 Input
               </div>
               <div className="flex flex-wrap gap-2">
@@ -107,14 +107,14 @@ function ExpandedRow({
             </div>
 
             {/* Output */}
-            <div className="text-[10px] font-medium text-clay-400 uppercase tracking-wider mb-1.5 flex items-center gap-2">
+            <div className="text-[10px] font-medium text-clay-300 uppercase tracking-wider mb-1.5 flex items-center gap-2">
               Output
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleStartEdit();
                 }}
-                className="text-clay-400 hover:text-clay-200 transition-colors"
+                className="text-clay-300 hover:text-clay-200 transition-colors"
                 title="Edit output"
               >
                 <Pencil className="h-3 w-3" />
@@ -184,13 +184,13 @@ export function ReviewTable({ items, onApprove, onReject, onEdit }: ReviewTableP
         <table className="w-full border-collapse">
           <thead className="sticky top-0 z-10 bg-clay-800">
             <tr className="border-b border-clay-500">
-              <th className="px-3 py-2 text-left text-[10px] font-medium text-clay-400 uppercase tracking-wider w-14">
+              <th className="px-3 py-2 text-left text-[10px] font-medium text-clay-300 uppercase tracking-wider w-14">
                 Row
               </th>
               {inputCols.map((col) => (
                 <th
                   key={`in-${col}`}
-                  className="px-3 py-2 text-left text-[10px] font-medium text-clay-400 uppercase tracking-wider"
+                  className="px-3 py-2 text-left text-[10px] font-medium text-clay-300 uppercase tracking-wider"
                 >
                   {col}
                 </th>
@@ -203,10 +203,10 @@ export function ReviewTable({ items, onApprove, onReject, onEdit }: ReviewTableP
                   {col}
                 </th>
               ))}
-              <th className="px-3 py-2 text-left text-[10px] font-medium text-clay-400 uppercase tracking-wider w-24">
+              <th className="px-3 py-2 text-left text-[10px] font-medium text-clay-300 uppercase tracking-wider w-24">
                 Status
               </th>
-              <th className="px-3 py-2 text-right text-[10px] font-medium text-clay-400 uppercase tracking-wider w-28">
+              <th className="px-3 py-2 text-right text-[10px] font-medium text-clay-300 uppercase tracking-wider w-28">
                 Actions
               </th>
             </tr>
@@ -288,7 +288,7 @@ export function ReviewTable({ items, onApprove, onReject, onEdit }: ReviewTableP
                             variant="ghost"
                             size="sm"
                             onClick={() => onApprove(item.id)}
-                            className="h-6 w-6 p-0 text-clay-400 hover:text-clay-200"
+                            className="h-6 w-6 p-0 text-clay-300 hover:text-clay-200"
                             title="Reset to pending"
                           >
                             <Undo2 className="h-3.5 w-3.5" />

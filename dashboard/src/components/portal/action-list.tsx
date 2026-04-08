@@ -80,7 +80,7 @@ export function ActionList({ slug, actions, onCreated, onUpdated, onToggle, onDe
       )}
 
       {sorted.length === 0 && !creating && (
-        <div className="text-center py-8 text-clay-400">
+        <div className="text-center py-8 text-clay-300">
           <p className="text-sm">No action items yet. Create one to track mutual accountability.</p>
         </div>
       )}
@@ -107,7 +107,7 @@ export function ActionList({ slug, actions, onCreated, onUpdated, onToggle, onDe
               {/* Toggle checkbox */}
               <button
                 onClick={() => onToggle(action.id)}
-                className="mt-0.5 text-clay-400 hover:text-kiln-teal transition-colors"
+                className="mt-0.5 text-clay-300 hover:text-kiln-teal transition-colors"
               >
                 {action.status === "done" ? (
                   <CheckSquare className="h-4.5 w-4.5 text-emerald-400" />
@@ -124,7 +124,7 @@ export function ActionList({ slug, actions, onCreated, onUpdated, onToggle, onDe
                   <span
                     className={cn(
                       "text-sm font-medium truncate",
-                      action.status === "done" ? "text-clay-400 line-through" : "text-clay-100"
+                      action.status === "done" ? "text-clay-300 line-through" : "text-clay-100"
                     )}
                   >
                     {action.title}
@@ -157,13 +157,13 @@ export function ActionList({ slug, actions, onCreated, onUpdated, onToggle, onDe
 
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                   {action.due_date && (
-                    <span className="text-[11px] text-clay-400 flex items-center gap-1">
+                    <span className="text-[11px] text-clay-300 flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       {action.due_date}
                     </span>
                   )}
                   {action.recurrence && action.recurrence !== "none" && (
-                    <span className="text-[11px] text-clay-400 flex items-center gap-1">
+                    <span className="text-[11px] text-clay-300 flex items-center gap-1">
                       <Repeat className="h-3 w-3" />
                       {action.recurrence}
                     </span>
@@ -177,7 +177,7 @@ export function ActionList({ slug, actions, onCreated, onUpdated, onToggle, onDe
                   variant="ghost"
                   size="sm"
                   onClick={() => setEditingId(action.id)}
-                  className="text-clay-400 hover:text-clay-100 h-7 w-7 p-0"
+                  className="text-clay-300 hover:text-clay-100 h-7 w-7 p-0"
                 >
                   <Pencil className="h-3 w-3" />
                 </Button>
@@ -185,7 +185,7 @@ export function ActionList({ slug, actions, onCreated, onUpdated, onToggle, onDe
                   variant="ghost"
                   size="sm"
                   onClick={() => onDelete(action.id)}
-                  className="text-clay-400 hover:text-red-400 h-7 w-7 p-0"
+                  className="text-clay-300 hover:text-red-400 h-7 w-7 p-0"
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>

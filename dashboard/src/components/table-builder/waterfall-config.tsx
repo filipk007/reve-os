@@ -62,7 +62,7 @@ export function WaterfallConfig({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+      <div className="flex items-center gap-1.5 text-xs text-clay-200">
         <Zap className="w-3 h-3 text-amber-400" />
         Waterfall — tries each provider in order, stops on first success
       </div>
@@ -74,8 +74,8 @@ export function WaterfallConfig({
             key={`${p.tool}-${idx}`}
             className="flex items-center gap-2 px-2 py-1.5 rounded bg-zinc-800 border border-zinc-700 group"
           >
-            <GripVertical className="w-3 h-3 text-zinc-600 shrink-0" />
-            <span className="text-xs text-zinc-500 w-4 tabular-nums">
+            <GripVertical className="w-3 h-3 text-clay-300 shrink-0" />
+            <span className="text-xs text-clay-300 w-4 tabular-nums">
               {idx + 1}.
             </span>
             <span className="text-xs text-zinc-300 flex-1 truncate">
@@ -83,7 +83,7 @@ export function WaterfallConfig({
             </span>
             <button
               onClick={() => remove(idx)}
-              className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-zinc-700 text-zinc-500"
+              className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-zinc-700 text-clay-300"
             >
               <X className="w-3 h-3" />
             </button>
@@ -104,7 +104,7 @@ export function WaterfallConfig({
               </SelectItem>
             ))}
             {remaining.length === 0 && (
-              <div className="px-2 py-1.5 text-xs text-zinc-500">No more providers</div>
+              <div className="px-2 py-1.5 text-xs text-clay-300">No more providers</div>
             )}
           </SelectContent>
         </Select>
@@ -112,7 +112,7 @@ export function WaterfallConfig({
         <Button
           variant="ghost"
           size="sm"
-          className="w-full text-xs text-zinc-500 hover:text-zinc-300 h-7"
+          className="w-full text-xs text-clay-300 hover:text-zinc-300 h-7"
           onClick={() => setAddingProvider(true)}
           disabled={remaining.length === 0}
         >

@@ -154,9 +154,9 @@ export function MyWorkDashboard() {
           ) : recentTables.length === 0 ? (
             <Card className="border-clay-600 border-dashed">
               <CardContent className="p-6 text-center">
-                <Table2 className="h-8 w-8 text-clay-400 mx-auto mb-2" />
+                <Table2 className="h-8 w-8 text-clay-300 mx-auto mb-2" />
                 <p className="text-sm text-clay-300 mb-1">No tables yet</p>
-                <p className="text-xs text-clay-400">
+                <p className="text-xs text-clay-300">
                   Upload a CSV or create a table to get started.
                 </p>
               </CardContent>
@@ -192,11 +192,11 @@ export function MyWorkDashboard() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-[11px] text-clay-400 mt-0.5">
+                    <p className="text-[11px] text-clay-300 mt-0.5">
                       Updated {formatRelativeTime(table.updated_at)}
                     </p>
                   </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-clay-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                  <ExternalLink className="h-3.5 w-3.5 text-clay-300 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </div>
               ))}
             </div>

@@ -21,7 +21,7 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
         prose-ul:text-clay-300 prose-ol:text-clay-300 prose-li:my-0.5
         prose-code:text-kiln-teal prose-code:bg-clay-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
         prose-pre:bg-clay-900 prose-pre:border prose-pre:border-clay-700 prose-pre:rounded-lg
-        prose-blockquote:border-clay-600 prose-blockquote:text-clay-400
+        prose-blockquote:border-clay-600 prose-blockquote:text-clay-300
         prose-table:text-clay-300 prose-th:text-clay-200 prose-th:border-clay-600 prose-td:border-clay-700
         prose-hr:border-clay-700
         ${className ?? ""}`}

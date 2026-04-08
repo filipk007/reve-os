@@ -101,7 +101,7 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
 
   if (loading) {
     return (
-      <div className="text-sm text-clay-500 py-4 text-center">
+      <div className="text-sm text-clay-300 py-4 text-center">
         Loading history...
       </div>
     );
@@ -109,7 +109,7 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
 
   if (records.length === 0) {
     return (
-      <div className="text-sm text-clay-500 py-4 text-center">
+      <div className="text-sm text-clay-300 py-4 text-center">
         No past runs yet. Run the function to see execution history.
       </div>
     );
@@ -142,7 +142,7 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
               <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", status.color)} />
 
               {/* Timestamp */}
-              <span className="text-xs text-clay-400 shrink-0 w-28">
+              <span className="text-xs text-clay-300 shrink-0 w-28">
                 {timeStr}
               </span>
 
@@ -158,18 +158,18 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
               </Badge>
 
               {/* Step count */}
-              <span className="text-xs text-clay-500">
+              <span className="text-xs text-clay-300">
                 {rec.step_count} step{rec.step_count !== 1 ? "s" : ""}
               </span>
 
               {/* Status */}
               <span className="flex items-center gap-1 ml-auto text-xs">
                 {status.icon}
-                <span className="text-clay-400">{status.label}</span>
+                <span className="text-clay-300">{status.label}</span>
               </span>
 
               {/* Expand indicator */}
-              <span className="text-clay-500 shrink-0">
+              <span className="text-clay-300 shrink-0">
                 {isExpanded ? (
                   <ChevronDown className="h-3 w-3" />
                 ) : (
@@ -201,12 +201,12 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
                       e.stopPropagation();
                       toggleInputs(rec.id);
                     }}
-                    className="h-6 px-1 text-xs text-clay-400 hover:text-clay-200"
+                    className="h-6 px-1 text-xs text-clay-300 hover:text-clay-200"
                   >
                     {showInputs.has(rec.id) ? "Hide Inputs" : "Show Inputs"}
                   </Button>
                   {showInputs.has(rec.id) && (
-                    <pre className="mt-1 text-xs text-clay-400 bg-clay-950 p-3 rounded border border-clay-800 overflow-auto max-h-32 whitespace-pre-wrap">
+                    <pre className="mt-1 text-xs text-clay-300 bg-clay-950 p-3 rounded border border-clay-800 overflow-auto max-h-32 whitespace-pre-wrap">
                       {JSON.stringify(rec.inputs, null, 2)}
                     </pre>
                   )}
@@ -221,7 +221,7 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
                       e.stopPropagation();
                       toggleOutputs(rec.id);
                     }}
-                    className="h-6 px-1 text-xs text-clay-400 hover:text-clay-200"
+                    className="h-6 px-1 text-xs text-clay-300 hover:text-clay-200"
                   >
                     {showOutputs.has(rec.id) ? "Hide Outputs" : "Show Outputs"}
                   </Button>
@@ -253,7 +253,7 @@ export function ExecutionHistoryPanel({ functionId }: ExecutionHistoryPanelProps
                         e.stopPropagation();
                         handleExportToSheet(rec);
                       }}
-                      className="h-6 px-1.5 text-xs text-clay-400 hover:text-clay-200"
+                      className="h-6 px-1.5 text-xs text-clay-300 hover:text-clay-200"
                     >
                       {exportingId === rec.id ? (
                         <Loader2 className="h-3 w-3 mr-1 animate-spin" />

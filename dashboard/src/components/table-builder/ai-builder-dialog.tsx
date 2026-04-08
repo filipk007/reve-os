@@ -47,12 +47,12 @@ const TYPE_ICONS: Record<string, typeof Search> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  input: "text-zinc-400 bg-zinc-800",
+  input: "text-clay-200 bg-zinc-800",
   enrichment: "text-blue-400 bg-blue-500/10",
   ai: "text-purple-400 bg-purple-500/10",
   formula: "text-teal-400 bg-teal-500/10",
   gate: "text-amber-400 bg-amber-500/10",
-  static: "text-zinc-400 bg-zinc-800",
+  static: "text-clay-200 bg-zinc-800",
 };
 
 const EXAMPLE_PROMPTS = [
@@ -135,7 +135,7 @@ export function AiBuilderDialog({
               </div>
               <span className="text-sm font-medium text-white">AI Table Builder</span>
             </div>
-            <button onClick={handleClose} className="text-zinc-500 hover:text-zinc-300">
+            <button onClick={handleClose} className="text-clay-300 hover:text-zinc-300">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -145,7 +145,7 @@ export function AiBuilderDialog({
             {!result && (
               <>
                 <div>
-                  <label className="text-xs text-zinc-400 mb-2 block">
+                  <label className="text-xs text-clay-200 mb-2 block">
                     What are you trying to achieve?
                   </label>
                   <Textarea
@@ -161,7 +161,7 @@ export function AiBuilderDialog({
 
                 {/* Example prompts */}
                 <div>
-                  <label className="text-[10px] text-zinc-600 uppercase tracking-wider mb-2 block">
+                  <label className="text-[10px] text-clay-300 uppercase tracking-wider mb-2 block">
                     Examples
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -169,7 +169,7 @@ export function AiBuilderDialog({
                       <button
                         key={i}
                         onClick={() => setDescription(ex)}
-                        className="text-left text-[11px] text-zinc-500 hover:text-zinc-300 px-3 py-2 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors"
+                        className="text-left text-[11px] text-clay-300 hover:text-zinc-300 px-3 py-2 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors"
                       >
                         {ex}
                       </button>
@@ -187,8 +187,8 @@ export function AiBuilderDialog({
             {loading && (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
                 <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
-                <p className="text-sm text-zinc-400">Building your table columns...</p>
-                <p className="text-xs text-zinc-600">This takes about 10-20 seconds</p>
+                <p className="text-sm text-clay-200">Building your table columns...</p>
+                <p className="text-xs text-clay-300">This takes about 10-20 seconds</p>
               </div>
             )}
 
@@ -197,7 +197,7 @@ export function AiBuilderDialog({
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-medium text-white">{result.table_name}</h3>
-                  <span className="text-xs text-zinc-500">
+                  <span className="text-xs text-clay-300">
                     {result.columns.length} columns
                   </span>
                 </div>
@@ -212,7 +212,7 @@ export function AiBuilderDialog({
                         key={col.id}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-zinc-800 bg-zinc-800/30"
                       >
-                        <span className="text-[10px] text-zinc-600 font-mono w-4 shrink-0">
+                        <span className="text-[10px] text-clay-300 font-mono w-4 shrink-0">
                           {i + 1}
                         </span>
                         <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${colorClass}`}>
@@ -220,7 +220,7 @@ export function AiBuilderDialog({
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-medium text-zinc-200">{col.name}</div>
-                          <div className="text-[11px] text-zinc-500 truncate">
+                          <div className="text-[11px] text-clay-300 truncate">
                             {col.column_type === "enrichment" && col.tool
                               ? `Tool: ${col.tool}`
                               : col.column_type === "ai"
@@ -246,7 +246,7 @@ export function AiBuilderDialog({
                     setResult(null);
                     setError("");
                   }}
-                  className="text-xs text-zinc-500 hover:text-zinc-300 mt-3 underline"
+                  className="text-xs text-clay-300 hover:text-zinc-300 mt-3 underline"
                 >
                   Back to edit prompt
                 </button>

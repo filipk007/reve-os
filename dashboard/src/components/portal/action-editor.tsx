@@ -89,7 +89,7 @@ export function ActionEditor({ slug, action, onSaved, onCancel }: ActionEditorPr
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Action item title..."
-        className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+        className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
         autoFocus
       />
 
@@ -98,7 +98,7 @@ export function ActionEditor({ slug, action, onSaved, onCancel }: ActionEditorPr
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Details (optional)..."
         rows={3}
-        className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal resize-y"
+        className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal resize-y"
       />
 
       <div className="flex gap-3">
@@ -163,7 +163,7 @@ export function ActionEditor({ slug, action, onSaved, onCancel }: ActionEditorPr
             value={blockedReason}
             onChange={(e) => setBlockedReason(e.target.value)}
             placeholder="Reason (optional)..."
-            className="flex-1 bg-clay-900 border border-amber-500/30 rounded-md px-3 py-1 text-xs text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-amber-400"
+            className="flex-1 bg-clay-900 border border-amber-500/30 rounded-md px-3 py-1 text-xs text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-amber-400"
           />
         )}
       </div>

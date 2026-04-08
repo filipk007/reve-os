@@ -316,7 +316,7 @@ export function ColumnConfigPanel({
     columnType === "waterfall" ? <Shuffle className="w-4 h-4 text-emerald-400" /> :
     columnType === "lookup" ? <Link2 className="w-4 h-4 text-cyan-400" /> :
     columnType === "script" ? <Terminal className="w-4 h-4 text-rose-400" /> :
-    <Type className="w-4 h-4 text-zinc-400" />;
+    <Type className="w-4 h-4 text-clay-200" />;
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
@@ -329,7 +329,7 @@ export function ColumnConfigPanel({
             {typeIcon}
             {editingColumn ? "Edit Column" : "Configure Column"}
           </SheetTitle>
-          <SheetDescription className="text-zinc-500">
+          <SheetDescription className="text-clay-300">
             {selectedTool
               ? `${selectedTool.name} — ${selectedTool.description}`
               : columnType === "ai"
@@ -345,7 +345,7 @@ export function ColumnConfigPanel({
         <div className="space-y-5">
           {/* Column name */}
           <div>
-            <Label className="text-zinc-400 text-xs">Column Name</Label>
+            <Label className="text-clay-200 text-xs">Column Name</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -371,7 +371,7 @@ export function ColumnConfigPanel({
                   }
                   setAutoMapped(false);
                 }}
-                className="text-[10px] text-zinc-500 hover:text-zinc-300 underline"
+                className="text-[10px] text-clay-300 hover:text-zinc-300 underline"
               >
                 Clear
               </button>
@@ -381,15 +381,15 @@ export function ColumnConfigPanel({
           {/* Enrichment params */}
           {columnType === "enrichment" && selectedTool?.inputs && (
             <div className="space-y-3">
-              <Label className="text-zinc-400 text-xs">Parameters</Label>
+              <Label className="text-clay-200 text-xs">Parameters</Label>
               {selectedTool.inputs.map((input) => {
                 const isEmpty = !params[input.name];
                 return (
                   <div key={input.name}>
-                    <label className="text-xs text-zinc-500 mb-1 block">
+                    <label className="text-xs text-clay-300 mb-1 block">
                       {input.name}
                       {input.type && (
-                        <span className="text-zinc-600 ml-1">({input.type})</span>
+                        <span className="text-clay-300 ml-1">({input.type})</span>
                       )}
                     </label>
                     <ColumnReferenceInput
@@ -424,19 +424,19 @@ export function ColumnConfigPanel({
           {columnType === "ai" && (
             <>
               <div>
-                <Label className="text-zinc-400 text-xs">Prompt</Label>
+                <Label className="text-clay-200 text-xs">Prompt</Label>
                 <Textarea
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   placeholder="e.g. Based on the company description, score their fit for IoT solutions from 1-10"
                   className="mt-1.5 bg-zinc-900 border-zinc-700 text-white min-h-[100px]"
                 />
-                <p className="text-xs text-zinc-600 mt-1">
+                <p className="text-xs text-clay-300 mt-1">
                   Type / to reference other column values
                 </p>
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Model</Label>
+                <Label className="text-clay-200 text-xs">Model</Label>
                 <Select value={aiModel} onValueChange={setAiModel}>
                   <SelectTrigger className="mt-1.5 bg-zinc-900 border-zinc-700 text-white">
                     <SelectValue />
@@ -454,7 +454,7 @@ export function ColumnConfigPanel({
           {/* Formula */}
           {columnType === "formula" && (
             <div>
-              <Label className="text-zinc-400 text-xs">Formula</Label>
+              <Label className="text-clay-200 text-xs">Formula</Label>
               <ColumnReferenceInput
                 value={formula}
                 onChange={setFormula}
@@ -469,7 +469,7 @@ export function ColumnConfigPanel({
           {columnType === "gate" && (
             <>
               <div>
-                <Label className="text-zinc-400 text-xs">Condition</Label>
+                <Label className="text-clay-200 text-xs">Condition</Label>
                 <ColumnReferenceInput
                   value={condition}
                   onChange={setCondition}
@@ -478,7 +478,7 @@ export function ColumnConfigPanel({
                 />
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Label (optional)</Label>
+                <Label className="text-clay-200 text-xs">Label (optional)</Label>
                 <Input
                   value={conditionLabel}
                   onChange={(e) => setConditionLabel(e.target.value)}
@@ -494,7 +494,7 @@ export function ColumnConfigPanel({
             <div className="space-y-3">
               <div className="flex gap-2">
                 <div className="w-24">
-                  <Label className="text-zinc-400 text-xs">Method</Label>
+                  <Label className="text-clay-200 text-xs">Method</Label>
                   <Select value={httpMethod} onValueChange={setHttpMethod}>
                     <SelectTrigger className="mt-1.5 bg-zinc-900 border-zinc-700 text-white">
                       <SelectValue />
@@ -507,7 +507,7 @@ export function ColumnConfigPanel({
                   </Select>
                 </div>
                 <div className="flex-1">
-                  <Label className="text-zinc-400 text-xs">URL</Label>
+                  <Label className="text-clay-200 text-xs">URL</Label>
                   <ColumnReferenceInput
                     value={httpUrl}
                     onChange={setHttpUrl}
@@ -519,9 +519,9 @@ export function ColumnConfigPanel({
 
               <div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-zinc-400 text-xs">Headers</Label>
+                  <Label className="text-clay-200 text-xs">Headers</Label>
                   <button
-                    className="text-[10px] text-zinc-500 hover:text-zinc-300"
+                    className="text-[10px] text-clay-300 hover:text-zinc-300"
                     onClick={() => setHttpHeaders([...httpHeaders, ["", ""]])}
                   >
                     <Plus className="w-3 h-3 inline mr-0.5" />Add
@@ -549,7 +549,7 @@ export function ColumnConfigPanel({
                       placeholder="Value"
                       className="flex-1 bg-zinc-900 border-zinc-700 text-white text-xs h-8"
                     />
-                    <button onClick={() => setHttpHeaders(httpHeaders.filter((_, j) => j !== i))} className="text-zinc-600 hover:text-zinc-400">
+                    <button onClick={() => setHttpHeaders(httpHeaders.filter((_, j) => j !== i))} className="text-clay-300 hover:text-clay-200">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -558,7 +558,7 @@ export function ColumnConfigPanel({
 
               {(httpMethod === "POST" || httpMethod === "PUT" || httpMethod === "PATCH") && (
                 <div>
-                  <Label className="text-zinc-400 text-xs">Body (JSON)</Label>
+                  <Label className="text-clay-200 text-xs">Body (JSON)</Label>
                   <Textarea
                     value={httpBody}
                     onChange={(e) => setHttpBody(e.target.value)}
@@ -569,18 +569,18 @@ export function ColumnConfigPanel({
               )}
 
               <div>
-                <Label className="text-zinc-400 text-xs">Extract (JSONPath)</Label>
+                <Label className="text-clay-200 text-xs">Extract (JSONPath)</Label>
                 <Input
                   value={httpExtract}
                   onChange={(e) => setHttpExtract(e.target.value)}
                   placeholder="$.data.company.name"
                   className="mt-1.5 bg-zinc-900 border-zinc-700 text-white font-mono text-xs"
                 />
-                <p className="text-[10px] text-zinc-600 mt-1">$ = entire response, $.field = nested field</p>
+                <p className="text-[10px] text-clay-300 mt-1">$ = entire response, $.field = nested field</p>
               </div>
 
               <div>
-                <Label className="text-zinc-400 text-xs">Fallback if empty</Label>
+                <Label className="text-clay-200 text-xs">Fallback if empty</Label>
                 <Input
                   value={httpIfEmpty}
                   onChange={(e) => setHttpIfEmpty(e.target.value)}
@@ -595,7 +595,7 @@ export function ColumnConfigPanel({
           {columnType === "lookup" && (
             <div className="space-y-3">
               <div>
-                <Label className="text-zinc-400 text-xs">Source Table ID</Label>
+                <Label className="text-clay-200 text-xs">Source Table ID</Label>
                 <Input
                   value={lookupSourceTable}
                   onChange={(e) => setLookupSourceTable(e.target.value)}
@@ -604,7 +604,7 @@ export function ColumnConfigPanel({
                 />
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Match Column (in source table)</Label>
+                <Label className="text-clay-200 text-xs">Match Column (in source table)</Label>
                 <Input
                   value={lookupMatchColumn}
                   onChange={(e) => setLookupMatchColumn(e.target.value)}
@@ -613,7 +613,7 @@ export function ColumnConfigPanel({
                 />
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Match Value</Label>
+                <Label className="text-clay-200 text-xs">Match Value</Label>
                 <ColumnReferenceInput
                   value={lookupMatchValue}
                   onChange={setLookupMatchValue}
@@ -623,7 +623,7 @@ export function ColumnConfigPanel({
               </div>
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <Label className="text-zinc-400 text-xs">Operator</Label>
+                  <Label className="text-clay-200 text-xs">Operator</Label>
                   <Select value={lookupMatchOperator} onValueChange={setLookupMatchOperator}>
                     <SelectTrigger className="mt-1.5 bg-zinc-900 border-zinc-700 text-white">
                       <SelectValue />
@@ -635,7 +635,7 @@ export function ColumnConfigPanel({
                   </Select>
                 </div>
                 <div className="flex-1">
-                  <Label className="text-zinc-400 text-xs">Return</Label>
+                  <Label className="text-clay-200 text-xs">Return</Label>
                   <Select value={lookupReturnType} onValueChange={setLookupReturnType}>
                     <SelectTrigger className="mt-1.5 bg-zinc-900 border-zinc-700 text-white">
                       <SelectValue />
@@ -651,7 +651,7 @@ export function ColumnConfigPanel({
               </div>
               {lookupReturnType === "value" && (
                 <div>
-                  <Label className="text-zinc-400 text-xs">Return Column</Label>
+                  <Label className="text-clay-200 text-xs">Return Column</Label>
                   <Input
                     value={lookupReturnColumn}
                     onChange={(e) => setLookupReturnColumn(e.target.value)}
@@ -667,7 +667,7 @@ export function ColumnConfigPanel({
           {columnType === "script" && (
             <div className="space-y-3">
               <div>
-                <Label className="text-zinc-400 text-xs">Language</Label>
+                <Label className="text-clay-200 text-xs">Language</Label>
                 <Select value={scriptLanguage} onValueChange={setScriptLanguage}>
                   <SelectTrigger className="mt-1.5 bg-zinc-900 border-zinc-700 text-white">
                     <SelectValue />
@@ -680,7 +680,7 @@ export function ColumnConfigPanel({
                 </Select>
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Code</Label>
+                <Label className="text-clay-200 text-xs">Code</Label>
                 <Textarea
                   value={scriptCode}
                   onChange={(e) => setScriptCode(e.target.value)}
@@ -690,10 +690,10 @@ export function ColumnConfigPanel({
                   className="mt-1.5 bg-zinc-900 border-zinc-700 text-white font-mono text-xs min-h-[120px]"
                   spellCheck={false}
                 />
-                <p className="text-[10px] text-zinc-600 mt-1">Row data is piped as JSON via stdin. Output JSON to stdout.</p>
+                <p className="text-[10px] text-clay-300 mt-1">Row data is piped as JSON via stdin. Output JSON to stdout.</p>
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Extract (JSONPath, optional)</Label>
+                <Label className="text-clay-200 text-xs">Extract (JSONPath, optional)</Label>
                 <Input
                   value={scriptExtract}
                   onChange={(e) => setScriptExtract(e.target.value)}
@@ -708,7 +708,7 @@ export function ColumnConfigPanel({
           {["enrichment", "ai", "http", "waterfall", "script"].includes(columnType) && (
             <div className="border-t border-zinc-800 pt-4">
               <button
-                className="flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-300 w-full"
+                className="flex items-center gap-2 text-xs text-clay-200 hover:text-zinc-300 w-full"
                 onClick={() => setShowErrorHandling(!showErrorHandling)}
               >
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showErrorHandling ? "" : "-rotate-90"}`} />
@@ -717,7 +717,7 @@ export function ColumnConfigPanel({
               {showErrorHandling && (
                 <div className="mt-3 space-y-3">
                   <div>
-                    <Label className="text-zinc-400 text-xs">On Error</Label>
+                    <Label className="text-clay-200 text-xs">On Error</Label>
                     <Select value={errorOnError} onValueChange={setErrorOnError}>
                       <SelectTrigger className="mt-1.5 bg-zinc-900 border-zinc-700 text-white">
                         <SelectValue />
@@ -731,7 +731,7 @@ export function ColumnConfigPanel({
                   </div>
                   {errorOnError === "fallback" && (
                     <div>
-                      <Label className="text-zinc-400 text-xs">Fallback Value</Label>
+                      <Label className="text-clay-200 text-xs">Fallback Value</Label>
                       <Input
                         value={errorFallbackValue}
                         onChange={(e) => setErrorFallbackValue(e.target.value)}
@@ -742,7 +742,7 @@ export function ColumnConfigPanel({
                   )}
                   <div className="flex gap-2">
                     <div className="flex-1">
-                      <Label className="text-zinc-400 text-xs">Max Retries</Label>
+                      <Label className="text-clay-200 text-xs">Max Retries</Label>
                       <Input
                         type="number"
                         min={0}
@@ -753,7 +753,7 @@ export function ColumnConfigPanel({
                       />
                     </div>
                     <div className="flex-1">
-                      <Label className="text-zinc-400 text-xs">Backoff</Label>
+                      <Label className="text-clay-200 text-xs">Backoff</Label>
                       <Select value={errorRetryBackoff} onValueChange={setErrorRetryBackoff}>
                         <SelectTrigger className="mt-1.5 bg-zinc-900 border-zinc-700 text-white">
                           <SelectValue />
@@ -775,7 +775,7 @@ export function ColumnConfigPanel({
           {(columnType === "enrichment" || columnType === "ai") && (
             <div className="border-t border-zinc-800 pt-4">
               <button
-                className="flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-300 w-full"
+                className="flex items-center gap-2 text-xs text-clay-200 hover:text-zinc-300 w-full"
                 onClick={() => setCondition(condition ? "" : " ")}
               >
                 <div

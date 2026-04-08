@@ -44,12 +44,12 @@ export function CostEstimatePopover({
             <DollarSign className="w-3 h-3 text-amber-400" />
             Execution Estimate
           </div>
-          <div className="text-zinc-400">
+          <div className="text-clay-200">
             {enrichCols.length} column{enrichCols.length > 1 ? "s" : ""} x{" "}
             {rows} row{rows > 1 ? "s" : ""} ={" "}
             <span className="text-white">{totalCalls} AI calls</span>
           </div>
-          <div className="text-zinc-500">
+          <div className="text-clay-300">
             ~${estimatedCost.toFixed(2)} estimated (Sonnet)
           </div>
         </div>

@@ -52,7 +52,7 @@ export function SOPEditor({ slug, sop, onSaved, onCancel }: SOPEditorProps) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="SOP title..."
-          className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+          className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
           autoFocus
         />
         <select
@@ -73,7 +73,7 @@ export function SOPEditor({ slug, sop, onSaved, onCancel }: SOPEditorProps) {
         onChange={(e) => setContent(e.target.value)}
         placeholder="Write your SOP content in markdown..."
         rows={10}
-        className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal font-mono resize-y"
+        className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal font-mono resize-y"
       />
 
       <div className="flex items-center gap-2 justify-end">

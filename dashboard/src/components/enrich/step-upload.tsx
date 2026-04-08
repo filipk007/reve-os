@@ -182,7 +182,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
     <div className="space-y-6">
       <div className="text-center space-y-1">
         <h2 className="text-lg font-semibold text-clay-100">Upload your CSV</h2>
-        <p className="text-sm text-clay-400">
+        <p className="text-sm text-clay-300">
           Drop a file with your contacts or companies to get started.
         </p>
       </div>
@@ -197,7 +197,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                 mode === "file"
                   ? "bg-clay-700 text-clay-100"
-                  : "text-clay-400 hover:text-clay-200",
+                  : "text-clay-300 hover:text-clay-200",
               )}
             >
               <Upload className="h-3 w-3" />
@@ -209,7 +209,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                 mode === "paste"
                   ? "bg-clay-700 text-clay-100"
-                  : "text-clay-400 hover:text-clay-200",
+                  : "text-clay-300 hover:text-clay-200",
               )}
             >
               <ClipboardPaste className="h-3 w-3" />
@@ -221,7 +221,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                 mode === "sheets"
                   ? "bg-clay-700 text-clay-100"
-                  : "text-clay-400 hover:text-clay-200",
+                  : "text-clay-300 hover:text-clay-200",
               )}
             >
               <Table2 className="h-3 w-3" />
@@ -235,13 +235,13 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
       {mode === "sheets" && !preview && (
         <div className="space-y-3">
           <div className="space-y-2">
-            <label className="text-xs text-clay-400">Paste a Google Sheet URL or spreadsheet ID</label>
+            <label className="text-xs text-clay-300">Paste a Google Sheet URL or spreadsheet ID</label>
             <div className="flex gap-2">
               <input
                 value={sheetUrl}
                 onChange={(e) => { setSheetUrl(e.target.value); setSheetError(""); }}
                 placeholder="https://docs.google.com/spreadsheets/d/..."
-                className="flex-1 bg-clay-800/50 border border-clay-600 rounded-md px-3 py-2 text-xs text-clay-200 placeholder:text-clay-500 focus:border-kiln-teal/50 focus:outline-none focus:ring-1 focus:ring-kiln-teal/20"
+                className="flex-1 bg-clay-800/50 border border-clay-600 rounded-md px-3 py-2 text-xs text-clay-200 placeholder:text-clay-300 focus:border-kiln-teal/50 focus:outline-none focus:ring-1 focus:ring-kiln-teal/20"
               />
               <button
                 onClick={handleImportSheet}
@@ -250,7 +250,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
                   "px-4 py-2 rounded-md text-xs font-medium transition-colors shrink-0",
                   sheetUrl.trim() && !sheetLoading
                     ? "bg-kiln-teal text-black hover:bg-kiln-teal/90"
-                    : "bg-clay-700 text-clay-500 cursor-not-allowed",
+                    : "bg-clay-700 text-clay-300 cursor-not-allowed",
                 )}
               >
                 {sheetLoading ? (
@@ -263,7 +263,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
             {sheetError && (
               <p className="text-xs text-red-400">{sheetError}</p>
             )}
-            <p className="text-[10px] text-clay-500">
+            <p className="text-[10px] text-clay-300">
               First row will be used as column headers. Make sure the sheet is accessible.
             </p>
           </div>
@@ -305,7 +305,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
                 <div className="text-sm font-medium text-clay-100">
                   {preview.file.name}
                 </div>
-                <div className="text-xs text-clay-400">
+                <div className="text-xs text-clay-300">
                   {preview.totalRows.toLocaleString()} rows, {preview.headers.length} columns
                 </div>
                 <button
@@ -313,18 +313,18 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
                     e.stopPropagation();
                     onClear();
                   }}
-                  className="text-xs text-clay-400 hover:text-clay-200 underline mt-1"
+                  className="text-xs text-clay-300 hover:text-clay-200 underline mt-1"
                 >
                   Upload different file
                 </button>
               </div>
             ) : (
               <div className="space-y-2">
-                <Upload className="h-10 w-10 text-clay-400 mx-auto" />
+                <Upload className="h-10 w-10 text-clay-300 mx-auto" />
                 <div className="text-sm text-clay-200">
                   Drag and drop a CSV file here
                 </div>
-                <div className="text-xs text-clay-400">or click to browse</div>
+                <div className="text-xs text-clay-300">or click to browse</div>
               </div>
             )}
           </div>
@@ -334,7 +334,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
             <div className="text-center">
               <button
                 onClick={handleDownloadSample}
-                className="inline-flex items-center gap-1 text-xs text-clay-500 hover:text-clay-300 transition-colors"
+                className="inline-flex items-center gap-1 text-xs text-clay-300 hover:text-clay-300 transition-colors"
               >
                 <Download className="h-3 w-3" />
                 Need a template? Download sample CSV
@@ -351,11 +351,11 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
             placeholder="Paste rows from a spreadsheet (tab-separated or comma-separated)..."
-            className="w-full h-40 rounded-lg border border-clay-600 bg-clay-800/50 px-4 py-3 text-xs font-mono text-clay-200 placeholder:text-clay-500 focus:border-kiln-teal/50 focus:outline-none focus:ring-1 focus:ring-kiln-teal/20 resize-none"
+            className="w-full h-40 rounded-lg border border-clay-600 bg-clay-800/50 px-4 py-3 text-xs font-mono text-clay-200 placeholder:text-clay-300 focus:border-kiln-teal/50 focus:outline-none focus:ring-1 focus:ring-kiln-teal/20 resize-none"
           />
           {pasteRowCount > 0 && (
             <div className="flex items-center justify-between">
-              <span className="text-xs text-clay-500">
+              <span className="text-xs text-clay-300">
                 {pasteRowCount} data row{pasteRowCount !== 1 ? "s" : ""} detected
               </span>
               <button
@@ -372,7 +372,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
       {/* Preview table */}
       {preview && (
         <div>
-          <h3 className="text-xs font-medium text-clay-400 mb-2">
+          <h3 className="text-xs font-medium text-clay-300 mb-2">
             Preview (first {preview.rows.length} rows)
           </h3>
           <div className="rounded-md border border-clay-700 overflow-x-auto">
@@ -382,7 +382,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
                   {preview.headers.map((h, i) => (
                     <th
                       key={i}
-                      className="px-3 py-1.5 text-left text-clay-400 font-medium border-b border-clay-700 bg-clay-800/50 whitespace-nowrap"
+                      className="px-3 py-1.5 text-left text-clay-300 font-medium border-b border-clay-700 bg-clay-800/50 whitespace-nowrap"
                     >
                       {h}
                     </th>
@@ -411,7 +411,7 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
       {/* Enrichment history */}
       {!preview && history.length > 0 && (
         <div className="space-y-2 pt-2">
-          <div className="text-[10px] text-clay-500 uppercase tracking-wider font-medium">
+          <div className="text-[10px] text-clay-300 uppercase tracking-wider font-medium">
             Recent enrichments
           </div>
           <div className="space-y-1.5">
@@ -421,24 +421,24 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
                 onClick={() => window.open(`/tables/${entry.id}`, "_blank")}
                 className="w-full flex items-center gap-3 p-2.5 rounded-md border border-clay-700 bg-clay-800/30 hover:bg-clay-800/60 hover:border-clay-600 transition-colors text-left"
               >
-                <Clock className="h-3.5 w-3.5 text-clay-500 shrink-0" />
+                <Clock className="h-3.5 w-3.5 text-clay-300 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs text-clay-200 truncate">{entry.name}</div>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <Badge variant="secondary" className="text-[9px] py-0 h-3.5 bg-clay-700/50 text-clay-400 border-clay-600">
+                    <Badge variant="secondary" className="text-[9px] py-0 h-3.5 bg-clay-700/50 text-clay-300 border-clay-600">
                       {entry.rows} rows
                     </Badge>
                     {entry.recipes.slice(0, 2).map((r) => (
-                      <Badge key={r} variant="secondary" className="text-[9px] py-0 h-3.5 bg-clay-700/50 text-clay-400 border-clay-600">
+                      <Badge key={r} variant="secondary" className="text-[9px] py-0 h-3.5 bg-clay-700/50 text-clay-300 border-clay-600">
                         {r}
                       </Badge>
                     ))}
                     {entry.recipes.length > 2 && (
-                      <span className="text-[9px] text-clay-500">+{entry.recipes.length - 2}</span>
+                      <span className="text-[9px] text-clay-300">+{entry.recipes.length - 2}</span>
                     )}
                   </div>
                 </div>
-                <span className="text-[10px] text-clay-500 shrink-0">
+                <span className="text-[10px] text-clay-300 shrink-0">
                   {formatRelativeTime(entry.timestamp)}
                 </span>
               </button>

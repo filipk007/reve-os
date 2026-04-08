@@ -98,7 +98,7 @@ export function TemplateCard({ template, onSelect, compact }: TemplateCardProps)
               </Badge>
             ))}
           </div>
-          <ArrowRight className="h-3 w-3 text-clay-400 shrink-0" />
+          <ArrowRight className="h-3 w-3 text-clay-300 shrink-0" />
           <div className="flex items-center gap-1 flex-wrap">
             {template.produced_outputs.slice(0, 3).map((output) => (
               <Badge

@@ -12,7 +12,7 @@ const statusIcons: Record<
   RowStatusValue,
   { icon: React.ComponentType<{ className?: string }>; className: string }
 > = {
-  pending: { icon: Circle, className: "h-3 w-3 text-clay-500" },
+  pending: { icon: Circle, className: "h-3 w-3 text-clay-300" },
   running: { icon: Loader2, className: "h-3 w-3 text-kiln-teal animate-spin" },
   done: { icon: CheckCircle2, className: "h-3 w-3 text-status-success" },
   error: { icon: XCircle, className: "h-3 w-3 text-kiln-coral" },

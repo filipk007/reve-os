@@ -39,11 +39,11 @@ export function InputOutputPreview({
           </Badge>
         ))}
         {inputs.length > maxItems && (
-          <span className="text-[10px] text-clay-400">+{inputs.length - maxItems}</span>
+          <span className="text-[10px] text-clay-300">+{inputs.length - maxItems}</span>
         )}
       </div>
 
-      <ArrowRight className="h-2.5 w-2.5 text-clay-500 shrink-0" />
+      <ArrowRight className="h-2.5 w-2.5 text-clay-300 shrink-0" />
 
       {/* Outputs */}
       <div className="flex items-center gap-1 flex-wrap">
@@ -58,7 +58,7 @@ export function InputOutputPreview({
           </Badge>
         ))}
         {outputs.length > maxItems && (
-          <span className="text-[10px] text-clay-400">+{outputs.length - maxItems}</span>
+          <span className="text-[10px] text-clay-300">+{outputs.length - maxItems}</span>
         )}
       </div>
     </div>

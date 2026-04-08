@@ -71,7 +71,7 @@ export function FriendlyTerm({ term, showOriginal }: FriendlyTermProps) {
         <span className="cursor-help border-b border-dotted border-clay-500">
           {mapping.label}
           {showOriginal && (
-            <span className="text-clay-400 ml-1">({term})</span>
+            <span className="text-clay-300 ml-1">({term})</span>
           )}
         </span>
       </TooltipTrigger>

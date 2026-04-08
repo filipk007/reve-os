@@ -152,7 +152,7 @@ export function PortalHeader({
       </div>
 
       {/* Context strip — simplified single line */}
-      <p className="text-[11px] text-clay-500 pl-[52px]">
+      <p className="text-[11px] text-clay-300 pl-[52px]">
         {[
           openActionCount > 0 ? `${openActionCount} action${openActionCount !== 1 ? "s" : ""}` : null,
           `${mediaCount} file${mediaCount !== 1 ? "s" : ""}`,

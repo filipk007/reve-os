@@ -86,7 +86,7 @@ export function ThreadList({ slug, projectId, threads, onSelectThread, onReload 
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Discussion topic..."
-            className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+            className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
             autoFocus
           />
           <textarea
@@ -94,7 +94,7 @@ export function ThreadList({ slug, projectId, threads, onSelectThread, onReload 
             onChange={(e) => setBody(e.target.value)}
             placeholder="Start the conversation..."
             rows={3}
-            className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal resize-y"
+            className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal resize-y"
           />
           <div className="flex items-center gap-2 justify-end">
             <Button
@@ -119,7 +119,7 @@ export function ThreadList({ slug, projectId, threads, onSelectThread, onReload 
 
       {/* Thread list */}
       {threads.length === 0 && !creating && (
-        <div className="text-center py-8 text-clay-400">
+        <div className="text-center py-8 text-clay-300">
           <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-40" />
           <p className="text-sm">No discussions yet. Start one to collaborate with the team.</p>
         </div>
@@ -137,13 +137,13 @@ export function ThreadList({ slug, projectId, threads, onSelectThread, onReload 
                 {thread.title}
               </h4>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[11px] text-clay-400">{thread.created_by}</span>
-                <span className="text-[11px] text-clay-500">|</span>
-                <span className="text-[11px] text-clay-400">
+                <span className="text-[11px] text-clay-300">{thread.created_by}</span>
+                <span className="text-[11px] text-clay-300">|</span>
+                <span className="text-[11px] text-clay-300">
                   {thread.message_count} message{thread.message_count !== 1 ? "s" : ""}
                 </span>
-                <span className="text-[11px] text-clay-500">|</span>
-                <span className="text-[11px] text-clay-400">{formatRelativeTime(thread.updated_at)}</span>
+                <span className="text-[11px] text-clay-300">|</span>
+                <span className="text-[11px] text-clay-300">{formatRelativeTime(thread.updated_at)}</span>
               </div>
               {thread.last_message_preview && (
                 <p className="text-xs text-clay-300 mt-1 truncate">
@@ -152,7 +152,7 @@ export function ThreadList({ slug, projectId, threads, onSelectThread, onReload 
                 </p>
               )}
             </div>
-            <ChevronRight className="h-4 w-4 text-clay-400 shrink-0 mt-0.5 group-hover:text-clay-200" />
+            <ChevronRight className="h-4 w-4 text-clay-300 shrink-0 mt-0.5 group-hover:text-clay-200" />
           </div>
         </button>
       ))}

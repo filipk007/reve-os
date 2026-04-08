@@ -30,7 +30,7 @@ export function HealthBadge({ portal }: { portal: PortalOverview }) {
         config.ring,
         level === "critical" ? "text-red-400" :
         level === "warning" ? "text-amber-400" :
-        level === "inactive" ? "text-clay-500" :
+        level === "inactive" ? "text-clay-300" :
         "text-emerald-400"
       )}
       title={config.label}

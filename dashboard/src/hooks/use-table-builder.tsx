@@ -434,9 +434,9 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
       id: "_row_num",
       size: 50,
       enableResizing: false,
-      header: () => <span className="text-zinc-500 text-xs">#</span>,
+      header: () => <span className="text-clay-300 text-xs">#</span>,
       cell: ({ row }) => (
-        <span className="text-zinc-500 text-xs">{row.index + 1}</span>
+        <span className="text-clay-300 text-xs">{row.index + 1}</span>
       ),
     });
 
@@ -449,8 +449,8 @@ export function useTableBuilder(tableId: string): UseTableBuilderReturn {
         accessorFn: (row) => row[`${col.id}__value`],
         cell: ({ getValue }) => {
           const val = getValue();
-          if (val === undefined || val === null) return <span className="text-zinc-600">—</span>;
-          if (typeof val === "object") return <span className="text-zinc-400 truncate">{JSON.stringify(val).slice(0, 60)}</span>;
+          if (val === undefined || val === null) return <span className="text-clay-300">—</span>;
+          if (typeof val === "object") return <span className="text-clay-200 truncate">{JSON.stringify(val).slice(0, 60)}</span>;
           return <span className="truncate">{String(val)}</span>;
         },
       });

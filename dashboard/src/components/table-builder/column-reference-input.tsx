@@ -179,7 +179,7 @@ export function ColumnReferenceInput({
           className="absolute top-full left-0 mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-md shadow-xl z-50 max-h-48 overflow-y-auto"
         >
           {filtered.length === 0 ? (
-            <div className="px-3 py-2 text-xs text-zinc-500">No matching columns</div>
+            <div className="px-3 py-2 text-xs text-clay-300">No matching columns</div>
           ) : (
             filtered.map((col) => {
               const colorClass = TYPE_COLORS[col.column_type] || TYPE_COLORS.input;

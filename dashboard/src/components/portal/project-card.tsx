@@ -97,7 +97,7 @@ export function ProjectCard({ project, slug }: { project: ProjectSummary; slug: 
       </div>
 
       {/* Due date or last activity */}
-      <p className="text-[11px] text-clay-400 mt-1.5 flex items-center gap-1">
+      <p className="text-[11px] text-clay-300 mt-1.5 flex items-center gap-1">
         {project.due_date ? (
           <>
             <Calendar className="h-2.5 w-2.5" />

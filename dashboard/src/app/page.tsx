@@ -819,26 +819,26 @@ function FunctionBuilderPanel({
                       </span>
                     )}
                     {assemblyDuration > 0 && (
-                      <span className="text-[10px] text-clay-400">{(assemblyDuration / 1000).toFixed(1)}s</span>
+                      <span className="text-[10px] text-clay-300">{(assemblyDuration / 1000).toFixed(1)}s</span>
                     )}
                   </div>
-                  <ChevronDown className={cn("h-3.5 w-3.5 text-clay-400 transition-transform", reasoningOpen && "rotate-180")} />
+                  <ChevronDown className={cn("h-3.5 w-3.5 text-clay-300 transition-transform", reasoningOpen && "rotate-180")} />
                 </button>
                 {reasoningOpen && (
                   <div className="px-3 pb-3 space-y-2 border-t border-clay-700/50">
                     <p className="text-xs text-clay-300 mt-2">{reasoning.thought_process}</p>
                     {reasoning.tools_considered && reasoning.tools_considered.length > 0 && (
                       <div className="space-y-1">
-                        <div className="text-[10px] text-clay-400 font-medium">Tools considered:</div>
+                        <div className="text-[10px] text-clay-300 font-medium">Tools considered:</div>
                         {reasoning.tools_considered.map((t, i) => (
                           <div key={i} className="flex items-center gap-2 text-[10px]">
                             <span className={cn(
                               "w-1.5 h-1.5 rounded-full",
                               t.selected ? "bg-emerald-400" : "bg-clay-500"
                             )} />
-                            <span className={t.selected ? "text-clay-100" : "text-clay-400"}>{t.name}</span>
-                            <span className="text-clay-500">—</span>
-                            <span className="text-clay-400">{t.why}</span>
+                            <span className={t.selected ? "text-clay-100" : "text-clay-300"}>{t.name}</span>
+                            <span className="text-clay-300">—</span>
+                            <span className="text-clay-300">{t.why}</span>
                           </div>
                         ))}
                       </div>
@@ -1046,7 +1046,7 @@ function FunctionBuilderPanel({
                       })
                       .map(cat => (
                         <div key={cat.category}>
-                          <div className="text-[9px] text-clay-400 font-medium px-1.5 py-0.5 sticky top-0 bg-clay-900/80">{cat.category}</div>
+                          <div className="text-[9px] text-clay-300 font-medium px-1.5 py-0.5 sticky top-0 bg-clay-900/80">{cat.category}</div>
                           {cat.tools.map(tool => (
                             <button
                               key={tool.id}
@@ -1064,7 +1064,7 @@ function FunctionBuilderPanel({
                                 <span className={cn(
                                   "text-[9px] px-1 rounded shrink-0",
                                   tool.speed === "fast" || tool.speed === "instant" ? "text-emerald-400" :
-                                  tool.speed === "slow" ? "text-amber-400" : "text-clay-400"
+                                  tool.speed === "slow" ? "text-amber-400" : "text-clay-300"
                                 )}>{tool.speed}</span>
                               )}
                             </button>
@@ -1110,7 +1110,7 @@ function FunctionBuilderPanel({
                       {s.tool === "call_ai" && (
                         <div className="border-t border-clay-700 px-3 py-2 space-y-2">
                           <div>
-                            <div className="text-[10px] text-clay-400 mb-1">Prompt</div>
+                            <div className="text-[10px] text-clay-300 mb-1">Prompt</div>
                             <Textarea
                               value={s.params.prompt || ""}
                               onChange={(e) => {
@@ -1125,7 +1125,7 @@ function FunctionBuilderPanel({
                             {/* Variable insert buttons */}
                             {inputs.length > 0 && (
                               <div className="flex flex-wrap items-center gap-1 mt-1.5">
-                                <span className="text-[9px] text-clay-400">Insert:</span>
+                                <span className="text-[9px] text-clay-300">Insert:</span>
                                 {inputs.map((inp) => (
                                   <button
                                     key={inp.name}
@@ -1146,7 +1146,7 @@ function FunctionBuilderPanel({
                                   return td?.outputs && td.outputs.length > 0;
                                 }) && (
                                   <>
-                                    <span className="text-[9px] text-clay-500">|</span>
+                                    <span className="text-[9px] text-clay-300">|</span>
                                     {steps.slice(0, i).flatMap(ps => {
                                       const td = toolCategories.flatMap(c => c.tools).find(t => t.id === ps.tool);
                                       return (td?.outputs || []).map(o => o.key);
@@ -1171,7 +1171,7 @@ function FunctionBuilderPanel({
                           </div>
                           {/* Define outputs for this AI step */}
                           <div>
-                            <div className="text-[10px] text-clay-400 mb-1">Output keys (what should AI return?)</div>
+                            <div className="text-[10px] text-clay-300 mb-1">Output keys (what should AI return?)</div>
                             <Input
                               value={s.params.output_keys || ""}
                               onChange={(e) => {
@@ -1227,7 +1227,7 @@ function FunctionBuilderPanel({
                   </div>
                 ))}
                 {steps.length === 0 && (
-                  <div className="text-center py-3 text-xs text-clay-400">
+                  <div className="text-center py-3 text-xs text-clay-300">
                     Use the quick-add buttons above or &quot;Browse All&quot; to add steps
                   </div>
                 )}

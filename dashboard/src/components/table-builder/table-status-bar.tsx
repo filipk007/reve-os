@@ -82,7 +82,7 @@ export function TableStatusBar({
       <div className="flex items-center gap-4 text-xs">
         {/* Row count */}
         <button
-          className="text-zinc-400 hover:text-white transition-colors"
+          className="text-clay-200 hover:text-white transition-colors"
           onClick={() => onFilterByStatus?.("all")}
         >
           {stats.total} rows
@@ -126,7 +126,7 @@ export function TableStatusBar({
         {/* Filtered */}
         {stats.filtered > 0 && (
           <button
-            className="flex items-center gap-1 text-zinc-500 hover:text-zinc-400 transition-colors"
+            className="flex items-center gap-1 text-clay-300 hover:text-clay-200 transition-colors"
             onClick={() => onFilterByStatus?.("filtered")}
           >
             {stats.filtered} filtered
@@ -138,13 +138,13 @@ export function TableStatusBar({
 
         {/* Execution progress */}
         {executing && (
-          <span className="text-zinc-500 tabular-nums">
+          <span className="text-clay-300 tabular-nums">
             {progressPercent}% complete
           </span>
         )}
 
         {/* Column count */}
-        <span className="text-zinc-600">
+        <span className="text-clay-300">
           {enrichCols.length} enrichment col{enrichCols.length !== 1 ? "s" : ""}
         </span>
       </div>

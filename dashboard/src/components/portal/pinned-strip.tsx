@@ -67,11 +67,11 @@ export function PinnedStrip({ slug, pinnedUpdates, media, onSelectUpdate }: Pinn
                 </div>
               ) : update.media_ids && update.media_ids.length > 0 ? (
                 <div className="h-8 w-8 rounded bg-clay-700 flex items-center justify-center flex-shrink-0">
-                  <Paperclip className="h-3.5 w-3.5 text-clay-400" />
+                  <Paperclip className="h-3.5 w-3.5 text-clay-300" />
                 </div>
               ) : (
                 <div className="h-8 w-8 rounded bg-clay-700 flex items-center justify-center flex-shrink-0">
-                  <MessageSquare className="h-3.5 w-3.5 text-clay-400" />
+                  <MessageSquare className="h-3.5 w-3.5 text-clay-300" />
                 </div>
               )}
 
@@ -80,7 +80,7 @@ export function PinnedStrip({ slug, pinnedUpdates, media, onSelectUpdate }: Pinn
                 <p className="text-xs font-medium text-clay-200 truncate group-hover:text-clay-100">
                   {update.title}
                 </p>
-                <p className="text-[11px] text-clay-400">
+                <p className="text-[11px] text-clay-300">
                   {formatRelativeTime(update.created_at)}
                 </p>
               </div>

@@ -96,7 +96,7 @@ export function CreateProjectDialog({ slug, open, onOpenChange, onCreated }: Cre
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Q2 Outbound Campaign"
-              className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+              className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
               autoFocus
             />
           </div>
@@ -109,7 +109,7 @@ export function CreateProjectDialog({ slug, open, onOpenChange, onCreated }: Cre
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What is this project about?"
               rows={2}
-              className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal resize-none"
+              className="w-full bg-clay-900 border border-clay-600 rounded-md px-3 py-2 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal resize-none"
             />
           </div>
 
@@ -135,7 +135,7 @@ export function CreateProjectDialog({ slug, open, onOpenChange, onCreated }: Cre
           {/* Target Date */}
           <div>
             <label className="text-xs font-medium text-clay-300 mb-1 block">
-              Target Date <span className="text-clay-500">(optional)</span>
+              Target Date <span className="text-clay-300">(optional)</span>
             </label>
             <input
               type="date"
@@ -148,7 +148,7 @@ export function CreateProjectDialog({ slug, open, onOpenChange, onCreated }: Cre
           {/* Phases */}
           <div>
             <label className="text-xs font-medium text-clay-300 mb-1 block">
-              Phases <span className="text-clay-500">(optional)</span>
+              Phases <span className="text-clay-300">(optional)</span>
             </label>
             {phases.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-2">
@@ -157,11 +157,11 @@ export function CreateProjectDialog({ slug, open, onOpenChange, onCreated }: Cre
                     key={i}
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-clay-700 text-xs text-clay-200"
                   >
-                    <span className="text-clay-500 text-[10px]">{i + 1}.</span>
+                    <span className="text-clay-300 text-[10px]">{i + 1}.</span>
                     {ph}
                     <button
                       onClick={() => handleRemovePhase(i)}
-                      className="text-clay-500 hover:text-clay-300"
+                      className="text-clay-300 hover:text-clay-300"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -176,7 +176,7 @@ export function CreateProjectDialog({ slug, open, onOpenChange, onCreated }: Cre
                 onChange={(e) => setNewPhase(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddPhase())}
                 placeholder="e.g. Discovery, Strategy, Execution"
-                className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+                className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
               />
               <Button
                 variant="outline"

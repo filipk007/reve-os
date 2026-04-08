@@ -54,7 +54,7 @@ export function SOPList({ slug, sops, sopAcks = {}, onCreated, onUpdated, onDele
             Standard Operating Procedures ({sops.length})
           </h3>
           {sops.length > 0 && (
-            <p className="text-[10px] text-clay-500 mt-0.5">
+            <p className="text-[10px] text-clay-300 mt-0.5">
               {ackedCount} of {sops.length} acknowledged
             </p>
           )}
@@ -100,7 +100,7 @@ export function SOPList({ slug, sops, sopAcks = {}, onCreated, onUpdated, onDele
       )}
 
       {sops.length === 0 && !creating && (
-        <div className="text-center py-8 text-clay-400">
+        <div className="text-center py-8 text-clay-300">
           <p className="text-sm">No SOPs yet. Create your first one to define expectations.</p>
         </div>
       )}
@@ -126,9 +126,9 @@ export function SOPList({ slug, sops, sopAcks = {}, onCreated, onUpdated, onDele
                   className="w-full flex items-center gap-3 p-3 text-left hover:bg-clay-750 transition-colors"
                 >
                   {expandedId === sop.id ? (
-                    <ChevronDown className="h-4 w-4 text-clay-400 shrink-0" />
+                    <ChevronDown className="h-4 w-4 text-clay-300 shrink-0" />
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-clay-400 shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-clay-300 shrink-0" />
                   )}
                   <span className="flex-1 text-sm font-medium text-clay-100">{sop.title}</span>
                   {ack && (
@@ -179,7 +179,7 @@ export function SOPList({ slug, sops, sopAcks = {}, onCreated, onUpdated, onDele
                         <Trash2 className="h-3 w-3" />
                         Delete
                       </Button>
-                      <span className="ml-auto text-[10px] text-clay-500">
+                      <span className="ml-auto text-[10px] text-clay-300">
                         Updated {new Date(sop.updated_at * 1000).toLocaleDateString()}
                       </span>
                     </div>

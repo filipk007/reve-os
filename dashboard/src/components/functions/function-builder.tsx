@@ -582,11 +582,11 @@ export function FunctionBuilder({
         <CardContent>
           {steps.length === 0 ? (
             <div className="text-center py-6 space-y-2">
-              <Wrench className="h-6 w-6 text-clay-500 mx-auto" />
+              <Wrench className="h-6 w-6 text-clay-300 mx-auto" />
               <div className="text-xs text-clay-300">
                 Steps are the tools that process your data.
               </div>
-              <div className="text-[10px] text-clay-400">
+              <div className="text-[10px] text-clay-300">
                 Add AI analysis, web search, gates to filter rows, or reference other functions.
               </div>
               {editing && (
@@ -840,7 +840,7 @@ export function FunctionBuilder({
                     {/* Output badges */}
                     {toolDef?.outputs && toolDef.outputs.length > 0 && (
                       <div className="px-3 pb-1.5 flex items-center gap-1">
-                        <span className="text-[9px] text-clay-400">produces:</span>
+                        <span className="text-[9px] text-clay-300">produces:</span>
                         {toolDef.outputs.map((o) => (
                           <Badge key={o.key} variant="outline" className="text-[9px] px-1 py-0 h-3.5 text-kiln-teal/70 border-kiln-teal/20">
                             {o.key}
@@ -946,7 +946,7 @@ function SortableStepItem({
           ? <Globe className="h-3 w-3 text-purple-400" />
           : toolDef?.has_native_api
             ? <Zap className="h-3 w-3 text-emerald-400" />
-            : <Wrench className="h-3 w-3 text-clay-400" />;
+            : <Wrench className="h-3 w-3 text-clay-300" />;
 
   // Filter tools for search
   const filteredCategories = toolCategories
@@ -1002,7 +1002,7 @@ function SortableStepItem({
           <PopoverContent className="w-72 p-0 bg-clay-900 border-clay-600" align="start">
             <div className="p-2 border-b border-clay-700">
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-clay-400" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-clay-300" />
                 <Input
                   value={toolSearch}
                   onChange={(e) => setToolSearch(e.target.value)}
@@ -1015,7 +1015,7 @@ function SortableStepItem({
             <div className="max-h-60 overflow-auto p-1">
               {filteredCategories.map(cat => (
                 <div key={cat.category} className="mb-1">
-                  <div className="text-[10px] text-clay-400 font-medium px-2 py-1 sticky top-0 bg-clay-900">{cat.category}</div>
+                  <div className="text-[10px] text-clay-300 font-medium px-2 py-1 sticky top-0 bg-clay-900">{cat.category}</div>
                   {cat.tools.map(tool => (
                     <button
                       key={tool.id}
@@ -1038,7 +1038,7 @@ function SortableStepItem({
                         <span className={cn(
                           "text-[9px] px-1 rounded",
                           tool.speed === "fast" || tool.speed === "instant" ? "text-emerald-400" :
-                          tool.speed === "slow" ? "text-amber-400" : "text-clay-400"
+                          tool.speed === "slow" ? "text-amber-400" : "text-clay-300"
                         )}>
                           {tool.speed}
                         </span>
@@ -1048,7 +1048,7 @@ function SortableStepItem({
                 </div>
               ))}
               {filteredCategories.length === 0 && (
-                <div className="text-xs text-clay-400 text-center py-3">No tools found</div>
+                <div className="text-xs text-clay-300 text-center py-3">No tools found</div>
               )}
             </div>
           </PopoverContent>
@@ -1056,7 +1056,7 @@ function SortableStepItem({
 
         {/* Category badge */}
         {toolDef?.category && (
-          <span className="text-[9px] text-clay-400 hidden sm:inline">{toolDef.category}</span>
+          <span className="text-[9px] text-clay-300 hidden sm:inline">{toolDef.category}</span>
         )}
 
         <div className="flex-1" />
@@ -1065,7 +1065,7 @@ function SortableStepItem({
           variant="ghost"
           size="sm"
           onClick={() => removeStep(i)}
-          className="h-6 w-6 p-0 text-clay-400 hover:text-red-400"
+          className="h-6 w-6 p-0 text-clay-300 hover:text-red-400"
         >
           <Trash2 className="h-3 w-3" />
         </Button>
@@ -1101,7 +1101,7 @@ function SortableStepItem({
           <div className="text-[10px] text-indigo-300/70">{toolDef.description}</div>
           {toolDef.outputs && toolDef.outputs.length > 0 && (
             <div className="flex items-center gap-1 mt-1">
-              <span className="text-[9px] text-clay-400">outputs:</span>
+              <span className="text-[9px] text-clay-300">outputs:</span>
               {toolDef.outputs.map(o => (
                 <Badge key={o.key} variant="outline" className="text-[9px] px-1 py-0 h-3.5 text-indigo-400/70 border-indigo-500/20">
                   {o.key}
@@ -1151,7 +1151,7 @@ function SortableStepItem({
                 variant="ghost"
                 size="sm"
                 onClick={() => removeStepParam(i, key)}
-                className="h-6 w-6 p-0 text-clay-400 hover:text-red-400 shrink-0"
+                className="h-6 w-6 p-0 text-clay-300 hover:text-red-400 shrink-0"
               >
                 <Trash2 className="h-3 w-3" />
               </Button>
@@ -1165,7 +1165,7 @@ function SortableStepItem({
             </Button>
             {inputs.length > 0 && (
               <>
-                <span className="text-[9px] text-clay-400">|</span>
+                <span className="text-[9px] text-clay-300">|</span>
                 {inputs.map((inp) => (
                   <button
                     key={inp.name}
@@ -1193,7 +1193,7 @@ function SortableStepItem({
             )}
             {priorStepOutputs.length > 0 && (
               <>
-                <span className="text-[9px] text-clay-400">|</span>
+                <span className="text-[9px] text-clay-300">|</span>
                 {priorStepOutputs.flatMap((ps) =>
                   ps.outputKeys.map((outKey) => (
                     <button

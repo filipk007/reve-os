@@ -46,7 +46,7 @@ export function TableFormulaBar({
   if (!selectedCell) {
     return (
       <div className="h-8 shrink-0 flex items-center px-4 border-b border-zinc-800 bg-zinc-900/50">
-        <span className="text-xs text-zinc-600">Select a cell to see details</span>
+        <span className="text-xs text-clay-300">Select a cell to see details</span>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export function TableFormulaBar({
   if (!col || !row) {
     return (
       <div className="h-8 shrink-0 flex items-center px-4 border-b border-zinc-800 bg-zinc-900/50">
-        <span className="text-xs text-zinc-600">—</span>
+        <span className="text-xs text-clay-300">—</span>
       </div>
     );
   }
@@ -80,12 +80,12 @@ export function TableFormulaBar({
   return (
     <div className="h-8 shrink-0 flex items-center gap-3 px-4 border-b border-zinc-800 bg-zinc-900/50">
       {/* Cell reference */}
-      <span className="text-[10px] font-mono bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded shrink-0">
+      <span className="text-[10px] font-mono bg-zinc-800 text-clay-200 px-1.5 py-0.5 rounded shrink-0">
         {col.name}:{rowIdx + 1}
       </span>
 
       {/* Column type icon */}
-      <Icon className="w-3 h-3 text-zinc-500 shrink-0" />
+      <Icon className="w-3 h-3 text-clay-300 shrink-0" />
 
       {/* Formula or value */}
       {col.column_type === "input" || col.column_type === "static" ? (
@@ -93,7 +93,7 @@ export function TableFormulaBar({
       ) : (
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {description && (
-            <span className="text-xs text-zinc-500 font-mono truncate">
+            <span className="text-xs text-clay-300 font-mono truncate">
               {description}
             </span>
           )}

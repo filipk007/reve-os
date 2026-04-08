@@ -105,7 +105,7 @@ export function ColumnStatsPopover({
           {/* Fill rate */}
           <div>
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-zinc-400">Fill rate</span>
+              <span className="text-clay-200">Fill rate</span>
               <span className="text-zinc-300">
                 {Math.round(stats.fillRate * 100)}% ({stats.filledCount}/
                 {stats.totalRows})
@@ -121,7 +121,7 @@ export function ColumnStatsPopover({
 
           {/* Unique values */}
           <div className="flex justify-between text-xs">
-            <span className="text-zinc-400">Unique values</span>
+            <span className="text-clay-200">Unique values</span>
             <span className="text-zinc-300">{stats.uniqueCount}</span>
           </div>
 
@@ -129,17 +129,17 @@ export function ColumnStatsPopover({
           {stats.min !== undefined && (
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
-                <div className="text-zinc-500">Min</div>
+                <div className="text-clay-300">Min</div>
                 <div className="text-zinc-300">{stats.min}</div>
               </div>
               <div>
-                <div className="text-zinc-500">Avg</div>
+                <div className="text-clay-300">Avg</div>
                 <div className="text-zinc-300">
                   {stats.avg?.toFixed(1)}
                 </div>
               </div>
               <div>
-                <div className="text-zinc-500">Max</div>
+                <div className="text-clay-300">Max</div>
                 <div className="text-zinc-300">{stats.max}</div>
               </div>
             </div>
@@ -162,7 +162,7 @@ export function ColumnStatsPopover({
           {/* Top values */}
           {stats.topValues.length > 0 && (
             <div>
-              <div className="text-xs text-zinc-500 mb-1">Top values</div>
+              <div className="text-xs text-clay-300 mb-1">Top values</div>
               <div className="space-y-1">
                 {stats.topValues.map((tv, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
@@ -176,7 +176,7 @@ export function ColumnStatsPopover({
                           width: `${(tv.count / stats.totalRows) * 60}px`,
                         }}
                       />
-                      <span className="text-zinc-500 tabular-nums w-5 text-right">
+                      <span className="text-clay-300 tabular-nums w-5 text-right">
                         {tv.count}
                       </span>
                     </div>

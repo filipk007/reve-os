@@ -105,7 +105,7 @@ export function CommentThread({ slug, updateId, initialCount = 0 }: CommentThrea
       {open && (
         <div className="mt-3 space-y-3 border-t border-clay-700 pt-3">
           {loading ? (
-            <div className="flex items-center gap-2 text-xs text-clay-400">
+            <div className="flex items-center gap-2 text-xs text-clay-300">
               <Loader2 className="h-3 w-3 animate-spin" />
               Loading comments...
             </div>
@@ -119,12 +119,12 @@ export function CommentThread({ slug, updateId, initialCount = 0 }: CommentThrea
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-clay-200">{comment.author}</span>
-                      <span className="text-[11px] text-clay-400">
+                      <span className="text-[11px] text-clay-300">
                         {new Date(comment.created_at * 1000).toLocaleString()}
                       </span>
                       <button
                         onClick={() => handleDelete(comment.id)}
-                        className="opacity-0 group-hover:opacity-100 text-clay-500 hover:text-red-400 transition-all ml-auto"
+                        className="opacity-0 group-hover:opacity-100 text-clay-300 hover:text-red-400 transition-all ml-auto"
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -137,14 +137,14 @@ export function CommentThread({ slug, updateId, initialCount = 0 }: CommentThrea
               {/* Author banner or picker */}
               <div className="space-y-2">
                 {author && !changingAuthor ? (
-                  <div className="flex items-center gap-2 text-[11px] text-clay-400">
+                  <div className="flex items-center gap-2 text-[11px] text-clay-300">
                     <div className="h-4 w-4 rounded-full bg-clay-600 flex items-center justify-center text-[9px] font-medium text-clay-300 shrink-0">
                       {author.charAt(0).toUpperCase()}
                     </div>
                     <span>Commenting as <strong className="text-clay-200">{author}</strong></span>
                     <button
                       onClick={() => setChangingAuthor(true)}
-                      className="text-clay-500 hover:text-clay-300 transition-colors"
+                      className="text-clay-300 hover:text-clay-300 transition-colors"
                     >
                       <Pencil className="h-2.5 w-2.5" />
                     </button>
@@ -163,7 +163,7 @@ export function CommentThread({ slug, updateId, initialCount = 0 }: CommentThrea
                     {changingAuthor && (
                       <button
                         onClick={() => setChangingAuthor(false)}
-                        className="text-[10px] text-clay-500 hover:text-clay-300"
+                        className="text-[10px] text-clay-300 hover:text-clay-300"
                       >
                         cancel
                       </button>
@@ -180,7 +180,7 @@ export function CommentThread({ slug, updateId, initialCount = 0 }: CommentThrea
                       onChange={(e) => { setBody(e.target.value); autoGrow(); }}
                       placeholder={author ? `Comment as ${author}...` : "Select a name first..."}
                       rows={1}
-                      className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-2.5 py-1.5 text-xs text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-clay-400 resize-none"
+                      className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-2.5 py-1.5 text-xs text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-clay-400 resize-none"
                       style={{ minHeight: "32px", maxHeight: "96px" }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
@@ -202,7 +202,7 @@ export function CommentThread({ slug, updateId, initialCount = 0 }: CommentThrea
                       )}
                     </Button>
                   </div>
-                  <p className="text-[10px] text-clay-500 pl-0.5">
+                  <p className="text-[10px] text-clay-300 pl-0.5">
                     Enter to send · Shift+Enter for new line
                   </p>
                 </div>

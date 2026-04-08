@@ -75,7 +75,7 @@ export function ReviewToolbar({
               "flex items-center gap-1 px-2.5 py-1.5 text-xs transition-colors",
               viewMode === "cards"
                 ? "bg-clay-700 text-clay-100"
-                : "text-clay-400 hover:text-clay-200 hover:bg-clay-700/50"
+                : "text-clay-300 hover:text-clay-200 hover:bg-clay-700/50"
             )}
             title="Card view"
           >
@@ -88,7 +88,7 @@ export function ReviewToolbar({
               "flex items-center gap-1 px-2.5 py-1.5 text-xs transition-colors",
               viewMode === "table"
                 ? "bg-clay-700 text-clay-100"
-                : "text-clay-400 hover:text-clay-200 hover:bg-clay-700/50"
+                : "text-clay-300 hover:text-clay-200 hover:bg-clay-700/50"
             )}
             title="Table view"
           >
@@ -165,7 +165,7 @@ export function ReviewToolbar({
               {destinations.length > 0 && (
                 <>
                   <DropdownMenuSeparator />
-                  <div className="px-2 py-1 text-[10px] font-medium text-clay-400 uppercase tracking-wider">
+                  <div className="px-2 py-1 text-[10px] font-medium text-clay-300 uppercase tracking-wider">
                     Push to Destination
                   </div>
                   {destinations.map((d) => (
@@ -184,7 +184,7 @@ export function ReviewToolbar({
               {destinations.length === 0 && (
                 <>
                   <DropdownMenuSeparator />
-                  <div className="px-2 py-1.5 text-xs text-clay-400">
+                  <div className="px-2 py-1.5 text-xs text-clay-300">
                     No destinations configured.
                     <br />
                     Add one in Settings.

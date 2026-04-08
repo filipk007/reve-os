@@ -181,7 +181,7 @@ export function ChatInput({
           </span>
           <button
             onClick={() => setCsvFile(null)}
-            className="text-clay-400 hover:text-clay-100 transition-colors"
+            className="text-clay-300 hover:text-clay-100 transition-colors"
           >
             <X className="h-3 w-3" />
           </button>
@@ -209,7 +209,7 @@ export function ChatInput({
               size="icon"
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled}
-              className="text-clay-400 hover:text-kiln-teal hover:bg-kiln-teal/10 shrink-0"
+              className="text-clay-300 hover:text-kiln-teal hover:bg-kiln-teal/10 shrink-0"
               title="Upload CSV"
             >
               <Paperclip className="h-5 w-5" />
@@ -237,7 +237,7 @@ export function ChatInput({
               : "Ask anything..."
           }
           rows={1}
-          className="bg-clay-900/80 border border-clay-600/80 rounded-xl px-4 py-3 text-sm text-clay-100 placeholder:text-clay-400 resize-none min-h-[44px] max-h-[160px] w-full focus:outline-none focus:border-kiln-teal disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-clay-900/80 border border-clay-600/80 rounded-xl px-4 py-3 text-sm text-clay-100 placeholder:text-clay-300 resize-none min-h-[44px] max-h-[160px] w-full focus:outline-none focus:border-kiln-teal disabled:opacity-50 disabled:cursor-not-allowed"
         />
 
         {/* Voice button */}
@@ -250,7 +250,7 @@ export function ChatInput({
             className={
               listening
                 ? "text-red-400 hover:text-red-300 hover:bg-red-400/10 shrink-0"
-                : "text-clay-400 hover:text-clay-100 hover:bg-clay-700 shrink-0"
+                : "text-clay-300 hover:text-clay-100 hover:bg-clay-700 shrink-0"
             }
             title={listening ? "Stop listening" : "Voice input"}
           >
@@ -266,7 +266,7 @@ export function ChatInput({
           className={
             canSend
               ? "text-kiln-teal hover:text-kiln-teal hover:bg-kiln-teal/10 shrink-0"
-              : "text-clay-400 cursor-not-allowed shrink-0"
+              : "text-clay-300 cursor-not-allowed shrink-0"
           }
         >
           <Send className="h-5 w-5" />

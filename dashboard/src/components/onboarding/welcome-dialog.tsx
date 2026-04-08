@@ -125,7 +125,7 @@ export function WelcomeDialog() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleSkip}
-                  className="text-xs text-clay-400 hover:text-clay-200 transition-colors"
+                  className="text-xs text-clay-300 hover:text-clay-200 transition-colors"
                 >
                   Skip for now
                 </button>
@@ -203,7 +203,7 @@ export function WelcomeDialog() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => setStep(0)}
-                  className="text-xs text-clay-400 hover:text-clay-200 transition-colors"
+                  className="text-xs text-clay-300 hover:text-clay-200 transition-colors"
                 >
                   Back
                 </button>

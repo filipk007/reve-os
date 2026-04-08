@@ -41,7 +41,7 @@ function LoginForm() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-clay-100">Clay Webhook OS</h1>
-          <p className="text-sm text-clay-400 mt-1">
+          <p className="text-sm text-clay-300 mt-1">
             Sign in to continue
           </p>
         </div>
@@ -87,7 +87,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-clay-950 flex items-center justify-center">
-          <p className="text-clay-400">Loading...</p>
+          <p className="text-clay-300">Loading...</p>
         </div>
       }
     >

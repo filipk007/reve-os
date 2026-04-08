@@ -47,7 +47,7 @@ export function ProjectSidebar({
         >
           <FolderOpen className="h-4 w-4 flex-shrink-0" />
           <span className="font-medium">Open in Google Drive</span>
-          <ExternalLink className="h-3 w-3 ml-auto text-clay-500" />
+          <ExternalLink className="h-3 w-3 ml-auto text-clay-300" />
         </a>
       )}
 
@@ -57,31 +57,31 @@ export function ProjectSidebar({
           <h3 className="text-xs font-medium text-clay-100 uppercase tracking-wider mb-3">Stats</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-3.5 w-3.5 text-clay-400" />
+              <MessageSquare className="h-3.5 w-3.5 text-clay-300" />
               <div>
                 <p className="text-lg font-semibold text-clay-100">{stats.update_count}</p>
-                <p className="text-[11px] text-clay-400">Posts</p>
+                <p className="text-[11px] text-clay-300">Posts</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Paperclip className="h-3.5 w-3.5 text-clay-400" />
+              <Paperclip className="h-3.5 w-3.5 text-clay-300" />
               <div>
                 <p className="text-lg font-semibold text-clay-100">{stats.media_count}</p>
-                <p className="text-[11px] text-clay-400">Files</p>
+                <p className="text-[11px] text-clay-300">Files</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-3.5 w-3.5 text-clay-400" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-clay-300" />
               <div>
                 <p className="text-lg font-semibold text-clay-100">{stats.action_count}</p>
-                <p className="text-[11px] text-clay-400">Actions</p>
+                <p className="text-[11px] text-clay-300">Actions</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-3.5 w-3.5 text-clay-400" />
+              <AlertCircle className="h-3.5 w-3.5 text-clay-300" />
               <div>
                 <p className="text-lg font-semibold text-clay-100">{stats.open_actions}</p>
-                <p className="text-[11px] text-clay-400">Open</p>
+                <p className="text-[11px] text-clay-300">Open</p>
               </div>
             </div>
           </div>
@@ -90,7 +90,7 @@ export function ProjectSidebar({
           {project.phases.length > 0 && (
             <div className="mt-3 pt-3 border-t border-clay-700">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] text-clay-400">Completion</span>
+                <span className="text-[11px] text-clay-300">Completion</span>
                 <span className="text-[11px] text-clay-200 font-medium">
                   {Math.round(stats.completion_pct * 100)}%
                 </span>

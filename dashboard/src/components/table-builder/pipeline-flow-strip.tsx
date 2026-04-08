@@ -78,7 +78,7 @@ interface FlowNodeProps {
 
 function FlowNode({ column, status, progress, onClick }: FlowNodeProps) {
   const Icon = TYPE_ICONS[column.column_type] || Search;
-  const iconColor = TYPE_ICON_COLORS[column.column_type] || "text-zinc-400";
+  const iconColor = TYPE_ICON_COLORS[column.column_type] || "text-clay-200";
   const typeColor = TYPE_COLORS[column.column_type] || "border-l-zinc-600";
 
   return (
@@ -106,7 +106,7 @@ function FlowNode({ column, status, progress, onClick }: FlowNodeProps) {
         <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
       )}
       {status === "skipped" && (
-        <SkipForward className="w-3 h-3 text-zinc-500 shrink-0" />
+        <SkipForward className="w-3 h-3 text-clay-300 shrink-0" />
       )}
       {(status === "idle" || status === "pending") && (
         <Icon className={`w-3 h-3 shrink-0 ${iconColor}`} />
@@ -251,7 +251,7 @@ export function PipelineFlowStrip({
         {/* Header */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center gap-1.5 px-4 py-1 text-xs text-zinc-500 hover:text-zinc-400 transition-colors"
+          className="w-full flex items-center gap-1.5 px-4 py-1 text-xs text-clay-300 hover:text-clay-200 transition-colors"
         >
           {collapsed ? (
             <ChevronRight className="w-3 h-3" />
@@ -259,7 +259,7 @@ export function PipelineFlowStrip({
             <ChevronDown className="w-3 h-3" />
           )}
           <span>Execution Flow</span>
-          <span className="text-zinc-600">
+          <span className="text-clay-300">
             {waves.length} {waves.length === 1 ? "step" : "steps"}
           </span>
         </button>

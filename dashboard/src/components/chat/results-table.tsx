@@ -38,7 +38,7 @@ export function ResultsTable({
       <div className="flex items-center justify-between px-4 py-2 border-b border-clay-700">
         <div className="flex items-center">
           <span className="text-xs font-semibold text-clay-300">Results</span>
-          <span className="ml-2 text-xs text-clay-400 font-mono">
+          <span className="ml-2 text-xs text-clay-300 font-mono">
             ({doneCount}/{rowStatuses.length})
           </span>
         </div>
@@ -93,7 +93,7 @@ export function ResultsTable({
                             key={col.key}
                             className={`px-3 py-2 font-mono max-w-[200px] truncate ${
                               value === null || value === undefined
-                                ? "text-clay-500"
+                                ? "text-clay-300"
                                 : "text-clay-100"
                             }`}
                             title={display !== "--" ? display : undefined}
@@ -137,7 +137,7 @@ export function ResultsTable({
                     <tr key={row.index} className="border-b border-clay-800">
                       <td
                         colSpan={resolvedColumns.length}
-                        className="px-3 py-2 text-clay-400"
+                        className="px-3 py-2 text-clay-300"
                       >
                         <div className="flex items-center gap-1.5">
                           <Loader2 className="h-3 w-3 animate-spin text-kiln-teal flex-shrink-0" />
@@ -156,7 +156,7 @@ export function ResultsTable({
                   >
                     <td
                       colSpan={resolvedColumns.length}
-                      className="px-3 py-2 text-clay-500"
+                      className="px-3 py-2 text-clay-300"
                     >
                       Row {row.index + 1}
                     </td>
@@ -168,7 +168,7 @@ export function ResultsTable({
         ) : (
           // No columns yet -- show a waiting state
           !streaming ? null : (
-            <div className="flex items-center justify-center py-8 text-xs text-clay-400">
+            <div className="flex items-center justify-center py-8 text-xs text-clay-300">
               <Loader2 className="h-4 w-4 animate-spin text-kiln-teal mr-2" />
               Waiting for first result...
             </div>

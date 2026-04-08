@@ -76,15 +76,15 @@ export function MediaUpload({ slug, projectId, onUploaded }: MediaUploadProps) {
               variant="ghost"
               size="icon"
               onClick={() => setSelectedFile(null)}
-              className="h-6 w-6 text-clay-400 hover:text-clay-200"
+              className="h-6 w-6 text-clay-300 hover:text-clay-200"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
         ) : (
           <>
-            <Upload className="h-8 w-8 text-clay-500 mx-auto mb-2" />
-            <p className="text-sm text-clay-400 mb-2">
+            <Upload className="h-8 w-8 text-clay-300 mx-auto mb-2" />
+            <p className="text-sm text-clay-300 mb-2">
               Drag & drop a file here, or{" "}
               <label className="text-kiln-teal cursor-pointer hover:underline">
                 browse
@@ -98,7 +98,7 @@ export function MediaUpload({ slug, projectId, onUploaded }: MediaUploadProps) {
                 />
               </label>
             </p>
-            <p className="text-[10px] text-clay-500">Images, videos, PDFs, docs — up to 50MB</p>
+            <p className="text-[10px] text-clay-300">Images, videos, PDFs, docs — up to 50MB</p>
           </>
         )}
       </div>
@@ -110,7 +110,7 @@ export function MediaUpload({ slug, projectId, onUploaded }: MediaUploadProps) {
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Add a caption (optional)"
-            className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+            className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
           />
           <Button
             size="sm"

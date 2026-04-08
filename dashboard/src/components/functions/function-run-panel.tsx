@@ -403,7 +403,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
           <div className="space-y-2.5">
             {inputs.map((inp) => (
               <div key={inp.name}>
-                <label className="text-xs text-clay-400 mb-1 block">
+                <label className="text-xs text-clay-300 mb-1 block">
                   {inp.name}{" "}
                   <span className="text-clay-600">({inp.type})</span>
                   {inp.required && <span className="text-red-400 ml-0.5">*</span>}
@@ -444,7 +444,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
             disabled={copyingPrompt}
             variant="outline"
             size="sm"
-            className="border-clay-700 text-clay-400 hover:text-clay-100"
+            className="border-clay-700 text-clay-300 hover:text-clay-100"
             title="Copy assembled prompt to clipboard — paste into Claude Code"
           >
             <Clipboard className="h-3.5 w-3.5 mr-1.5" />
@@ -473,7 +473,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                 {localWaiting ? "Executing locally..." : "Execution complete"}
               </span>
               {localWaiting && elapsed > 0 && (
-                <span className="text-[10px] text-clay-500 font-mono">{elapsed}s</span>
+                <span className="text-[10px] text-clay-300 font-mono">{elapsed}s</span>
               )}
               <div className="ml-auto">
                 {localWaiting ? (
@@ -481,7 +481,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                     onClick={() => { setLocalJobId(null); setLocalWaiting(false); }}
                     variant="ghost"
                     size="sm"
-                    className="text-clay-500 h-6 text-[10px] px-2"
+                    className="text-clay-300 h-6 text-[10px] px-2"
                   >
                     Cancel
                   </Button>
@@ -490,7 +490,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                     onClick={() => setExecutionLogs([])}
                     variant="ghost"
                     size="sm"
-                    className="text-clay-500 h-6 text-[10px] px-2"
+                    className="text-clay-300 h-6 text-[10px] px-2"
                   >
                     Clear
                   </Button>
@@ -512,9 +512,9 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                   </span>
                   <span className={cn(
                     "break-all",
-                    log.type === "init" && "text-clay-500",
+                    log.type === "init" && "text-clay-300",
                     log.type === "tool_use" && "text-cyan-400",
-                    log.type === "tool_result" && "text-clay-400",
+                    log.type === "tool_result" && "text-clay-300",
                     log.type === "text" && "text-clay-300",
                     log.type === "result" && "text-green-400",
                     log.type === "error" && "text-red-400",
@@ -534,7 +534,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
         {/* Batch CSV section */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-clay-500 font-medium uppercase tracking-wide">Batch</span>
+            <span className="text-xs text-clay-300 font-medium uppercase tracking-wide">Batch</span>
             <div className="flex-1 h-px bg-clay-800" />
           </div>
 
@@ -552,8 +552,8 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                 className="hidden"
                 onChange={(e) => { const file = e.target.files?.[0]; if (file) handleCsvUpload(file); }}
               />
-              <Upload className="h-5 w-5 text-clay-500 mx-auto mb-1" />
-              <div className="text-xs text-clay-400">Drop CSV or click to upload</div>
+              <Upload className="h-5 w-5 text-clay-300 mx-auto mb-1" />
+              <div className="text-xs text-clay-300">Drop CSV or click to upload</div>
             </div>
           ) : (
             <div className="space-y-2">
@@ -561,13 +561,13 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                 <FileSpreadsheet className="h-4 w-4 text-kiln-teal shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs text-clay-200 truncate">{csvFileName}</div>
-                  <div className="text-[10px] text-clay-500">{csvRows.length} rows</div>
+                  <div className="text-[10px] text-clay-300">{csvRows.length} rows</div>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => { setCsvRows(null); setCsvFileName(""); setBatchResults([]); }}
-                  className="h-6 w-6 p-0 text-clay-500 hover:text-clay-300"
+                  className="h-6 w-6 p-0 text-clay-300 hover:text-clay-300"
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -579,7 +579,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                   <thead>
                     <tr className="border-b border-clay-800 bg-clay-900">
                       {Object.keys(csvRows[0]).slice(0, 5).map((h) => (
-                        <th key={h} className="text-left text-clay-500 px-2 py-1 font-medium">{h}</th>
+                        <th key={h} className="text-left text-clay-300 px-2 py-1 font-medium">{h}</th>
                       ))}
                       {Object.keys(csvRows[0]).length > 5 && (
                         <th className="text-clay-600 px-2 py-1">+{Object.keys(csvRows[0]).length - 5}</th>
@@ -617,7 +617,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                     onClick={handleBatchDownload}
                     variant="outline"
                     size="sm"
-                    className="border-clay-700 text-clay-400 hover:text-clay-100"
+                    className="border-clay-700 text-clay-300 hover:text-clay-100"
                   >
                     Download CSV
                   </Button>
@@ -633,7 +633,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                       style={{ width: `${(batchProgress.done / Math.max(batchProgress.total, 1)) * 100}%` }}
                     />
                   </div>
-                  <div className="text-[10px] text-clay-500">
+                  <div className="text-[10px] text-clay-300">
                     {batchProgress.done}/{batchProgress.total} complete
                     {batchProgress.errors > 0 && (
                       <span className="text-red-400 ml-2">{batchProgress.errors} errors</span>
@@ -664,7 +664,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
         {/* Streaming progress */}
         {isStreaming && (
           <div className="space-y-1.5">
-            <div className="text-xs text-clay-500 font-medium uppercase tracking-wide flex items-center gap-2">
+            <div className="text-xs text-clay-300 font-medium uppercase tracking-wide flex items-center gap-2">
               <Loader2 className="h-3 w-3 animate-spin text-kiln-teal" />
               Executing ({streamingTrace.length} step{streamingTrace.length !== 1 ? "s" : ""} complete)
             </div>
@@ -699,19 +699,19 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                 {hasError ? "Error" : "Success"}
               </Badge>
               {fieldCount > 0 && (
-                <Badge variant="outline" className="text-[10px] border-clay-600 text-clay-400">
+                <Badge variant="outline" className="text-[10px] border-clay-600 text-clay-300">
                   <Zap className="h-3 w-3 mr-1" />
                   {fieldCount} field{fieldCount !== 1 ? "s" : ""}
                   {nullCount > 0 && ` (${nullCount} null)`}
                 </Badge>
               )}
               {totalDurationMs > 0 && (
-                <Badge variant="outline" className="text-[10px] border-clay-600 text-clay-400">
+                <Badge variant="outline" className="text-[10px] border-clay-600 text-clay-300">
                   <Clock className="h-3 w-3 mr-1" />
                   {(totalDurationMs / 1000).toFixed(1)}s
                 </Badge>
               )}
-              <button onClick={handleCopyResult} className="ml-auto text-clay-500 hover:text-clay-300">
+              <button onClick={handleCopyResult} className="ml-auto text-clay-300 hover:text-clay-300">
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
             </div>
@@ -792,7 +792,7 @@ export function FunctionRunPanel({ func, inputs }: FunctionRunPanelProps) {
                             )}>
                               {isGate ? `Gate: ${stage.name}` : stage.name}
                             </span>
-                            <span className="text-clay-400">
+                            <span className="text-clay-300">
                               {stage.rows_in} → {stage.rows_out}
                               {isGate && ` (${(stage.pass_rate * 100).toFixed(0)}%)`}
                               {!isGate && stage.duration_ms > 0 && ` · ${(stage.duration_ms / 1000).toFixed(1)}s`}

@@ -187,7 +187,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
             className={`text-sm px-3.5 py-1.5 transition-colors ${
               authorOrg === "internal"
                 ? "bg-kiln-teal/15 text-kiln-teal"
-                : "bg-clay-800 text-clay-400 hover:text-clay-200"
+                : "bg-clay-800 text-clay-300 hover:text-clay-200"
             }`}
           >
             {internalLabel}
@@ -197,7 +197,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
             className={`text-sm px-3.5 py-1.5 border-l border-clay-600 transition-colors ${
               authorOrg === "client"
                 ? "bg-purple-500/15 text-purple-400"
-                : "bg-clay-800 text-clay-400 hover:text-clay-200"
+                : "bg-clay-800 text-clay-300 hover:text-clay-200"
             }`}
           >
             {clientLabel}
@@ -243,7 +243,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
                     className="w-full text-left px-3 py-2 text-xs text-clay-200 hover:bg-clay-700 transition-colors"
                   >
                     <span className="font-medium">{t.title}</span>
-                    <span className="block text-[10px] text-clay-500 mt-0.5">{t.type}</span>
+                    <span className="block text-[10px] text-clay-300 mt-0.5">{t.type}</span>
                   </button>
                 ))}
               </div>
@@ -255,7 +255,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
       {/* Project selector (shown when projects available and not pre-locked to a project) */}
       {projects && projects.length > 0 && !initialProjectId && (
         <div className="flex items-center gap-2">
-          <span className="text-xs text-clay-500">Project:</span>
+          <span className="text-xs text-clay-300">Project:</span>
           <select
             value={selectedProjectId || ""}
             onChange={(e) => setSelectedProjectId(e.target.value || undefined)}
@@ -276,7 +276,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title your update..."
-        className="w-full bg-clay-900/80 border border-clay-600/80 rounded-lg px-3.5 py-3 text-lg font-semibold text-clay-100 placeholder:text-clay-400/60 focus:outline-none focus:border-kiln-teal"
+        className="w-full bg-clay-900/80 border border-clay-600/80 rounded-lg px-3.5 py-3 text-lg font-semibold text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
       />
 
       {/* Markdown toolbar + preview toggle */}
@@ -306,7 +306,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
                   setTimeout(() => { ta.focus(); ta.setSelectionRange(start + insert.length, start + insert.length); }, 0);
                 }
               }}
-              className="h-7 w-7 rounded flex items-center justify-center text-clay-400 hover:text-clay-200 hover:bg-clay-700 transition-colors"
+              className="h-7 w-7 rounded flex items-center justify-center text-clay-300 hover:text-clay-200 hover:bg-clay-700 transition-colors"
               title={btnTitle}
             >
               <Icon className="h-3.5 w-3.5" />
@@ -315,7 +315,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
         </div>
         <button
           onClick={() => setShowPreview(!showPreview)}
-          className="flex items-center gap-1 text-[11px] text-clay-400 hover:text-clay-200 transition-colors"
+          className="flex items-center gap-1 text-[11px] text-clay-300 hover:text-clay-200 transition-colors"
         >
           {showPreview ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
           {showPreview ? "Edit" : "Preview"}
@@ -329,7 +329,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
             {body ? (
               <MarkdownContent content={body} />
             ) : (
-              <p className="text-sm text-clay-500">Nothing to preview</p>
+              <p className="text-sm text-clay-300">Nothing to preview</p>
             )}
           </div>
         ) : (
@@ -339,11 +339,11 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
             onChange={(e) => setBody(e.target.value)}
             placeholder="Add details (supports **markdown**)..."
             rows={3}
-            className="w-full bg-clay-900/80 border border-clay-600/80 rounded-lg px-3.5 py-2.5 text-sm text-clay-100 placeholder:text-clay-400 focus:outline-none focus:border-kiln-teal resize-y"
+            className="w-full bg-clay-900/80 border border-clay-600/80 rounded-lg px-3.5 py-2.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal resize-y"
           />
         )}
         {body && !showPreview && (
-          <span className="absolute bottom-2 right-3 text-[10px] text-clay-500">
+          <span className="absolute bottom-2 right-3 text-[10px] text-clay-300">
             {body.trim().split(/\s+/).filter(Boolean).length} words
           </span>
         )}
@@ -368,7 +368,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
                     className="h-10 w-10 rounded object-cover"
                   />
                 ) : (
-                  <FileIcon className="h-4 w-4 text-clay-500 shrink-0" />
+                  <FileIcon className="h-4 w-4 text-clay-300 shrink-0" />
                 )}
                 <span className="text-xs text-clay-300 max-w-[120px] truncate">
                   {m.original_name}
@@ -383,7 +383,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
             );
           })}
           {uploading && (
-            <div className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-clay-400">
+            <div className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-clay-300">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Uploading...
             </div>

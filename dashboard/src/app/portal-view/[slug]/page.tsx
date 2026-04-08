@@ -161,7 +161,7 @@ export default function PublicPortalPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-clay-900 flex items-center justify-center">
-        <div className="animate-pulse text-clay-400">Loading portal...</div>
+        <div className="animate-pulse text-clay-300">Loading portal...</div>
       </div>
     );
   }
@@ -172,7 +172,7 @@ export default function PublicPortalPage() {
         <div className="text-center space-y-3">
           <ShieldAlert className="h-12 w-12 text-red-400 mx-auto" />
           <h1 className="text-lg font-semibold text-clay-100">Access Denied</h1>
-          <p className="text-sm text-clay-400">{error || "Invalid or expired share link."}</p>
+          <p className="text-sm text-clay-300">{error || "Invalid or expired share link."}</p>
         </div>
       </div>
     );
@@ -192,7 +192,7 @@ export default function PublicPortalPage() {
             <input
               type="text"
               placeholder="Enter your name to interact..."
-              className="flex-1 bg-clay-900 border border-clay-600 rounded-lg px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-clay-400"
+              className="flex-1 bg-clay-900 border border-clay-600 rounded-lg px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-clay-400"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   const val = (e.target as HTMLInputElement).value.trim();
@@ -253,9 +253,9 @@ export default function PublicPortalPage() {
                       className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-clay-750 transition-colors"
                     >
                       {expandedSop === sop.id ? (
-                        <ChevronDown className="h-4 w-4 text-clay-400 shrink-0" />
+                        <ChevronDown className="h-4 w-4 text-clay-300 shrink-0" />
                       ) : (
-                        <ChevronRight className="h-4 w-4 text-clay-400 shrink-0" />
+                        <ChevronRight className="h-4 w-4 text-clay-300 shrink-0" />
                       )}
                       <span className="flex-1 text-sm font-medium text-clay-100">{sop.title}</span>
                       {isAcked && (
@@ -313,10 +313,10 @@ export default function PublicPortalPage() {
             {/* Progress bar */}
             <div className="mb-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-clay-500">
+                <span className="text-xs text-clay-300">
                   {doneActions.length} of {portal.actions.length} complete
                 </span>
-                <span className="text-xs text-clay-500">
+                <span className="text-xs text-clay-300">
                   {Math.round((doneActions.length / portal.actions.length) * 100)}%
                 </span>
               </div>
@@ -351,7 +351,7 @@ export default function PublicPortalPage() {
                         className="mt-0.5 h-5 w-5 rounded border-2 border-clay-500 flex items-center justify-center shrink-0 hover:border-emerald-400 hover:bg-emerald-400/10 transition-colors"
                       >
                         {isProcessing ? (
-                          <Loader2 className="h-3 w-3 text-clay-400 animate-spin" />
+                          <Loader2 className="h-3 w-3 text-clay-300 animate-spin" />
                         ) : (
                           <Check className="h-3 w-3 text-transparent hover:text-emerald-400" />
                         )}
@@ -359,7 +359,7 @@ export default function PublicPortalPage() {
                     ) : isDone ? (
                       <CheckSquare className="h-5 w-5 text-emerald-400 mt-0.5 shrink-0" />
                     ) : (
-                      <Square className="h-5 w-5 text-clay-500 mt-0.5 shrink-0" />
+                      <Square className="h-5 w-5 text-clay-300 mt-0.5 shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -367,7 +367,7 @@ export default function PublicPortalPage() {
                         <span
                           className={cn(
                             "text-sm font-medium",
-                            isDone ? "text-clay-500 line-through" : "text-clay-100"
+                            isDone ? "text-clay-300 line-through" : "text-clay-100"
                           )}
                         >
                           {action.title}
@@ -379,7 +379,7 @@ export default function PublicPortalPage() {
                         )}
                       </div>
                       {action.description && (
-                        <p className="text-sm text-clay-400 mt-1">{action.description}</p>
+                        <p className="text-sm text-clay-300 mt-1">{action.description}</p>
                       )}
                     </div>
                   </div>
@@ -425,7 +425,7 @@ export default function PublicPortalPage() {
                         {update.type}
                       </span>
                       <h4 className="text-base font-medium text-clay-100 flex-1">{update.title}</h4>
-                      <span className="text-xs text-clay-500 shrink-0">
+                      <span className="text-xs text-clay-300 shrink-0">
                         {new Date(update.created_at * 1000).toLocaleDateString()}
                       </span>
                     </div>
@@ -498,7 +498,7 @@ export default function PublicPortalPage() {
                                 if (e.key === "Enter") handleApproval(update.id, "request_revision", revisionNotes);
                               }}
                               placeholder="What needs to change?"
-                              className="flex-1 bg-clay-900 border border-orange-500/30 rounded-lg px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-orange-400"
+                              className="flex-1 bg-clay-900 border border-orange-500/30 rounded-lg px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-orange-400"
                               autoFocus
                             />
                             <button
@@ -537,7 +537,7 @@ export default function PublicPortalPage() {
                               }
                             }}
                             placeholder={`Comment as ${clientName}...`}
-                            className="flex-1 bg-clay-900 border border-clay-600 rounded-lg px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-clay-400"
+                            className="flex-1 bg-clay-900 border border-clay-600 rounded-lg px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-clay-400"
                           />
                           <button
                             onClick={() => handlePostComment(update.id)}
@@ -562,7 +562,7 @@ export default function PublicPortalPage() {
 
         {/* Footer */}
         <div className="pt-8 border-t border-clay-700 text-center">
-          <p className="text-xs text-clay-500">Powered by The Kiln</p>
+          <p className="text-xs text-clay-300">Powered by The Kiln</p>
         </div>
       </div>
     </div>

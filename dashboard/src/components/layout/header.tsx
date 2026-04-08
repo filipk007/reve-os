@@ -290,7 +290,7 @@ export function Header({ title, breadcrumbs, lastUpdated, onRefresh }: HeaderPro
               <Button
                 variant="ghost"
                 size="icon-sm"
-                className="text-clay-400 hover:text-clay-100"
+                className="text-clay-300 hover:text-clay-100"
                 onClick={async () => {
                   const supabase = createClient();
                   await supabase.auth.signOut();

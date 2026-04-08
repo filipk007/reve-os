@@ -179,7 +179,7 @@ export function FunctionHeader({
         <MessageSquareText className="h-4 w-4 text-kiln-teal shrink-0 mt-0.5" />
         <div className="flex-1 space-y-1">
           <p className="text-sm text-clay-100">{explanation.explanation}</p>
-          <p className="text-xs text-clay-400">{explanation.use_case}</p>
+          <p className="text-xs text-clay-300">{explanation.use_case}</p>
           <span className={cn(
             "inline-block text-[10px] px-1.5 py-0.5 rounded",
             explanation.estimated_speed === "fast" ? "bg-emerald-500/15 text-emerald-400" :
@@ -189,7 +189,7 @@ export function FunctionHeader({
             {explanation.estimated_speed}
           </span>
         </div>
-        <button onClick={() => setExplanation(null)} className="text-clay-500 hover:text-clay-300">
+        <button onClick={() => setExplanation(null)} className="text-clay-300 hover:text-clay-300">
           <Trash2 className="h-3 w-3" />
         </button>
       </div>

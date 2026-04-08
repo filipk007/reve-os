@@ -146,7 +146,7 @@ function WizardField({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="w-full rounded-md border border-clay-500 bg-clay-800 px-3 py-2 text-sm text-clay-100 placeholder:text-clay-400 focus:border-kiln-teal focus:outline-none focus:ring-1 focus:ring-kiln-teal/30 resize-none"
+        className="w-full rounded-md border border-clay-500 bg-clay-800 px-3 py-2 text-sm text-clay-100 placeholder:text-clay-300 focus:border-kiln-teal focus:outline-none focus:ring-1 focus:ring-kiln-teal/30 resize-none"
       />
     </div>
   );
@@ -174,7 +174,7 @@ function WizardInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-md border border-clay-500 bg-clay-800 px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-400 focus:border-kiln-teal focus:outline-none focus:ring-1 focus:ring-kiln-teal/30"
+        className="w-full rounded-md border border-clay-500 bg-clay-800 px-3 py-1.5 text-sm text-clay-100 placeholder:text-clay-300 focus:border-kiln-teal focus:outline-none focus:ring-1 focus:ring-kiln-teal/30"
       />
     </div>
   );
@@ -268,7 +268,7 @@ function CsvDropZone({
               e.stopPropagation();
               onClear();
             }}
-            className="text-xs text-clay-400 hover:text-clay-200 underline mt-1"
+            className="text-xs text-clay-300 hover:text-clay-200 underline mt-1"
           >
             Replace file
           </button>
@@ -281,7 +281,7 @@ function CsvDropZone({
               {label}
             </span>
           </div>
-          <Upload className="h-8 w-8 text-clay-400 mx-auto" />
+          <Upload className="h-8 w-8 text-clay-300 mx-auto" />
           <p className="text-xs text-clay-300">
             Drop CSV or click to browse
           </p>
@@ -313,7 +313,7 @@ function IntroStep() {
               <p className="text-sm font-medium text-clay-100">
                 {STEP_META[s].label}
               </p>
-              <p className="text-xs text-clay-400">{STEP_META[s].description}</p>
+              <p className="text-xs text-clay-300">{STEP_META[s].description}</p>
             </div>
           </div>
         ))}
@@ -437,13 +437,13 @@ function PainStep({
             className="rounded-md border border-clay-600 bg-clay-800/50 p-3 space-y-2"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-clay-400">
+              <span className="text-xs font-medium text-clay-300">
                 Data Source {idx + 1}
               </span>
               {wiz.painSources.length > 1 && (
                 <button
                   onClick={() => wiz.removePainSource(idx)}
-                  className="text-clay-500 hover:text-red-400 transition-colors"
+                  className="text-clay-300 hover:text-red-400 transition-colors"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -592,7 +592,7 @@ function ContextStep({
       {/* Client profiles */}
       {clients.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-xs font-medium text-clay-400 tracking-wide uppercase">
+          <h4 className="text-xs font-medium text-clay-300 tracking-wide uppercase">
             Client Profiles
           </h4>
           <div className="grid grid-cols-2 gap-2">
@@ -623,7 +623,7 @@ function ContextStep({
                     <p className="text-sm font-medium text-clay-100 truncate">
                       {client.name}
                     </p>
-                    <p className="text-[10px] text-clay-400 truncate">
+                    <p className="text-[10px] text-clay-300 truncate">
                       {client.industry}
                       {client.stage ? ` · ${client.stage}` : ""}
                     </p>
@@ -637,7 +637,7 @@ function ContextStep({
 
       {/* Knowledge base files by category */}
       <div className="space-y-2">
-        <h4 className="text-xs font-medium text-clay-400 tracking-wide uppercase">
+        <h4 className="text-xs font-medium text-clay-300 tracking-wide uppercase">
           Knowledge Base
         </h4>
         <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
@@ -676,7 +676,7 @@ function ContextStep({
       {/* Selection summary */}
       {((campaignContext.selectedClients?.length || 0) > 0 ||
         (campaignContext.selectedKbFiles?.length || 0) > 0) && (
-        <div className="flex items-center gap-2 text-xs text-clay-400">
+        <div className="flex items-center gap-2 text-xs text-clay-300">
           <FolderOpen className="h-3.5 w-3.5" />
           {campaignContext.selectedClients?.length || 0} client
           {(campaignContext.selectedClients?.length || 0) !== 1 ? "s" : ""},{" "}
@@ -877,7 +877,7 @@ function ReviewStep({
 
       <div className="rounded-md border border-clay-600 bg-clay-800/50 p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-medium text-clay-400 tracking-wide uppercase">
+          <h4 className="text-xs font-medium text-clay-300 tracking-wide uppercase">
             Campaign Summary
           </h4>
           <div className="flex gap-2">
@@ -907,16 +907,16 @@ function ReviewStep({
             ] as const
           ).map(([label, val]) => (
             <div key={label} className="flex gap-2">
-              <span className="text-clay-400 shrink-0 w-16">{label}:</span>
+              <span className="text-clay-300 shrink-0 w-16">{label}:</span>
               <span className="text-clay-200 truncate">
-                {val || <span className="text-clay-500 italic">not set</span>}
+                {val || <span className="text-clay-300 italic">not set</span>}
               </span>
             </div>
           ))}
         </div>
         {((wiz.campaignContext.selectedClients?.length || 0) > 0 ||
           (wiz.campaignContext.selectedKbFiles?.length || 0) > 0) && (
-          <div className="text-xs text-clay-400 border-t border-clay-600 pt-2 mt-2">
+          <div className="text-xs text-clay-300 border-t border-clay-600 pt-2 mt-2">
             Context: {wiz.campaignContext.selectedClients?.length || 0} clients,{" "}
             {wiz.campaignContext.selectedKbFiles?.length || 0} KB files loaded
           </div>
@@ -1009,7 +1009,7 @@ export function CampaignWizard({
                 variant="ghost"
                 size="sm"
                 onClick={() => wiz.reset()}
-                className="text-clay-400"
+                className="text-clay-300"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 Reset

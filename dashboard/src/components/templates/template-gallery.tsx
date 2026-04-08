@@ -41,7 +41,7 @@ export function TemplateGallery({ onSelect, compact, limit }: TemplateGalleryPro
       {/* Search — hide in compact mode */}
       {!compact && WORKFLOW_TEMPLATES.length > 4 && (
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-clay-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-clay-300" />
           <Input
             placeholder="Search templates..."
             value={search}
@@ -64,7 +64,7 @@ export function TemplateGallery({ onSelect, compact, limit }: TemplateGalleryPro
       </div>
 
       {filtered.length === 0 && (
-        <p className="text-center text-sm text-clay-400 py-6">
+        <p className="text-center text-sm text-clay-300 py-6">
           No templates match your search.
         </p>
       )}

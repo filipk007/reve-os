@@ -88,7 +88,7 @@ export function CatalogCard({
           <button
             onClick={handleExplain}
             disabled={explaining}
-            className="ml-auto text-clay-400 hover:text-kiln-teal transition-colors"
+            className="ml-auto text-clay-300 hover:text-kiln-teal transition-colors"
             title="Explain this function"
           >
             {explaining ? (

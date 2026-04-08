@@ -108,23 +108,23 @@ export function SearchBar({
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-clay-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-clay-300" />
           <input
             ref={inputRef}
             type="text"
             value={local}
             onChange={(e) => handleChange(e.target.value)}
             placeholder="Search posts... (\u2318K)"
-            className="w-full rounded-lg border border-clay-700 bg-clay-900 pl-9 pr-20 py-2 text-sm text-clay-100 placeholder:text-clay-500 focus:border-clay-500 focus:outline-none"
+            className="w-full rounded-lg border border-clay-700 bg-clay-900 pl-9 pr-20 py-2 text-sm text-clay-100 placeholder:text-clay-300 focus:border-clay-500 focus:outline-none"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
             {isFiltered && (
               <>
-                <span className="text-[10px] text-clay-500">
+                <span className="text-[10px] text-clay-300">
                   {resultCount} of {totalCount}
                 </span>
                 {value && (
-                  <button onClick={handleClear} className="text-clay-500 hover:text-clay-300">
+                  <button onClick={handleClear} className="text-clay-300 hover:text-clay-300">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 )}
@@ -139,7 +139,7 @@ export function SearchBar({
             "flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all",
             filtersVisible || hasNonDefaultFilters
               ? "text-clay-200 border-clay-600 bg-clay-800"
-              : "text-clay-500 border-clay-700 bg-transparent hover:text-clay-300 hover:border-clay-600"
+              : "text-clay-300 border-clay-700 bg-transparent hover:text-clay-300 hover:border-clay-600"
           )}
           title="Toggle filters"
         >
@@ -166,7 +166,7 @@ export function SearchBar({
                       "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium transition-all border",
                       active
                         ? t.activeColor
-                        : "text-clay-500 border-clay-700 bg-transparent hover:text-clay-400 hover:border-clay-600"
+                        : "text-clay-300 border-clay-700 bg-transparent hover:text-clay-300 hover:border-clay-600"
                     )}
                   >
                     <span className={cn("h-1.5 w-1.5 rounded-full", active ? t.dot : "bg-clay-600")} />
@@ -199,7 +199,7 @@ export function SearchBar({
                           : f.id === "internal"
                             ? "text-kiln-teal/80 border-kiln-teal/15 bg-kiln-teal/5"
                             : "text-clay-200 border-clay-600 bg-clay-700/50"
-                        : "text-clay-500 border-clay-700 bg-transparent hover:text-clay-400 hover:border-clay-600"
+                        : "text-clay-300 border-clay-700 bg-transparent hover:text-clay-300 hover:border-clay-600"
                     )}
                   >
                     {f.label}
@@ -219,7 +219,7 @@ export function SearchBar({
                   "flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium transition-all border",
                   pinnedOnly
                     ? "text-amber-400/80 border-amber-400/15 bg-amber-500/5"
-                    : "text-clay-500 border-clay-700 bg-transparent hover:text-clay-400 hover:border-clay-600"
+                    : "text-clay-300 border-clay-700 bg-transparent hover:text-clay-300 hover:border-clay-600"
                 )}
               >
                 <Pin className="h-2.5 w-2.5" />

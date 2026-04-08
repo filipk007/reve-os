@@ -32,7 +32,7 @@ function numberHeatColor(value: number): string {
 
 /** Format a value for display with conditional formatting */
 function FormattedValue({ value }: { value: unknown }) {
-  if (value === null || value === undefined) return <span className="text-zinc-600">—</span>;
+  if (value === null || value === undefined) return <span className="text-clay-300">—</span>;
 
   const type = detectType(value);
 
@@ -73,7 +73,7 @@ function FormattedValue({ value }: { value: unknown }) {
     default:
       if (typeof value === "object") {
         return (
-          <span className="text-zinc-400 truncate">
+          <span className="text-clay-200 truncate">
             {JSON.stringify(value).slice(0, 80)}
           </span>
         );
@@ -87,7 +87,7 @@ export function EnrichmentCell({ value, status, error, skipReason, upstreamColum
     <AnimatePresence mode="wait">
       {/* Empty */}
       {status === "empty" && (
-        <span key="empty" className="text-zinc-600">
+        <span key="empty" className="text-clay-300">
           —
         </span>
       )}
@@ -110,7 +110,7 @@ export function EnrichmentCell({ value, status, error, skipReason, upstreamColum
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="flex items-center gap-1.5 text-zinc-400"
+          className="flex items-center gap-1.5 text-clay-200"
         >
           <Loader2 className="w-3 h-3 animate-spin text-blue-400" />
           <span className="text-xs">Running...</span>
@@ -151,7 +151,7 @@ export function EnrichmentCell({ value, status, error, skipReason, upstreamColum
       {status === "skipped" && skipReason === "upstream_error" && (
         <span
           key="skipped-upstream"
-          className="flex items-center gap-1 text-zinc-500 text-xs"
+          className="flex items-center gap-1 text-clay-300 text-xs"
           title={upstreamColumnName ? `Skipped: ${upstreamColumnName} errored` : "Skipped: upstream error"}
         >
           <Ban className="w-3 h-3 shrink-0" />
@@ -163,14 +163,14 @@ export function EnrichmentCell({ value, status, error, skipReason, upstreamColum
 
       {/* Skipped — generic */}
       {status === "skipped" && skipReason !== "upstream_error" && (
-        <span key="skipped" className="text-zinc-600 text-xs">
+        <span key="skipped" className="text-clay-300 text-xs">
           Skipped
         </span>
       )}
 
       {/* Filtered — row excluded by gate */}
       {status === "filtered" && (
-        <span key="filtered" className="text-zinc-600 text-xs line-through">
+        <span key="filtered" className="text-clay-300 text-xs line-through">
           Filtered
         </span>
       )}

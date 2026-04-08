@@ -133,7 +133,7 @@ export default function EnrichPage() {
                       ? "bg-kiln-teal/15 text-kiln-teal"
                       : i < stepIdx
                         ? "bg-clay-700 text-clay-300"
-                        : "bg-clay-800 text-clay-500",
+                        : "bg-clay-800 text-clay-300",
                   )}
                 >
                   <span className="w-4 h-4 flex items-center justify-center rounded-full text-[10px] bg-current/10">
@@ -215,7 +215,7 @@ export default function EnrichPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-clay-400 hover:text-clay-200"
+                    className="text-clay-300 hover:text-clay-200"
                     onClick={goBack}
                   >
                     <ArrowLeft className="h-4 w-4 mr-1" />

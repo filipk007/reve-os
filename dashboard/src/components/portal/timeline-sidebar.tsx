@@ -95,15 +95,15 @@ export function TimelineSidebar({
             onClick={() => setActionsOpen(!actionsOpen)}
             className="w-full flex items-center gap-2 text-xs font-semibold text-clay-200 hover:text-clay-100 transition-colors"
           >
-            <CheckSquare className="h-3.5 w-3.5 text-clay-400" />
+            <CheckSquare className="h-3.5 w-3.5 text-clay-300" />
             Open Actions
-            <span className="text-[10px] bg-clay-700 text-clay-400 px-1.5 py-0.5 rounded-full ml-auto">
+            <span className="text-[10px] bg-clay-700 text-clay-300 px-1.5 py-0.5 rounded-full ml-auto">
               {openActions.length}
             </span>
             {actionsOpen ? (
-              <ChevronUp className="h-3.5 w-3.5 text-clay-500" />
+              <ChevronUp className="h-3.5 w-3.5 text-clay-300" />
             ) : (
-              <ChevronDown className="h-3.5 w-3.5 text-clay-500" />
+              <ChevronDown className="h-3.5 w-3.5 text-clay-300" />
             )}
           </button>
 
@@ -140,7 +140,7 @@ export function TimelineSidebar({
                               {action.owner}
                             </span>
                             {action.due_date && (
-                              <span className={cn("text-[9px]", isOverdue ? "text-red-400" : "text-clay-500")}>
+                              <span className={cn("text-[9px]", isOverdue ? "text-red-400" : "text-clay-300")}>
                                 {isOverdue ? "Overdue" : action.due_date}
                               </span>
                             )}
@@ -150,7 +150,7 @@ export function TimelineSidebar({
                     );
                   })}
                   {openActions.length > 8 && (
-                    <p className="text-[10px] text-clay-500 pl-5">+{openActions.length - 8} more</p>
+                    <p className="text-[10px] text-clay-300 pl-5">+{openActions.length - 8} more</p>
                   )}
                 </div>
               </motion.div>
@@ -159,7 +159,7 @@ export function TimelineSidebar({
         </div>
       ) : excludeActionIds && excludeActionIds.size > 0 ? (
         <div className="rounded-xl border border-clay-700/50 bg-clay-800/60 p-3">
-          <div className="flex items-center gap-2 text-xs text-clay-400">
+          <div className="flex items-center gap-2 text-xs text-clay-300">
             <CheckSquare className="h-3.5 w-3.5" />
             <span>Actions shown in attention strip above</span>
           </div>
@@ -172,15 +172,15 @@ export function TimelineSidebar({
           onClick={() => setTimelineOpen(!timelineOpen)}
           className="w-full flex items-center gap-2 text-xs font-semibold text-clay-200 hover:text-clay-100 transition-colors"
         >
-          <Clock className="h-3.5 w-3.5 text-clay-400" />
+          <Clock className="h-3.5 w-3.5 text-clay-300" />
           Timeline
-          <span className="text-[10px] bg-clay-700 text-clay-400 px-1.5 py-0.5 rounded-full ml-auto">
+          <span className="text-[10px] bg-clay-700 text-clay-300 px-1.5 py-0.5 rounded-full ml-auto">
             {visibleUpdates.length}
           </span>
           {timelineOpen ? (
-            <ChevronUp className="h-3.5 w-3.5 text-clay-500" />
+            <ChevronUp className="h-3.5 w-3.5 text-clay-300" />
           ) : (
-            <ChevronDown className="h-3.5 w-3.5 text-clay-500" />
+            <ChevronDown className="h-3.5 w-3.5 text-clay-300" />
           )}
         </button>
 
@@ -205,7 +205,7 @@ export function TimelineSidebar({
                         "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-all border",
                         active
                           ? `${config.textColor} border-current/20 bg-current/5`
-                          : "text-clay-500 border-clay-700 bg-transparent opacity-50"
+                          : "text-clay-300 border-clay-700 bg-transparent opacity-50"
                       )}
                     >
                       <span className={cn("h-1.5 w-1.5 rounded-full", config.dot)} />
@@ -218,8 +218,8 @@ export function TimelineSidebar({
               {visibleUpdates.length === 0 ? (
                 <div className="text-center py-6 space-y-2">
                   <Clock className="h-8 w-8 text-clay-600 mx-auto" />
-                  <p className="text-xs text-clay-400 font-medium">No activity yet</p>
-                  <p className="text-[10px] text-clay-500">
+                  <p className="text-xs text-clay-300 font-medium">No activity yet</p>
+                  <p className="text-[10px] text-clay-300">
                     Create your first post to start<br />building the timeline.
                   </p>
                 </div>
@@ -263,7 +263,7 @@ export function TimelineSidebar({
                               {update.title}
                             </p>
                             {bodySnippet && (
-                              <p className="text-[10px] text-clay-500 truncate mt-0.5">
+                              <p className="text-[10px] text-clay-300 truncate mt-0.5">
                                 {bodySnippet}{update.body && update.body.length > 60 ? "..." : ""}
                               </p>
                             )}
@@ -272,7 +272,7 @@ export function TimelineSidebar({
                                 {config.label}
                               </span>
                               <span className="text-clay-600 text-[9px]">&middot;</span>
-                              <span className="text-[10px] text-clay-500">
+                              <span className="text-[10px] text-clay-300">
                                 {formatRelativeTime(update.created_at)}
                               </span>
                             </div>

@@ -57,7 +57,7 @@ export function ProjectLinksSection({ links, onAddLink, onDeleteLink }: ProjectL
           variant="ghost"
           size="sm"
           onClick={() => setAdding(!adding)}
-          className="h-6 text-[11px] text-clay-400 hover:text-clay-200 hover:bg-clay-700 gap-1"
+          className="h-6 text-[11px] text-clay-300 hover:text-clay-200 hover:bg-clay-700 gap-1"
         >
           <Plus className="h-3 w-3" />
         </Button>
@@ -70,7 +70,7 @@ export function ProjectLinksSection({ links, onAddLink, onDeleteLink }: ProjectL
             const Icon = getLinkIcon(link.url);
             return (
               <div key={link.id} className="flex items-center gap-2 group">
-                <Icon className="h-3.5 w-3.5 text-clay-400 flex-shrink-0" />
+                <Icon className="h-3.5 w-3.5 text-clay-300 flex-shrink-0" />
                 <a
                   href={link.url}
                   target="_blank"
@@ -79,12 +79,12 @@ export function ProjectLinksSection({ links, onAddLink, onDeleteLink }: ProjectL
                 >
                   {link.title}
                 </a>
-                <span className="text-[10px] text-clay-500 truncate max-w-[80px] hidden group-hover:inline">
+                <span className="text-[10px] text-clay-300 truncate max-w-[80px] hidden group-hover:inline">
                   {getDomain(link.url)}
                 </span>
                 <button
                   onClick={() => onDeleteLink(link.id)}
-                  className="opacity-0 group-hover:opacity-100 text-clay-500 hover:text-red-400 transition-opacity flex-shrink-0"
+                  className="opacity-0 group-hover:opacity-100 text-clay-300 hover:text-red-400 transition-opacity flex-shrink-0"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -97,7 +97,7 @@ export function ProjectLinksSection({ links, onAddLink, onDeleteLink }: ProjectL
       {links.length === 0 && !adding && (
         <button
           onClick={() => setAdding(true)}
-          className="text-[11px] text-clay-400 hover:text-clay-300 transition-colors"
+          className="text-[11px] text-clay-300 hover:text-clay-300 transition-colors"
         >
           Pin important links here
         </button>
@@ -111,7 +111,7 @@ export function ProjectLinksSection({ links, onAddLink, onDeleteLink }: ProjectL
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://..."
-            className="w-full bg-clay-800 border border-clay-600 rounded-md px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+            className="w-full bg-clay-800 border border-clay-600 rounded-md px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
             autoFocus
           />
           <input
@@ -120,14 +120,14 @@ export function ProjectLinksSection({ links, onAddLink, onDeleteLink }: ProjectL
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="Label (optional)"
-            className="w-full bg-clay-800 border border-clay-600 rounded-md px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+            className="w-full bg-clay-800 border border-clay-600 rounded-md px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
           />
           <div className="flex justify-end gap-1.5">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => { setAdding(false); setTitle(""); setUrl(""); }}
-              className="h-6 text-[10px] text-clay-400"
+              className="h-6 text-[10px] text-clay-300"
             >
               Cancel
             </Button>

@@ -116,7 +116,7 @@ export default function ProjectDetailPage() {
   if (!project) {
     return (
       <div className="max-w-6xl mx-auto text-center py-16 px-4">
-        <p className="text-clay-400">Project not found.</p>
+        <p className="text-clay-300">Project not found.</p>
       </div>
     );
   }

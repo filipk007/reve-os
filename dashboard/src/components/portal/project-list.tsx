@@ -36,16 +36,16 @@ export function ProjectList({ slug, projects, onProjectCreated }: ProjectListPro
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-clay-400">
+        <div className="flex items-center gap-2 text-xs text-clay-300">
           <FolderOpen className="h-3.5 w-3.5" />
           <span className="font-medium">Projects</span>
-          <span className="text-clay-500">({projects.length})</span>
+          <span className="text-clay-300">({projects.length})</span>
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setDialogOpen(true)}
-          className="h-7 text-xs text-clay-400 hover:text-clay-200 hover:bg-clay-700 gap-1"
+          className="h-7 text-xs text-clay-300 hover:text-clay-200 hover:bg-clay-700 gap-1"
         >
           <Plus className="h-3 w-3" />
           New
@@ -64,7 +64,7 @@ export function ProjectList({ slug, projects, onProjectCreated }: ProjectListPro
           />
           <span className="text-sm font-medium text-clay-200 truncate">{projects[0].name}</span>
           {projects[0].phases.length > 0 && (
-            <span className="text-[11px] text-clay-500 ml-auto shrink-0">
+            <span className="text-[11px] text-clay-300 ml-auto shrink-0">
               {projects[0].phases.filter((p) => p.status === "completed").length}/{projects[0].phases.length} phases
             </span>
           )}

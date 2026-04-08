@@ -188,7 +188,7 @@ export function Sidebar() {
             {/* Section label — show for power mode with multiple sections */}
             {persona === "power" && navSections.length > 1 && !compact && (
               <p className={cn(
-                "px-3 text-[10px] font-semibold uppercase tracking-wider text-clay-400",
+                "px-3 text-[10px] font-semibold uppercase tracking-wider text-clay-300",
                 sectionIdx > 0 ? "mt-4 mb-1.5" : "mb-1.5"
               )}>
                 {section.label}
@@ -270,7 +270,7 @@ export function Sidebar() {
         <button
           onClick={handleTogglePersona}
           className={cn(
-            "flex items-center gap-2 rounded-lg px-3 py-2 text-clay-400 hover:text-clay-200 hover:bg-clay-700 transition-colors duration-150",
+            "flex items-center gap-2 rounded-lg px-3 py-2 text-clay-300 hover:text-clay-200 hover:bg-clay-700 transition-colors duration-150",
             compact && "justify-center px-2"
           )}
         >

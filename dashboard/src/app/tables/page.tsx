@@ -21,7 +21,7 @@ import Papa from "papaparse";
 
 export default function TablesPageWrapper() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950 flex items-center justify-center text-clay-200">Loading...</div>}>
       <TablesPage />
     </Suspense>
   );
@@ -199,7 +199,7 @@ function TablesPage() {
               <Table2 className="w-6 h-6 text-kiln-teal" />
               Tables
             </h1>
-            <p className="text-zinc-400 text-sm mt-1">
+            <p className="text-clay-200 text-sm mt-1">
               Clay-style enrichment tables. Import data, add columns, watch results fill in.
             </p>
           </div>
@@ -266,8 +266,8 @@ function TablesPage() {
         ) : tables.length === 0 ? (
           <div className="text-center py-20">
             <Table2 className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-            <p className="text-zinc-400 text-lg mb-2">No tables yet</p>
-            <p className="text-zinc-600 text-sm mb-6">
+            <p className="text-clay-200 text-lg mb-2">No tables yet</p>
+            <p className="text-clay-300 text-sm mb-6">
               Create a new table or import a CSV to get started
             </p>
             <div className="flex gap-2 justify-center">
@@ -300,7 +300,7 @@ function TablesPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-white truncate">{t.name}</h3>
                     {t.description && (
-                      <p className="text-zinc-500 text-sm mt-1 truncate">{t.description}</p>
+                      <p className="text-clay-300 text-sm mt-1 truncate">{t.description}</p>
                     )}
                   </div>
                   <DropdownMenu>
@@ -308,7 +308,7 @@ function TablesPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-zinc-400"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-clay-200"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </Button>
@@ -327,7 +327,7 @@ function TablesPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <div className="flex items-center gap-4 mt-4 text-xs text-zinc-500">
+                <div className="flex items-center gap-4 mt-4 text-xs text-clay-300">
                   <span>{t.row_count} rows</span>
                   <span>{t.column_count} columns</span>
                   <span className="ml-auto">{formatDate(t.updated_at)}</span>
@@ -349,19 +349,19 @@ function TablesPage() {
             </DialogPrimitive.Description>
 
             <div className="border-b border-zinc-800 px-4 py-3 flex items-center gap-3">
-              <Search className="w-4 h-4 text-zinc-500 shrink-0" />
+              <Search className="w-4 h-4 text-clay-300 shrink-0" />
               <input
                 value={funcSearch}
                 onChange={(e) => setFuncSearch(e.target.value)}
                 placeholder="Search functions..."
-                className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-zinc-500"
+                className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-clay-300"
                 autoFocus
               />
             </div>
 
             <div className="max-h-80 overflow-y-auto p-2">
               {filteredFunctions.length === 0 ? (
-                <p className="text-center text-sm text-zinc-500 py-8">
+                <p className="text-center text-sm text-clay-300 py-8">
                   {functions.length === 0 ? "No functions found" : "No matching functions"}
                 </p>
               ) : (
@@ -375,9 +375,9 @@ function TablesPage() {
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium text-white truncate">{func.name}</div>
                       {func.description && (
-                        <div className="text-xs text-zinc-500 truncate mt-0.5">{func.description}</div>
+                        <div className="text-xs text-clay-300 truncate mt-0.5">{func.description}</div>
                       )}
-                      <div className="flex gap-3 mt-1 text-[10px] text-zinc-600">
+                      <div className="flex gap-3 mt-1 text-[10px] text-clay-300">
                         <span>{func.inputs.length} inputs</span>
                         <span>{func.steps.length} steps</span>
                       </div>

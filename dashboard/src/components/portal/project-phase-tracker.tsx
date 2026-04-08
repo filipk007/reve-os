@@ -40,7 +40,7 @@ export function ProjectPhaseTracker({
           variant="ghost"
           size="sm"
           onClick={() => setAdding(!adding)}
-          className="h-6 text-[11px] text-clay-400 hover:text-clay-200 hover:bg-clay-700 gap-1"
+          className="h-6 text-[11px] text-clay-300 hover:text-clay-200 hover:bg-clay-700 gap-1"
         >
           <Plus className="h-3 w-3" />
         </Button>
@@ -48,7 +48,7 @@ export function ProjectPhaseTracker({
 
       {/* Phase list */}
       {sorted.length === 0 && !adding && (
-        <p className="text-xs text-clay-400">No phases defined</p>
+        <p className="text-xs text-clay-300">No phases defined</p>
       )}
 
       <div className="space-y-1.5">
@@ -63,7 +63,7 @@ export function ProjectPhaseTracker({
                   ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
                   : phase.status === "active"
                     ? "bg-kiln-teal/20 border-kiln-teal/50 text-kiln-teal"
-                    : "bg-clay-700 border-clay-600 text-clay-400"
+                    : "bg-clay-700 border-clay-600 text-clay-300"
               )}
             >
               {phase.status === "completed" ? (
@@ -78,7 +78,7 @@ export function ProjectPhaseTracker({
               className={cn(
                 "text-sm flex-1 truncate",
                 phase.status === "completed"
-                  ? "text-clay-400 line-through"
+                  ? "text-clay-300 line-through"
                   : phase.status === "active"
                     ? "text-clay-100 font-medium"
                     : "text-clay-200"
@@ -90,7 +90,7 @@ export function ProjectPhaseTracker({
             {/* Delete */}
             <button
               onClick={() => onDeletePhase(phase.id)}
-              className="opacity-0 group-hover:opacity-100 text-clay-500 hover:text-red-400 transition-opacity"
+              className="opacity-0 group-hover:opacity-100 text-clay-300 hover:text-red-400 transition-opacity"
             >
               <X className="h-3 w-3" />
             </button>
@@ -107,7 +107,7 @@ export function ProjectPhaseTracker({
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="Phase name..."
-            className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-2.5 py-1 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-kiln-teal"
+            className="flex-1 bg-clay-900 border border-clay-600 rounded-md px-2.5 py-1 text-sm text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-kiln-teal"
             autoFocus
           />
           <Button

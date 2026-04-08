@@ -90,18 +90,18 @@ export function DocumentsView({
               </div>
               <div>
                 <p className="text-sm font-medium text-clay-100">Client Drive Folder</p>
-                <p className="text-[11px] text-clay-400">Google Drive — all assets</p>
+                <p className="text-[11px] text-clay-300">Google Drive — all assets</p>
               </div>
-              <ExternalLink className="h-3.5 w-3.5 text-clay-500 group-hover:text-clay-300 ml-2 shrink-0" />
+              <ExternalLink className="h-3.5 w-3.5 text-clay-300 group-hover:text-clay-300 ml-2 shrink-0" />
             </a>
           ) : (
             <div className="flex items-center gap-3 rounded-lg border border-clay-700/50 bg-clay-850/50 px-4 py-3 opacity-50">
               <div className="h-9 w-9 rounded-lg bg-clay-700 flex items-center justify-center shrink-0">
-                <FolderOpen className="h-5 w-5 text-clay-500" />
+                <FolderOpen className="h-5 w-5 text-clay-300" />
               </div>
               <div>
-                <p className="text-sm font-medium text-clay-400">No Drive Folder</p>
-                <p className="text-[11px] text-clay-500">Sync not configured</p>
+                <p className="text-sm font-medium text-clay-300">No Drive Folder</p>
+                <p className="text-[11px] text-clay-300">Sync not configured</p>
               </div>
             </div>
           )}
@@ -123,9 +123,9 @@ export function DocumentsView({
               </div>
               <div>
                 <p className="text-sm font-medium text-clay-100">{project.name}</p>
-                <p className="text-[11px] text-clay-400">Project folder — {project.media_count} files</p>
+                <p className="text-[11px] text-clay-300">Project folder — {project.media_count} files</p>
               </div>
-              <ExternalLink className="h-3.5 w-3.5 text-clay-500 group-hover:text-clay-300 ml-2 shrink-0" />
+              <ExternalLink className="h-3.5 w-3.5 text-clay-300 group-hover:text-clay-300 ml-2 shrink-0" />
             </a>
           ))}
         </div>
@@ -137,7 +137,7 @@ export function DocumentsView({
           <Package className="h-3.5 w-3.5" />
           Deliverables
           {deliverables.length > 0 && (
-            <span className="text-[10px] bg-clay-700 text-clay-400 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] bg-clay-700 text-clay-300 px-1.5 py-0.5 rounded-full">
               {deliverables.length}
             </span>
           )}
@@ -146,8 +146,8 @@ export function DocumentsView({
         {deliverables.length === 0 ? (
           <div className="rounded-lg border border-clay-700 bg-clay-800 p-6 text-center">
             <Package className="h-8 w-8 text-clay-600 mx-auto mb-2" />
-            <p className="text-sm text-clay-400">No deliverables yet.</p>
-            <p className="text-[11px] text-clay-500 mt-1">Create a post with type "Deliverable" to see it here.</p>
+            <p className="text-sm text-clay-300">No deliverables yet.</p>
+            <p className="text-[11px] text-clay-300 mt-1">Create a post with type "Deliverable" to see it here.</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -167,25 +167,25 @@ export function DocumentsView({
                     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-clay-800 transition-colors"
                   >
                     {isExpanded ? (
-                      <ChevronDown className="h-4 w-4 text-clay-400 shrink-0" />
+                      <ChevronDown className="h-4 w-4 text-clay-300 shrink-0" />
                     ) : (
-                      <ChevronUp className="h-4 w-4 text-clay-400 shrink-0 rotate-180" />
+                      <ChevronUp className="h-4 w-4 text-clay-300 shrink-0 rotate-180" />
                     )}
 
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-clay-100 truncate">{d.title}</p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-[11px] text-clay-400">
+                        <span className="text-[11px] text-clay-300">
                           {d.author_name || (isInternal ? "The Kiln" : clientName || "Client")}
                         </span>
                         <span className="text-clay-600 text-[10px]">&middot;</span>
-                        <span className="text-[11px] text-clay-500">
+                        <span className="text-[11px] text-clay-300">
                           {formatRelativeTime(d.created_at)}
                         </span>
                         {attachedCount > 0 && (
                           <>
                             <span className="text-clay-600 text-[10px]">&middot;</span>
-                            <span className="flex items-center gap-0.5 text-[11px] text-clay-400">
+                            <span className="flex items-center gap-0.5 text-[11px] text-clay-300">
                               <Paperclip className="h-2.5 w-2.5" />
                               {attachedCount}
                             </span>
@@ -243,7 +243,7 @@ export function DocumentsView({
             <Paperclip className="h-3.5 w-3.5" />
             All Files
             {media.length > 0 && (
-              <span className="text-[10px] bg-clay-700 text-clay-400 px-1.5 py-0.5 rounded-full">
+              <span className="text-[10px] bg-clay-700 text-clay-300 px-1.5 py-0.5 rounded-full">
                 {media.length}
               </span>
             )}
@@ -292,13 +292,13 @@ export function DocumentsView({
                           style={{ backgroundColor: project.color }}
                         />
                         <span className="text-xs font-medium text-clay-200">{project.name}</span>
-                        <span className="text-[10px] text-clay-500">{files.length} files</span>
+                        <span className="text-[10px] text-clay-300">{files.length} files</span>
                       </>
                     ) : (
                       <>
                         <span className="h-2.5 w-2.5 rounded bg-clay-600" />
                         <span className="text-xs font-medium text-clay-300">General</span>
-                        <span className="text-[10px] text-clay-500">{files.length} files</span>
+                        <span className="text-[10px] text-clay-300">{files.length} files</span>
                       </>
                     )}
                   </div>
@@ -311,7 +311,7 @@ export function DocumentsView({
         {media.length === 0 && !showUpload && (
           <div className="rounded-lg border border-clay-700 bg-clay-800 p-6 text-center">
             <Paperclip className="h-8 w-8 text-clay-600 mx-auto mb-2" />
-            <p className="text-sm text-clay-400">No files uploaded yet.</p>
+            <p className="text-sm text-clay-300">No files uploaded yet.</p>
           </div>
         )}
       </div>

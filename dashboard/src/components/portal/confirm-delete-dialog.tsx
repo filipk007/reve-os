@@ -36,7 +36,7 @@ export function ConfirmDeleteDialog({
             <AlertTriangle className="h-5 w-5 text-red-400" />
             <DialogTitle className="text-clay-100">Delete Post</DialogTitle>
           </div>
-          <DialogDescription className="text-clay-400 pt-2">
+          <DialogDescription className="text-clay-300 pt-2">
             {mediaCount > 0 ? (
               <>
                 This will permanently delete <span className="text-clay-200 font-medium">&ldquo;{title}&rdquo;</span> and{" "}

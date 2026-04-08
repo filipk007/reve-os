@@ -152,7 +152,7 @@ export function ApprovalBanner({ slug, update, onUpdated }: ApprovalBannerProps)
               if (e.key === "Enter") handleAction("request_revision", revisionNotes);
             }}
             placeholder="What needs to change?"
-            className="flex-1 bg-clay-900 border border-orange-500/30 rounded-md px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-orange-400"
+            className="flex-1 bg-clay-900 border border-orange-500/30 rounded-md px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-orange-400"
             autoFocus
           />
           <Button
@@ -173,7 +173,7 @@ export function ApprovalBanner({ slug, update, onUpdated }: ApprovalBannerProps)
             const actionLabel = h.action === "approve" ? "Approved" : h.action === "request_revision" ? "Requested revision" : "Resubmitted";
             return (
               <div key={i} className="flex items-start gap-2 text-[10px]">
-                <span className="text-clay-400 shrink-0">{formatTime(h.timestamp)}</span>
+                <span className="text-clay-300 shrink-0">{formatTime(h.timestamp)}</span>
                 <span className="text-clay-200">
                   <strong>{h.actor_name}</strong> {actionLabel.toLowerCase()}
                   {h.notes ? `: "${h.notes}"` : ""}

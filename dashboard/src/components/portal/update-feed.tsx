@@ -24,7 +24,7 @@ interface UpdateFeedProps {
 export function UpdateFeed({ slug, updates, onTogglePin, onDelete }: UpdateFeedProps) {
   if (updates.length === 0) {
     return (
-      <div className="text-center py-8 text-clay-400">
+      <div className="text-center py-8 text-clay-300">
         <p className="text-sm">No updates yet. Post your first update to start the activity feed.</p>
       </div>
     );
@@ -62,7 +62,7 @@ export function UpdateFeed({ slug, updates, onTogglePin, onDelete }: UpdateFeedP
                 </div>
                 {update.body && <MarkdownContent content={update.body} />}
                 <div className="flex items-center gap-1 mt-2">
-                  <span className="text-[10px] text-clay-500">
+                  <span className="text-[10px] text-clay-300">
                     {new Date(update.created_at * 1000).toLocaleString()}
                   </span>
                 </div>
@@ -73,7 +73,7 @@ export function UpdateFeed({ slug, updates, onTogglePin, onDelete }: UpdateFeedP
                   variant="ghost"
                   size="icon"
                   onClick={() => onTogglePin(update.id)}
-                  className="h-7 w-7 text-clay-400 hover:text-amber-400"
+                  className="h-7 w-7 text-clay-300 hover:text-amber-400"
                   title={update.pinned ? "Unpin" : "Pin"}
                 >
                   {update.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
@@ -82,7 +82,7 @@ export function UpdateFeed({ slug, updates, onTogglePin, onDelete }: UpdateFeedP
                   variant="ghost"
                   size="icon"
                   onClick={() => onDelete(update.id)}
-                  className="h-7 w-7 text-clay-400 hover:text-red-400"
+                  className="h-7 w-7 text-clay-300 hover:text-red-400"
                   title="Delete"
                 >
                   <Trash2 className="h-3.5 w-3.5" />

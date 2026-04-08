@@ -34,7 +34,7 @@ function JsonTree({
   onAddAsColumn?: (path: string, value: unknown) => void;
 }) {
   if (data === null || data === undefined) {
-    return <span className="text-zinc-500 italic">null</span>;
+    return <span className="text-clay-300 italic">null</span>;
   }
 
   if (typeof data === "string") {
@@ -48,7 +48,7 @@ function JsonTree({
           }}
           className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-zinc-700"
         >
-          <Copy className="w-3 h-3 text-zinc-500" />
+          <Copy className="w-3 h-3 text-clay-300" />
         </button>
       </div>
     );
@@ -63,7 +63,7 @@ function JsonTree({
       <div className="space-y-1 pl-3 border-l border-zinc-800">
         {data.map((item, i) => (
           <div key={i}>
-            <span className="text-zinc-600 text-xs">[{i}]</span>
+            <span className="text-clay-300 text-xs">[{i}]</span>
             <div className="pl-2">
               <JsonTree data={item} path={`${path}[${i}]`} onAddAsColumn={onAddAsColumn} />
             </div>
@@ -112,7 +112,7 @@ function JsonTree({
     );
   }
 
-  return <span className="text-zinc-500">{String(data)}</span>;
+  return <span className="text-clay-300">{String(data)}</span>;
 }
 
 export function CellDetailPanel({
@@ -147,7 +147,7 @@ export function CellDetailPanel({
     status === "done" ? "text-emerald-400" :
     status === "error" ? "text-red-400" :
     status === "running" ? "text-blue-400" :
-    "text-zinc-500";
+    "text-clay-300";
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
@@ -163,14 +163,14 @@ export function CellDetailPanel({
                 <>
                   <button
                     onClick={() => onNavigate("up")}
-                    className="p-1 rounded hover:bg-zinc-800 text-zinc-400"
+                    className="p-1 rounded hover:bg-zinc-800 text-clay-200"
                     title="Previous row"
                   >
                     <ChevronUp className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => onNavigate("down")}
-                    className="p-1 rounded hover:bg-zinc-800 text-zinc-400"
+                    className="p-1 rounded hover:bg-zinc-800 text-clay-200"
                     title="Next row"
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -179,7 +179,7 @@ export function CellDetailPanel({
               )}
             </div>
           </div>
-          <SheetDescription className="text-zinc-500 text-xs">
+          <SheetDescription className="text-clay-300 text-xs">
             Row: {row._row_id}
           </SheetDescription>
         </SheetHeader>
@@ -207,19 +207,19 @@ export function CellDetailPanel({
 
           {/* Value / JSON tree */}
           <div>
-            <h4 className="text-xs font-medium text-zinc-400 mb-2">Result</h4>
+            <h4 className="text-xs font-medium text-clay-200 mb-2">Result</h4>
             <div className="px-3 py-2 rounded bg-zinc-900 border border-zinc-800 text-xs max-h-[400px] overflow-y-auto">
               {value !== undefined && value !== null ? (
                 <JsonTree data={value} onAddAsColumn={onAddAsColumn} />
               ) : (
-                <span className="text-zinc-600 italic">No data</span>
+                <span className="text-clay-300 italic">No data</span>
               )}
             </div>
           </div>
 
           {/* All row data */}
           <div>
-            <h4 className="text-xs font-medium text-zinc-400 mb-2">All Columns</h4>
+            <h4 className="text-xs font-medium text-clay-200 mb-2">All Columns</h4>
             <div className="space-y-1">
               {table.columns
                 .filter((c) => !c.hidden)
@@ -247,7 +247,7 @@ export function CellDetailPanel({
                           "bg-zinc-600"
                         }`}
                       />
-                      <span className="text-zinc-500 w-24 truncate shrink-0">{col.name}</span>
+                      <span className="text-clay-300 w-24 truncate shrink-0">{col.name}</span>
                       <span className="text-zinc-300 truncate">{displayVal}</span>
                     </div>
                   );

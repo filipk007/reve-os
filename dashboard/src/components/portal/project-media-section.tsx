@@ -45,7 +45,7 @@ export function ProjectMediaSection({ slug, media, onDelete }: ProjectMediaSecti
       </div>
 
       {media.length === 0 ? (
-        <p className="text-xs text-clay-400">No files yet</p>
+        <p className="text-xs text-clay-300">No files yet</p>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-2">
@@ -70,12 +70,12 @@ export function ProjectMediaSection({ slug, media, onDelete }: ProjectMediaSecti
                     </button>
                   ) : isVideo(m.mime_type) ? (
                     <div className="w-full aspect-square bg-clay-900 flex items-center justify-center">
-                      <Film className="h-6 w-6 text-clay-400" />
+                      <Film className="h-6 w-6 text-clay-300" />
                     </div>
                   ) : (
                     <div className="w-full aspect-square bg-clay-900 flex flex-col items-center justify-center p-2">
-                      <FileIcon className="h-5 w-5 text-clay-400 mb-1" />
-                      <span className="text-[10px] text-clay-400 text-center truncate w-full">
+                      <FileIcon className="h-5 w-5 text-clay-300 mb-1" />
+                      <span className="text-[10px] text-clay-300 text-center truncate w-full">
                         {m.original_name}
                       </span>
                     </div>
@@ -83,7 +83,7 @@ export function ProjectMediaSection({ slug, media, onDelete }: ProjectMediaSecti
 
                   {/* Footer */}
                   <div className="px-2 py-1.5 flex items-center justify-between">
-                    <span className="text-[10px] text-clay-400 truncate flex-1">
+                    <span className="text-[10px] text-clay-300 truncate flex-1">
                       {formatBytes(m.size_bytes)}
                     </span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -91,7 +91,7 @@ export function ProjectMediaSection({ slug, media, onDelete }: ProjectMediaSecti
                         <a
                           href={fullUrl}
                           download={m.original_name}
-                          className="text-clay-400 hover:text-clay-200"
+                          className="text-clay-300 hover:text-clay-200"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Download className="h-3 w-3" />
@@ -99,7 +99,7 @@ export function ProjectMediaSection({ slug, media, onDelete }: ProjectMediaSecti
                       )}
                       <button
                         onClick={() => onDelete(m.id)}
-                        className="text-clay-500 hover:text-red-400"
+                        className="text-clay-300 hover:text-red-400"
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>

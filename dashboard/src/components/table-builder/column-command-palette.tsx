@@ -194,16 +194,16 @@ export function ColumnCommandPalette({
           >
             {/* Search bar */}
             <div className="border-b border-zinc-800 px-4 py-3 flex items-center gap-3">
-              <Search className="w-4 h-4 text-zinc-500 shrink-0" />
+              <Search className="w-4 h-4 text-clay-300 shrink-0" />
               <Command.Input
                 placeholder="Search enrichments, AI, formulas, filters..."
-                className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-zinc-500"
+                className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-clay-300"
                 autoFocus
               />
             </div>
 
             <Command.List className="max-h-[60vh] overflow-y-auto p-3">
-              <Command.Empty className="py-10 text-center text-sm text-zinc-500">
+              <Command.Empty className="py-10 text-center text-sm text-clay-300">
                 No results found.
               </Command.Empty>
 
@@ -223,7 +223,7 @@ export function ColumnCommandPalette({
                     </div>
                     <div>
                       <div className="font-semibold text-sm">AI Builder</div>
-                      <div className="text-xs text-zinc-400">
+                      <div className="text-xs text-clay-200">
                         Describe what you want to achieve and AI will build the columns for you
                       </div>
                     </div>
@@ -235,7 +235,7 @@ export function ColumnCommandPalette({
               {recentTools.length > 0 && (
                 <Command.Group
                   heading="Recent"
-                  className={`${GROUP_HEADING_CLASS} [&_[cmdk-group-heading]]:text-zinc-500`}
+                  className={`${GROUP_HEADING_CLASS} [&_[cmdk-group-heading]]:text-clay-300`}
                 >
                   {recentTools.map((tool) => {
                     const CatIcon =
@@ -247,7 +247,7 @@ export function ColumnCommandPalette({
                         onSelect={() => handleSelectTool(tool)}
                         value={`recent ${tool.name} ${tool.description}`}
                       >
-                        <Clock className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                        <Clock className="w-3.5 h-3.5 text-clay-300 shrink-0" />
                         <CatIcon className="w-4 h-4 text-blue-400 shrink-0" />
                         <div className="min-w-0 flex-1">
                           <div className="font-medium">{tool.name}</div>
@@ -286,7 +286,7 @@ export function ColumnCommandPalette({
                           <div className="font-medium text-xs">
                             {preset.name}
                           </div>
-                          <div className="text-[11px] text-zinc-500 truncate">
+                          <div className="text-[11px] text-clay-300 truncate">
                             {preset.description}
                           </div>
                         </div>
@@ -299,7 +299,7 @@ export function ColumnCommandPalette({
               {/* Built-in column types */}
               <Command.Group
                 heading="Column Types"
-                className={`${GROUP_HEADING_CLASS} [&_[cmdk-group-heading]]:text-zinc-500`}
+                className={`${GROUP_HEADING_CLASS} [&_[cmdk-group-heading]]:text-clay-300`}
               >
                 <div className="grid grid-cols-2 gap-2 px-1 pb-2">
                   <Command.Item
@@ -312,7 +312,7 @@ export function ColumnCommandPalette({
                     <Brain className="w-4 h-4 text-purple-400 shrink-0" />
                     <div>
                       <div className="font-medium text-xs">Use AI</div>
-                      <div className="text-[11px] text-zinc-500">
+                      <div className="text-[11px] text-clay-300">
                         Natural language prompt
                       </div>
                     </div>
@@ -327,7 +327,7 @@ export function ColumnCommandPalette({
                     <Calculator className="w-4 h-4 text-teal-400 shrink-0" />
                     <div>
                       <div className="font-medium text-xs">Formula</div>
-                      <div className="text-[11px] text-zinc-500">
+                      <div className="text-[11px] text-clay-300">
                         Computed from columns
                       </div>
                     </div>
@@ -342,7 +342,7 @@ export function ColumnCommandPalette({
                     <Filter className="w-4 h-4 text-amber-400 shrink-0" />
                     <div>
                       <div className="font-medium text-xs">Gate / Filter</div>
-                      <div className="text-[11px] text-zinc-500">
+                      <div className="text-[11px] text-clay-300">
                         Filter rows by condition
                       </div>
                     </div>
@@ -354,10 +354,10 @@ export function ColumnCommandPalette({
                       onClose();
                     }}
                   >
-                    <Type className="w-4 h-4 text-zinc-400 shrink-0" />
+                    <Type className="w-4 h-4 text-clay-200 shrink-0" />
                     <div>
                       <div className="font-medium text-xs">Static Column</div>
-                      <div className="text-[11px] text-zinc-500">
+                      <div className="text-[11px] text-clay-300">
                         Manual text or number
                       </div>
                     </div>
@@ -374,7 +374,7 @@ export function ColumnCommandPalette({
                       <Unplug className="w-4 h-4 text-orange-400 shrink-0" />
                       <div>
                         <div className="font-medium text-xs">HTTP Request</div>
-                        <div className="text-[11px] text-zinc-500">
+                        <div className="text-[11px] text-clay-300">
                           Call any API endpoint
                         </div>
                       </div>
@@ -392,7 +392,7 @@ export function ColumnCommandPalette({
                       <Shuffle className="w-4 h-4 text-emerald-400 shrink-0" />
                       <div>
                         <div className="font-medium text-xs">Waterfall</div>
-                        <div className="text-[11px] text-zinc-500">
+                        <div className="text-[11px] text-clay-300">
                           Try providers in order
                         </div>
                       </div>
@@ -410,7 +410,7 @@ export function ColumnCommandPalette({
                       <Link2 className="w-4 h-4 text-cyan-400 shrink-0" />
                       <div>
                         <div className="font-medium text-xs">Lookup</div>
-                        <div className="text-[11px] text-zinc-500">
+                        <div className="text-[11px] text-clay-300">
                           Cross-table data join
                         </div>
                       </div>
@@ -428,7 +428,7 @@ export function ColumnCommandPalette({
                       <Terminal className="w-4 h-4 text-rose-400 shrink-0" />
                       <div>
                         <div className="font-medium text-xs">Script</div>
-                        <div className="text-[11px] text-zinc-500">
+                        <div className="text-[11px] text-clay-300">
                           Run Python/Bash/Node code
                         </div>
                       </div>
@@ -445,7 +445,7 @@ export function ColumnCommandPalette({
                   <Command.Group
                     key={category}
                     heading={category}
-                    className={`${GROUP_HEADING_CLASS} [&_[cmdk-group-heading]]:text-zinc-500 [&_[cmdk-group-heading]]:mt-1`}
+                    className={`${GROUP_HEADING_CLASS} [&_[cmdk-group-heading]]:text-clay-300 [&_[cmdk-group-heading]]:mt-1`}
                   >
                     {categoryTools.map((tool) => (
                       <Command.Item
@@ -457,7 +457,7 @@ export function ColumnCommandPalette({
                         <CatIcon className="w-4 h-4 text-blue-400 shrink-0" />
                         <div className="min-w-0 flex-1">
                           <div className="font-medium">{tool.name}</div>
-                          <div className="text-xs text-zinc-500 truncate">
+                          <div className="text-xs text-clay-300 truncate">
                             {tool.description}
                           </div>
                         </div>
@@ -482,7 +482,7 @@ function SpeedBadge({ speed }: { speed?: string }) {
       ? "bg-emerald-500/10 text-emerald-400"
       : speed === "medium"
         ? "bg-amber-500/10 text-amber-400"
-        : "bg-zinc-500/10 text-zinc-400";
+        : "bg-zinc-500/10 text-clay-200";
   return (
     <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${color}`}>
       {speed}

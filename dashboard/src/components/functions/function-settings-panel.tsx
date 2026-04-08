@@ -56,14 +56,14 @@ export function FunctionSettingsPanel({
       >
         <SheetHeader>
           <SheetTitle className="text-white">Function Settings</SheetTitle>
-          <SheetDescription className="text-zinc-500">
+          <SheetDescription className="text-clay-300">
             {func.id}
           </SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 space-y-5">
           <div>
-            <label className="text-xs text-zinc-400">Name</label>
+            <label className="text-xs text-clay-200">Name</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -72,7 +72,7 @@ export function FunctionSettingsPanel({
           </div>
 
           <div>
-            <label className="text-xs text-zinc-400">Description</label>
+            <label className="text-xs text-clay-200">Description</label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -81,7 +81,7 @@ export function FunctionSettingsPanel({
           </div>
 
           <div>
-            <label className="text-xs text-zinc-400">Folder</label>
+            <label className="text-xs text-clay-200">Folder</label>
             <Input
               value={folder}
               onChange={(e) => setFolder(e.target.value)}
@@ -108,7 +108,7 @@ export function FunctionSettingsPanel({
           <Separator className="bg-zinc-800" />
 
           {/* Info */}
-          <div className="space-y-2 text-xs text-zinc-500">
+          <div className="space-y-2 text-xs text-clay-300">
             <div className="flex justify-between">
               <span>Inputs</span>
               <span>{func.inputs.length}</span>

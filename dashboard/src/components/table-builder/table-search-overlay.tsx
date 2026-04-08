@@ -77,12 +77,12 @@ export function TableSearchOverlay({
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Find in table..."
-            className="w-48 bg-transparent text-sm text-white outline-none placeholder:text-zinc-500"
+            className="w-48 bg-transparent text-sm text-white outline-none placeholder:text-clay-300"
           />
 
           {/* Match count */}
           {query && (
-            <span className="text-xs text-zinc-500 tabular-nums shrink-0">
+            <span className="text-xs text-clay-300 tabular-nums shrink-0">
               {matchCount > 0
                 ? `${currentMatch + 1} of ${matchCount}`
                 : "No matches"}
@@ -94,14 +94,14 @@ export function TableSearchOverlay({
             <button
               onClick={() => onNavigate("up")}
               disabled={matchCount === 0}
-              className="p-0.5 rounded hover:bg-zinc-700 text-zinc-400 disabled:opacity-30"
+              className="p-0.5 rounded hover:bg-zinc-700 text-clay-200 disabled:opacity-30"
             >
               <ChevronUp className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => onNavigate("down")}
               disabled={matchCount === 0}
-              className="p-0.5 rounded hover:bg-zinc-700 text-zinc-400 disabled:opacity-30"
+              className="p-0.5 rounded hover:bg-zinc-700 text-clay-200 disabled:opacity-30"
             >
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
@@ -113,7 +113,7 @@ export function TableSearchOverlay({
               setQuery("");
               onClose();
             }}
-            className="p-0.5 rounded hover:bg-zinc-700 text-zinc-400"
+            className="p-0.5 rounded hover:bg-zinc-700 text-clay-200"
           >
             <X className="w-3.5 h-3.5" />
           </button>

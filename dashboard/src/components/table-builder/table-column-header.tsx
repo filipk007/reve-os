@@ -39,8 +39,8 @@ const TYPE_ICON_COLORS: Record<string, string> = {
   ai: "text-purple-400",
   formula: "text-teal-400",
   gate: "text-amber-400",
-  input: "text-zinc-500",
-  static: "text-zinc-500",
+  input: "text-clay-300",
+  static: "text-clay-300",
 };
 
 interface TableColumnHeaderProps {
@@ -63,7 +63,7 @@ export function TableColumnHeader({
   sortDir,
 }: TableColumnHeaderProps) {
   const Icon = TYPE_ICONS[column.column_type] || Type;
-  const iconColor = TYPE_ICON_COLORS[column.column_type] || "text-zinc-500";
+  const iconColor = TYPE_ICON_COLORS[column.column_type] || "text-clay-300";
 
   const hasProgress = progress && progress.total > 0;
   const percent = hasProgress ? Math.round((progress.done / progress.total) * 100) : 0;
@@ -182,7 +182,7 @@ export function TableColumnHeader({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-zinc-700 transition-opacity">
-              <MoreVertical className="w-3 h-3 text-zinc-500" />
+              <MoreVertical className="w-3 h-3 text-clay-300" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="bg-zinc-900 border-zinc-700 text-sm">
@@ -231,7 +231,7 @@ export function TableColumnHeader({
             e.stopPropagation();
             onEditConfig();
           }}
-          className="text-[10px] text-zinc-600 hover:text-zinc-400 text-left truncate transition-colors"
+          className="text-[10px] text-clay-300 hover:text-clay-200 text-left truncate transition-colors"
         >
           {configSummary}
         </button>
@@ -260,7 +260,7 @@ export function TableColumnHeader({
               )}
             </motion.div>
           </div>
-          <span className="text-[10px] text-zinc-500 tabular-nums w-7 text-right">
+          <span className="text-[10px] text-clay-300 tabular-nums w-7 text-right">
             {percent}%
           </span>
         </div>

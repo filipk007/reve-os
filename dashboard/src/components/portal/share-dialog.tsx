@@ -95,7 +95,7 @@ export function ShareDialog({ slug, shareToken, open, onOpenChange, onChanged }:
                 </div>
               )}
               {!shareUrl && shareToken && (
-                <p className="text-xs text-clay-400">
+                <p className="text-xs text-clay-300">
                   A share link is active. Generate a new one to see the URL.
                 </p>
               )}

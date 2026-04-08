@@ -100,7 +100,7 @@ export function AuthorPicker({ value, onChange, size = "sm", placeholder = "Sele
           isMd ? "px-3" : "px-2",
           value
             ? "text-clay-200 border-clay-600 hover:border-clay-500 bg-clay-900"
-            : "text-clay-500 border-clay-600 hover:text-clay-300 bg-clay-900",
+            : "text-clay-300 border-clay-600 hover:text-clay-300 bg-clay-900",
           textSize
         )}
       >
@@ -114,13 +114,13 @@ export function AuthorPicker({ value, onChange, size = "sm", placeholder = "Sele
         ) : (
           placeholder
         )}
-        <ChevronDown className="h-3 w-3 text-clay-500 ml-auto" />
+        <ChevronDown className="h-3 w-3 text-clay-300 ml-auto" />
       </button>
 
       {showPicker && (
         <div className="absolute bottom-full left-0 mb-1 w-52 bg-clay-800 border border-clay-600 rounded-lg shadow-xl z-20 py-1">
           {savedAuthors.length === 0 && !addingNew && (
-            <div className="px-3 py-2 text-[11px] text-clay-500">No saved names yet</div>
+            <div className="px-3 py-2 text-[11px] text-clay-300">No saved names yet</div>
           )}
 
           {savedAuthors.map((name) => (
@@ -152,7 +152,7 @@ export function AuthorPicker({ value, onChange, size = "sm", placeholder = "Sele
                   if (e.key === "Escape") { setAddingNew(false); setNewName(""); }
                 }}
                 placeholder="Name"
-                className="flex-1 bg-clay-900 border border-clay-600 rounded px-2 py-1 text-xs text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-clay-400"
+                className="flex-1 bg-clay-900 border border-clay-600 rounded px-2 py-1 text-xs text-clay-100 placeholder:text-clay-300 focus:outline-none focus:border-clay-400"
               />
               <Button
                 size="sm"
@@ -167,7 +167,7 @@ export function AuthorPicker({ value, onChange, size = "sm", placeholder = "Sele
             <button
               onClick={() => setAddingNew(true)}
               className={cn(
-                "w-full text-left px-3 py-1.5 text-clay-400 hover:text-clay-200 hover:bg-clay-700 flex items-center gap-2 transition-colors border-t border-clay-700 mt-1",
+                "w-full text-left px-3 py-1.5 text-clay-300 hover:text-clay-200 hover:bg-clay-700 flex items-center gap-2 transition-colors border-t border-clay-700 mt-1",
                 textSize
               )}
             >

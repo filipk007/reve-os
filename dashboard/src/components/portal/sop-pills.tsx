@@ -76,9 +76,9 @@ export function SOPPills({ slug, sops, sopAcks = {}, onCreated, onUpdated, onDel
           onClick={() => setPopoverOpen(!popoverOpen)}
           className="flex items-center gap-1.5 text-xs font-medium text-clay-300 hover:text-clay-100 transition-colors px-2.5 py-1.5 rounded-lg border border-clay-700 bg-clay-800/60 hover:bg-clay-800"
         >
-          <FileText className="h-3.5 w-3.5 text-clay-400" />
+          <FileText className="h-3.5 w-3.5 text-clay-300" />
           {sops.length} {sops.length === 1 ? "SOP" : "SOPs"}
-          <ChevronDown className={cn("h-3 w-3 text-clay-500 transition-transform", popoverOpen && "rotate-180")} />
+          <ChevronDown className={cn("h-3 w-3 text-clay-300 transition-transform", popoverOpen && "rotate-180")} />
         </button>
 
         {popoverOpen && (
@@ -103,14 +103,14 @@ export function SOPPills({ slug, sops, sopAcks = {}, onCreated, onUpdated, onDel
             <div className="border-t border-clay-700 p-2 flex items-center gap-1.5">
               <button
                 onClick={() => { setCreating(true); setPopoverOpen(false); }}
-                className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs text-clay-400 hover:text-clay-200 hover:bg-clay-800 transition-colors flex-1"
+                className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs text-clay-300 hover:text-clay-200 hover:bg-clay-800 transition-colors flex-1"
               >
                 <Plus className="h-3 w-3" />
                 New SOP
               </button>
               <button
                 onClick={() => { setTemplatePickerOpen(true); setPopoverOpen(false); }}
-                className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs text-clay-400 hover:text-clay-200 hover:bg-clay-800 transition-colors flex-1"
+                className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs text-clay-300 hover:text-clay-200 hover:bg-clay-800 transition-colors flex-1"
               >
                 <Copy className="h-3 w-3" />
                 Template
@@ -175,7 +175,7 @@ export function SOPPills({ slug, sops, sopAcks = {}, onCreated, onUpdated, onDel
                   <Trash2 className="h-3.5 w-3.5" />
                   Delete
                 </Button>
-                <span className="ml-auto text-[10px] text-clay-500">
+                <span className="ml-auto text-[10px] text-clay-300">
                   Updated {new Date(selectedSop.updated_at * 1000).toLocaleDateString()}
                 </span>
               </SheetFooter>

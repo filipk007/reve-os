@@ -178,7 +178,7 @@ export function FunctionPicker({
         {selectedFunction && onClear && (
           <button
             onClick={onClear}
-            className="text-clay-400 hover:text-clay-100 transition-colors shrink-0 p-1 rounded hover:bg-clay-700"
+            className="text-clay-300 hover:text-clay-100 transition-colors shrink-0 p-1 rounded hover:bg-clay-700"
             title="Clear function — return to free chat"
           >
             <X className="h-4 w-4" />

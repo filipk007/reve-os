@@ -31,7 +31,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 
   if (media.length === 0) {
     return (
-      <div className="text-center py-8 text-clay-400">
+      <div className="text-center py-8 text-clay-300">
         <p className="text-sm">No media files yet. Upload images, screenshots, or files.</p>
       </div>
     );
@@ -65,17 +65,17 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
                 </button>
               ) : isVideo(m.mime_type) ? (
                 <div className="w-full aspect-video bg-clay-900 flex items-center justify-center">
-                  <Film className="h-8 w-8 text-clay-500" />
+                  <Film className="h-8 w-8 text-clay-300" />
                 </div>
               ) : (
                 <div className="w-full aspect-video bg-clay-900 flex items-center justify-center">
-                  <FileIcon className="h-8 w-8 text-clay-500" />
+                  <FileIcon className="h-8 w-8 text-clay-300" />
                 </div>
               )}
               <div className="p-2">
                 <p className="text-xs text-clay-200 truncate">{m.caption || m.original_name}</p>
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-[10px] text-clay-500">{formatBytes(m.size_bytes)}</span>
+                  <span className="text-[10px] text-clay-300">{formatBytes(m.size_bytes)}</span>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     {downloadUrl && (
                       <a
@@ -83,7 +83,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
                         target={driveUrl ? "_blank" : undefined}
                         rel={driveUrl ? "noopener noreferrer" : undefined}
                         download={driveUrl ? undefined : m.original_name}
-                        className="text-clay-400 hover:text-clay-200"
+                        className="text-clay-300 hover:text-clay-200"
                         title={driveUrl ? "Open in Google Drive" : "Download"}
                       >
                         <Download className="h-3.5 w-3.5" />
@@ -91,7 +91,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
                     )}
                     <button
                       onClick={() => onDelete(m.id)}
-                      className="text-clay-400 hover:text-red-400"
+                      className="text-clay-300 hover:text-red-400"
                       title="Delete"
                     >
                       <Trash2 className="h-3.5 w-3.5" />

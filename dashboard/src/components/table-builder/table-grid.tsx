@@ -220,7 +220,7 @@ export function TableGrid({
                 return (
                   <th
                     key={header.id}
-                    className={`relative px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-800 select-none ${
+                    className={`relative px-3 py-2 text-left text-xs font-medium text-clay-200 border-b border-zinc-800 select-none ${
                       tableCol
                         ? `border-l-2 ${COLUMN_TYPE_COLORS[tableCol.column_type] || "border-l-zinc-600"}`
                         : ""
@@ -298,7 +298,7 @@ export function TableGrid({
               <th className="px-2 py-2 border-b border-zinc-800 bg-zinc-900 w-10">
                 <button
                   onClick={() => onAddColumn()}
-                  className={`flex items-center justify-center w-6 h-6 rounded hover:bg-zinc-700 text-zinc-500 hover:text-kiln-teal transition-colors ${
+                  className={`flex items-center justify-center w-6 h-6 rounded hover:bg-zinc-700 text-clay-300 hover:text-kiln-teal transition-colors ${
                     rows.length > 0 &&
                     table.columns.every(
                       (c) => c.column_type === "input" || c.column_type === "static",
@@ -391,7 +391,7 @@ export function TableGrid({
                     >
                       {/* Row number with expand toggle */}
                       {isRowNum ? (
-                        <span className="flex items-center gap-0.5 text-zinc-500 text-xs cursor-pointer hover:text-zinc-300">
+                        <span className="flex items-center gap-0.5 text-clay-300 text-xs cursor-pointer hover:text-zinc-300">
                           {onToggleExpandRow && (
                             isExpanded
                               ? <ChevronDown className="w-3 h-3" />
@@ -462,7 +462,7 @@ export function TableGrid({
                       const status = getCellStatus(expandedRow, col.id);
                       return (
                         <div key={col.id} className="min-w-0">
-                          <div className="text-[10px] text-zinc-500 mb-0.5 truncate">
+                          <div className="text-[10px] text-clay-300 mb-0.5 truncate">
                             {col.name}
                           </div>
                           <div className="text-xs text-zinc-300 truncate">
@@ -470,7 +470,7 @@ export function TableGrid({
                               ? typeof val === "object"
                                 ? JSON.stringify(val).slice(0, 100)
                                 : String(val)
-                              : <span className="text-zinc-600">—</span>}
+                              : <span className="text-clay-300">—</span>}
                           </div>
                         </div>
                       );
@@ -499,9 +499,9 @@ export function TableGrid({
 
       {/* Empty state */}
       {rows.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
+        <div className="flex flex-col items-center justify-center py-20 text-clay-300">
           <p className="text-sm mb-2">No rows yet</p>
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-clay-300">
             Import a CSV or add rows to get started
           </p>
         </div>

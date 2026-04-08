@@ -38,7 +38,7 @@ export function PortalTabs({ active, onChange, counts }: PortalTabsProps) {
             {count !== undefined && count > 0 && (
               <span className={cn(
                 "text-[10px] px-1.5 py-0.5 rounded-full",
-                active === tab.id ? "bg-kiln-teal/20 text-kiln-teal" : "bg-clay-700 text-clay-400"
+                active === tab.id ? "bg-kiln-teal/20 text-kiln-teal" : "bg-clay-700 text-clay-300"
               )}>
                 {count}
               </span>

@@ -50,7 +50,7 @@ function EmailChipInput({
             {email}
             <button
               onClick={() => onChange(emails.filter((e) => e !== email))}
-              className="text-clay-500 hover:text-red-400"
+              className="text-clay-300 hover:text-red-400"
             >
               <X className="h-2.5 w-2.5" />
             </button>
@@ -69,7 +69,7 @@ function EmailChipInput({
         }}
         onBlur={addEmail}
         placeholder="Add email..."
-        className="w-full rounded-md border border-clay-600 bg-clay-900 px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-500 focus:border-clay-400 focus:outline-none"
+        className="w-full rounded-md border border-clay-600 bg-clay-900 px-2.5 py-1 text-xs text-clay-100 placeholder:text-clay-300 focus:border-clay-400 focus:outline-none"
       />
     </div>
   );
@@ -126,7 +126,7 @@ export function NotificationSettings({
       <div className="rounded-lg border border-clay-700 bg-clay-800 p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <SlackIcon className="h-4 w-4 text-clay-400" />
+            <SlackIcon className="h-4 w-4 text-clay-300" />
             <span className="text-xs font-medium text-clay-200">Notifications</span>
             {isConnected ? (
               <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-400">
@@ -143,7 +143,7 @@ export function NotificationSettings({
           </div>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="text-[11px] text-clay-400 hover:text-clay-200"
+            className="text-[11px] text-clay-300 hover:text-clay-200"
           >
             {expanded ? "Close" : "Edit"}
           </button>
@@ -152,19 +152,19 @@ export function NotificationSettings({
           <div className="mt-3 space-y-3">
             {/* Slack */}
             <div>
-              <label className="text-[10px] text-clay-500 font-medium uppercase tracking-wider">Slack Webhook</label>
+              <label className="text-[10px] text-clay-300 font-medium uppercase tracking-wider">Slack Webhook</label>
               <input
                 type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://hooks.slack.com/services/..."
-                className="mt-1 w-full rounded-md border border-clay-600 bg-clay-900 px-2.5 py-1.5 text-xs text-clay-100 placeholder:text-clay-500 focus:border-clay-400 focus:outline-none"
+                className="mt-1 w-full rounded-md border border-clay-600 bg-clay-900 px-2.5 py-1.5 text-xs text-clay-100 placeholder:text-clay-300 focus:border-clay-400 focus:outline-none"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="text-[10px] text-clay-500 font-medium uppercase tracking-wider">Email Recipients</label>
+              <label className="text-[10px] text-clay-300 font-medium uppercase tracking-wider">Email Recipients</label>
               <div className="mt-1">
                 <EmailChipInput emails={emails} onChange={setEmails} />
               </div>
@@ -200,7 +200,7 @@ export function NotificationSettings({
     <Popover>
       <PopoverTrigger asChild>
         <button
-          className="relative inline-flex items-center justify-center h-8 w-8 rounded-md border border-clay-600 bg-clay-800 text-clay-400 hover:text-clay-100 hover:bg-clay-700 transition-colors"
+          className="relative inline-flex items-center justify-center h-8 w-8 rounded-md border border-clay-600 bg-clay-800 text-clay-300 hover:text-clay-100 hover:bg-clay-700 transition-colors"
           title={isConnected ? "Slack connected" : "Set up Slack notifications"}
         >
           <SlackIcon className="h-4 w-4" />
@@ -223,7 +223,7 @@ export function NotificationSettings({
 
           {/* Slack */}
           <div>
-            <p className="text-xs text-clay-400 mb-1.5">
+            <p className="text-xs text-clay-300 mb-1.5">
               Paste an{" "}
               <a
                 href="https://api.slack.com/messaging/webhooks"
@@ -241,13 +241,13 @@ export function NotificationSettings({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://hooks.slack.com/services/..."
-              className="w-full rounded-md border border-clay-600 bg-clay-900 px-2.5 py-1.5 text-xs text-clay-100 placeholder:text-clay-500 focus:border-clay-400 focus:outline-none"
+              className="w-full rounded-md border border-clay-600 bg-clay-900 px-2.5 py-1.5 text-xs text-clay-100 placeholder:text-clay-300 focus:border-clay-400 focus:outline-none"
             />
           </div>
 
           {/* Email */}
           <div>
-            <p className="text-xs text-clay-400 mb-1.5 flex items-center gap-1">
+            <p className="text-xs text-clay-300 mb-1.5 flex items-center gap-1">
               <Mail className="h-3 w-3" />
               Email recipients
             </p>

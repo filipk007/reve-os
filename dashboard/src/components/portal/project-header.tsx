@@ -11,7 +11,7 @@ const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
   on_hold: "bg-amber-500/15 text-amber-400 border-amber-500/30",
   completed: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  archived: "bg-clay-500/15 text-clay-400 border-clay-500/30",
+  archived: "bg-clay-500/15 text-clay-300 border-clay-500/30",
 };
 
 const STATUS_OPTIONS = ["active", "on_hold", "completed", "archived"] as const;
@@ -44,7 +44,7 @@ export function ProjectHeader({
       {/* Back link */}
       <Link
         href={`/clients/${slug}`}
-        className="inline-flex items-center gap-1.5 text-xs text-clay-400 hover:text-clay-200 transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs text-clay-300 hover:text-clay-200 transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         {clientName}
@@ -95,7 +95,7 @@ export function ProjectHeader({
                 "inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border font-medium",
                 isOverdue(project.due_date)
                   ? "bg-red-500/15 text-red-400 border-red-500/30"
-                  : "bg-clay-700 text-clay-400 border-clay-600",
+                  : "bg-clay-700 text-clay-300 border-clay-600",
               )}
             >
               <Calendar className="h-3 w-3" />
@@ -104,7 +104,7 @@ export function ProjectHeader({
           ) : (
             <button
               onClick={() => setEditingDate(true)}
-              className="text-[11px] text-clay-500 hover:text-clay-400 transition-colors flex items-center gap-1"
+              className="text-[11px] text-clay-300 hover:text-clay-300 transition-colors flex items-center gap-1"
             >
               <Calendar className="h-3 w-3" />
               Set target date
@@ -116,7 +116,7 @@ export function ProjectHeader({
           variant="ghost"
           size="sm"
           onClick={onDelete}
-          className="text-clay-500 hover:text-red-400 hover:bg-red-500/10"
+          className="text-clay-300 hover:text-red-400 hover:bg-red-500/10"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -124,7 +124,7 @@ export function ProjectHeader({
 
       {/* Description */}
       {project.description && (
-        <p className="text-sm text-clay-400 max-w-2xl">{project.description}</p>
+        <p className="text-sm text-clay-300 max-w-2xl">{project.description}</p>
       )}
     </div>
   );

@@ -266,7 +266,7 @@ export default function TableBuilderPage({
   if (tb.loading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+        <Loader2 className="w-6 h-6 text-clay-300 animate-spin" />
       </div>
     );
   }
