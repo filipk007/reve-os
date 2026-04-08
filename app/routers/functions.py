@@ -539,6 +539,7 @@ async def list_local_queue(request: Request, status: str | None = None, limit: i
     for job in jobs:
         summary.append({
             "id": job.get("id"),
+            "type": job.get("type", "function"),
             "function_id": job.get("function_id"),
             "function_name": job.get("function_name"),
             "model": job.get("model"),
@@ -546,6 +547,9 @@ async def list_local_queue(request: Request, status: str | None = None, limit: i
             "queued_at": job.get("queued_at"),
             "prompt_chars": len(job.get("prompt", "")),
             "output_keys": job.get("output_keys", []),
+            "bridge_id": job.get("bridge_id"),
+            "table_id": job.get("table_id"),
+            "column_id": job.get("column_id"),
         })
 
     return {"jobs": summary, "count": len(summary)}

@@ -519,7 +519,9 @@ def cmd_watch(client: ClayClient) -> None:
             jobs = client.list_pending_jobs()
             if jobs:
                 job_summary = jobs[0]
-                print(f"\nPicked up: {job_summary['function_name']} ({job_summary['id']})")
+                job_type = job_summary.get("type", "function")
+                label = job_summary.get("function_name") or job_summary["id"]
+                print(f"\nPicked up: {label} ({job_summary['id']}, type={job_type})")
 
                 # Fetch full job with prompt
                 job = client.get_job(job_summary["id"])
@@ -540,10 +542,24 @@ def cmd_watch(client: ClayClient) -> None:
                     client.update_job_status(job["id"], "failed")
                     continue
 
-                response = client.submit_result(
-                    job["function_id"], job["id"], result, int(duration_ms)
-                )
-                print(f"  Done in {duration_ms/1000:.1f}s — saved as {response.get('exec_id')}")
+                if job.get("type") == "table_cell":
+                    bridge_id = job.get("bridge_id")
+                    if bridge_id:
+                        r = requests.post(
+                            f"{client.base}/tables/local-result/{job['id']}",
+                            headers=client.headers,
+                            json={"bridge_id": bridge_id, "result": result, "duration_ms": int(duration_ms)},
+                        )
+                        r.raise_for_status()
+                        print(f"  Done in {duration_ms/1000:.1f}s — bridge resolved")
+                    else:
+                        print("  Failed: Missing bridge_id")
+                        client.update_job_status(job["id"], "failed")
+                else:
+                    response = client.submit_result(
+                        job["function_id"], job["id"], result, int(duration_ms)
+                    )
+                    print(f"  Done in {duration_ms/1000:.1f}s — saved as {response.get('exec_id')}")
             else:
                 sys.stdout.write(".")
                 sys.stdout.flush()
@@ -589,11 +605,13 @@ def cmd_daemon(client: ClayClient) -> None:
             jobs = client.list_pending_jobs()
             if jobs:
                 job_summary = jobs[0]
-                log.info("Picked up: %s (%s)", job_summary["function_name"], job_summary["id"])
+                job_type = job_summary.get("type", "function")
+                log.info("Picked up: %s (%s, type=%s)", job_summary.get("function_name", job_summary["id"]), job_summary["id"], job_type)
 
                 job = client.get_job(job_summary["id"])
                 client.update_job_status(job["id"], "running")
 
+                # Execute prompt via Claude Code
                 log.info("Streaming execution in Claude Code (%s)...", job["model"])
                 output, duration_ms = run_claude_streaming(
                     job["prompt"], job["model"], job["id"], client,
@@ -610,15 +628,31 @@ def cmd_daemon(client: ClayClient) -> None:
                     log.warning("Failed: Could not parse JSON for job %s", job["id"])
                     continue
 
-                # Filter to only declared output keys (drop intermediate values like 'people')
-                output_keys = job.get("output_keys", [])
-                if output_keys:
-                    result = {k: v for k, v in result.items() if k in output_keys}
+                # Route result based on job type
+                if job.get("type") == "table_cell":
+                    # Table enrichment job — submit via bridge callback
+                    bridge_id = job.get("bridge_id")
+                    if bridge_id:
+                        r = requests.post(
+                            f"{client.base}/tables/local-result/{job['id']}",
+                            headers=client.headers,
+                            json={"bridge_id": bridge_id, "result": result, "duration_ms": int(duration_ms)},
+                        )
+                        r.raise_for_status()
+                        log.info("Table cell done in %.1fs — bridge %s resolved", duration_ms / 1000, bridge_id)
+                    else:
+                        log.warning("Table cell job %s missing bridge_id", job["id"])
+                        client.update_job_status(job["id"], "failed")
+                else:
+                    # Function job — submit via standard endpoint
+                    output_keys = job.get("output_keys", [])
+                    if output_keys:
+                        result = {k: v for k, v in result.items() if k in output_keys}
 
-                response = client.submit_result(
-                    job["function_id"], job["id"], result, int(duration_ms)
-                )
-                log.info("Done in %.1fs — saved as %s", duration_ms / 1000, response.get("exec_id"))
+                    response = client.submit_result(
+                        job["function_id"], job["id"], result, int(duration_ms)
+                    )
+                    log.info("Done in %.1fs — saved as %s", duration_ms / 1000, response.get("exec_id"))
 
             time.sleep(5)
 

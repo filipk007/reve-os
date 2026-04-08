@@ -347,9 +347,12 @@ export function StepProgress({
       {runnerConnected === false && (phase === "enriching" || isPreGrid) && (
         <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2.5 flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
-          <span className="text-xs text-amber-300">
-            Local runner not connected — run <code className="font-mono bg-clay-800 px-1 rounded text-amber-200">clay-run --watch</code> on your Mac to process enrichments
+          <span className="text-xs text-amber-300 flex-1">
+            Local runner not connected — enrichments need your Mac to process
           </span>
+          <a href="/setup" className="text-xs text-amber-200 hover:text-amber-100 underline shrink-0">
+            Set up
+          </a>
         </div>
       )}
 
