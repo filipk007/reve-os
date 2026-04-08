@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Download, ExternalLink, RotateCcw, CheckCircle2, XCircle, Loader2, Square, Search, Brain, Calculator, Filter } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { Download, ExternalLink, RotateCcw, CheckCircle2, XCircle, Loader2, Square, Search, Brain, Calculator, Filter, RefreshCw, X, Copy, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Papa from "papaparse";
 import {
   createTable,
   importTableCsv,
@@ -18,6 +19,7 @@ import { EnrichmentCell } from "@/components/table-builder/enrichment-cell";
 import type { CsvPreview } from "./step-upload";
 
 type Phase = "creating" | "importing" | "configuring" | "enriching" | "done" | "error";
+type RowFilter = "all" | "success" | "errors";
 
 interface StepProgressProps {
   csvPreview: CsvPreview;
@@ -27,12 +29,27 @@ interface StepProgressProps {
   rowLimit?: number;
 }
 
+interface ColumnProgress {
+  done: number;
+  total: number;
+  errors: number;
+}
+
 const COLUMN_TYPE_STYLES: Record<string, { icon: typeof Search; color: string }> = {
   enrichment: { icon: Search, color: "border-l-blue-500" },
   ai: { icon: Brain, color: "border-l-purple-500" },
   formula: { icon: Calculator, color: "border-l-teal-500" },
   gate: { icon: Filter, color: "border-l-amber-500" },
 };
+
+function formatEta(ms: number): string {
+  const seconds = Math.round(ms / 1000);
+  if (seconds < 60) return `~${seconds}s`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `~${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  return `~${hours}h ${minutes % 60}m`;
+}
 
 export function StepProgress({
   csvPreview,
@@ -48,55 +65,167 @@ export function StepProgress({
   const [progress, setProgress] = useState({ done: 0, total: 0, errors: 0 });
   const [columns, setColumns] = useState<TableColumn[]>([]);
   const [rows, setRows] = useState<TableRow[]>([]);
+  const [columnProgress, setColumnProgress] = useState<Record<string, ColumnProgress>>({});
   const [showConfetti, setShowConfetti] = useState(false);
+  const [selectedCell, setSelectedCell] = useState<{ rowId: string; columnId: string } | null>(null);
+  const [rowFilter, setRowFilter] = useState<RowFilter>("all");
+  const [retrying, setRetrying] = useState(false);
+  const [enrichStartTime, setEnrichStartTime] = useState<number>(0);
   const abortRef = useRef<AbortController | null>(null);
   const startedRef = useRef(false);
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // Enrichment columns (non-input)
+  const enrichmentCols = useMemo(
+    () => columns.filter((c) => c.column_type !== "input"),
+    [columns],
+  );
+
+  // Filtered rows
+  const filteredRows = useMemo(() => {
+    if (rowFilter === "all") return rows;
+    return rows.filter((row) => {
+      const hasError = enrichmentCols.some(
+        (col) => (row[`${col.id}__status`] as CellState) === "error",
+      );
+      return rowFilter === "errors" ? hasError : !hasError;
+    });
+  }, [rows, rowFilter, enrichmentCols]);
+
+  // Error row count
+  const errorRowCount = useMemo(() => {
+    return rows.filter((row) =>
+      enrichmentCols.some((col) => (row[`${col.id}__status`] as CellState) === "error"),
+    ).length;
+  }, [rows, enrichmentCols]);
+
+  // ETA calculation
+  const eta = useMemo(() => {
+    if (phase !== "enriching" || progress.done < 5 || enrichStartTime === 0) return null;
+    const elapsed = Date.now() - enrichStartTime;
+    const avgMs = elapsed / progress.done;
+    const remaining = avgMs * (progress.total - progress.done);
+    return remaining > 0 ? formatEta(remaining) : null;
+  }, [phase, progress, enrichStartTime]);
+
+  // SSE event handler shared by run and retry
+  const handleEvent = useCallback((event: TableExecutionEvent) => {
+    if (event.type === "execute_start") {
+      setProgress({ done: 0, total: event.total_rows, errors: 0 });
+    } else if (event.type === "cell_update") {
+      setRows((prev) =>
+        prev.map((r) =>
+          r._row_id === event.row_id
+            ? {
+                ...r,
+                [`${event.column_id}__value`]: event.value,
+                [`${event.column_id}__status`]: event.status,
+                [`${event.column_id}__error`]: event.error,
+              }
+            : r,
+        ),
+      );
+    } else if (event.type === "column_progress") {
+      setProgress((prev) => ({ ...prev, done: event.done, errors: event.errors }));
+      setColumnProgress((prev) => ({
+        ...prev,
+        [event.column_id]: { done: event.done, total: event.total, errors: event.errors },
+      }));
+    } else if (event.type === "execute_complete") {
+      setProgress({
+        done: event.cells_done,
+        total: event.cells_done + event.cells_errored,
+        errors: event.cells_errored,
+      });
+    }
+  }, []);
 
   const handleStop = useCallback(() => {
     abortRef.current?.abort();
     setPhase("done");
   }, []);
 
+  // Retry failed rows
+  const handleRetry = useCallback(() => {
+    if (!tableId) return;
+    const errorRowIds = rows
+      .filter((row) =>
+        enrichmentCols.some((col) => (row[`${col.id}__status`] as CellState) === "error"),
+      )
+      .map((r) => r._row_id);
+
+    if (errorRowIds.length === 0) return;
+
+    // Reset errored cells to pending
+    setRows((prev) =>
+      prev.map((r) => {
+        if (!errorRowIds.includes(r._row_id)) return r;
+        const updated = { ...r };
+        for (const col of enrichmentCols) {
+          if ((updated[`${col.id}__status`] as CellState) === "error") {
+            updated[`${col.id}__status`] = "pending";
+            updated[`${col.id}__error`] = undefined;
+          }
+        }
+        return updated as TableRow;
+      }),
+    );
+
+    setRetrying(true);
+    setPhase("enriching");
+    setEnrichStartTime(Date.now());
+
+    const controller = streamTableExecution(
+      tableId,
+      (event: TableExecutionEvent) => {
+        handleEvent(event);
+        if (event.type === "execute_complete") {
+          setPhase("done");
+          setRetrying(false);
+        }
+      },
+      (err) => {
+        setErrorMsg(err);
+        setPhase("done");
+        setRetrying(false);
+      },
+      { row_ids: errorRowIds },
+    );
+    abortRef.current = controller;
+  }, [tableId, rows, enrichmentCols, handleEvent]);
+
   const run = useCallback(async () => {
     if (startedRef.current) return;
     startedRef.current = true;
 
+    // Request notification permission early
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+
     try {
-      // 1. Create table
       setPhase("creating");
       const name = `Enrichment - ${new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
+        month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit",
       })}`;
       setTableName(name);
       const table = await createTable({ name });
       setTableId(table.id);
 
-      // 2. Import CSV
       setPhase("importing");
       await importTableCsv(table.id, csvPreview.file, columnMapping);
 
-      // 3. Add enrichment columns from recipes
       setPhase("configuring");
       for (const recipe of selectedRecipes) {
         for (const col of recipe.columns) {
           await addTableColumn(table.id, {
-            name: col.name,
-            column_type: col.column_type,
-            tool: col.tool,
-            params: col.params,
-            ai_prompt: col.ai_prompt,
-            ai_model: col.ai_model,
+            name: col.name, column_type: col.column_type, tool: col.tool,
+            params: col.params, ai_prompt: col.ai_prompt, ai_model: col.ai_model,
             output_key: col.output_key,
           });
         }
       }
 
-      // 4. Fetch table definition + rows for the grid
       const [tableDef, rowsData] = await Promise.all([
         fetchTable(table.id),
         fetchTableRows(table.id, 0, rowLimit ?? 1000),
@@ -104,42 +233,14 @@ export function StepProgress({
       setColumns(tableDef.columns.filter((c) => !c.hidden));
       setRows(rowsData.rows as TableRow[]);
 
-      // 5. Execute with SSE — update grid cells in real-time
       setPhase("enriching");
+      setEnrichStartTime(Date.now());
       await new Promise<void>((resolve, reject) => {
         const controller = streamTableExecution(
           table.id,
           (event: TableExecutionEvent) => {
-            if (event.type === "execute_start") {
-              setProgress({ done: 0, total: event.total_rows, errors: 0 });
-            } else if (event.type === "cell_update") {
-              // Update the specific cell in the rows state
-              setRows((prev) =>
-                prev.map((r) =>
-                  r._row_id === event.row_id
-                    ? {
-                        ...r,
-                        [`${event.column_id}__value`]: event.value,
-                        [`${event.column_id}__status`]: event.status,
-                        [`${event.column_id}__error`]: event.error,
-                      }
-                    : r,
-                ),
-              );
-            } else if (event.type === "column_progress") {
-              setProgress((prev) => ({
-                ...prev,
-                done: event.done,
-                errors: event.errors,
-              }));
-            } else if (event.type === "execute_complete") {
-              setProgress({
-                done: event.cells_done,
-                total: event.cells_done + event.cells_errored,
-                errors: event.cells_errored,
-              });
-              resolve();
-            }
+            handleEvent(event);
+            if (event.type === "execute_complete") resolve();
           },
           (err) => reject(new Error(err)),
           rowLimit ? { limit: rowLimit } : undefined,
@@ -147,99 +248,125 @@ export function StepProgress({
         abortRef.current = controller;
       });
 
-      // 6. Done
       setPhase("done");
       setShowConfetti(true);
 
-      // Save to localStorage for history
+      // Browser notification
+      if (typeof document !== "undefined" && document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") {
+        new Notification("Enrichment complete", {
+          body: `${progress.done} cells enriched — ready to download`,
+        });
+      }
+
+      // Save to history
       try {
         const entry = {
-          id: table.id,
-          name: csvPreview.file.name,
-          rows: csvPreview.totalRows,
-          recipes: selectedRecipes.map((r) => r.name),
-          timestamp: Date.now(),
+          id: table.id, name: csvPreview.file.name, rows: csvPreview.totalRows,
+          recipes: selectedRecipes.map((r) => r.name), timestamp: Date.now(),
         };
         const history = JSON.parse(localStorage.getItem("enrich-history") || "[]");
         history.unshift(entry);
         localStorage.setItem("enrich-history", JSON.stringify(history.slice(0, 10)));
       } catch {}
     } catch (err) {
-      if ((err as Error)?.name === "AbortError") {
-        setPhase("done");
-        return;
-      }
+      if ((err as Error)?.name === "AbortError") { setPhase("done"); return; }
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong");
       setPhase("error");
     }
-  }, [csvPreview, selectedRecipes, columnMapping, rowLimit]);
+  }, [csvPreview, selectedRecipes, columnMapping, rowLimit, handleEvent, progress.done]);
 
+  useEffect(() => { run(); return () => { abortRef.current?.abort(); }; }, [run]);
   useEffect(() => {
-    run();
-    return () => {
-      abortRef.current?.abort();
-    };
-  }, [run]);
-
-  useEffect(() => {
-    if (showConfetti) {
-      const t = setTimeout(() => setShowConfetti(false), 2000);
-      return () => clearTimeout(t);
-    }
+    if (showConfetti) { const t = setTimeout(() => setShowConfetti(false), 2000); return () => clearTimeout(t); }
   }, [showConfetti]);
 
+  // Browser notification on done (for retry too)
+  useEffect(() => {
+    if (phase === "done" && typeof document !== "undefined" && document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") {
+      new Notification("Enrichment complete", { body: `${progress.done} cells enriched` });
+    }
+  }, [phase, progress.done]);
+
+  // Filtered download
   const handleDownload = useCallback(async () => {
     if (!tableId) return;
     try {
-      const blob = await exportTableCsv(tableId);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${tableName || "enriched"}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
+      if (rowFilter !== "all" && filteredRows.length > 0) {
+        // Client-side CSV from filtered rows
+        const headers = columns.map((c) => c.name);
+        const data = filteredRows.map((row) =>
+          columns.map((col) => {
+            const val = row[`${col.id}__value`];
+            return val == null ? "" : typeof val === "object" ? JSON.stringify(val) : String(val);
+          }),
+        );
+        const csv = Papa.unparse({ fields: headers, data });
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${tableName || "enriched"}-${rowFilter}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const blob = await exportTableCsv(tableId);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${tableName || "enriched"}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
     } catch {
       setErrorMsg("Failed to export CSV");
     }
-  }, [tableId, tableName]);
+  }, [tableId, tableName, rowFilter, filteredRows, columns]);
 
   const pct = progress.total > 0 ? Math.min(100, Math.round((progress.done / progress.total) * 100)) : 0;
   const showGrid = columns.length > 0 && rows.length > 0;
   const isPreGrid = phase === "creating" || phase === "importing" || phase === "configuring";
+
+  // Selected cell data
+  const cellDetail = useMemo(() => {
+    if (!selectedCell) return null;
+    const row = rows.find((r) => r._row_id === selectedCell.rowId);
+    const col = columns.find((c) => c.id === selectedCell.columnId);
+    if (!row || !col) return null;
+    return {
+      colName: col.name,
+      colType: col.column_type,
+      value: row[`${col.id}__value`],
+      status: (row[`${col.id}__status`] as CellState) || "empty",
+      error: row[`${col.id}__error`] as string | undefined,
+    };
+  }, [selectedCell, rows, columns]);
 
   return (
     <div className="space-y-4">
       {/* ── Status bar ── */}
       {phase !== "error" && (
         <div className="flex items-center gap-3">
-          {/* Phase indicator */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {isPreGrid ? (
               <>
                 <Loader2 className="h-4 w-4 text-kiln-teal animate-spin shrink-0" />
                 <span className="text-sm text-clay-200">
-                  {phase === "creating"
-                    ? "Creating table..."
-                    : phase === "importing"
-                      ? "Importing data..."
-                      : "Setting up enrichment..."}
+                  {phase === "creating" ? "Creating table..." : phase === "importing" ? "Importing data..." : "Setting up enrichment..."}
                 </span>
               </>
             ) : phase === "enriching" ? (
               <>
                 <Loader2 className="h-4 w-4 text-kiln-teal animate-spin shrink-0" />
-                <span className="text-sm text-clay-200">Enriching...</span>
+                <span className="text-sm text-clay-200">{retrying ? "Retrying..." : "Enriching..."}</span>
                 <div className="flex-1 h-1.5 rounded-full bg-clay-700 overflow-hidden max-w-xs">
-                  <div
-                    className="h-full rounded-full bg-kiln-teal transition-all duration-300"
-                    style={{ width: `${pct}%` }}
-                  />
+                  <div className="h-full rounded-full bg-kiln-teal transition-all duration-300" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="text-xs text-clay-400 tabular-nums shrink-0">
-                  {progress.done}/{progress.total}
-                </span>
-                {progress.errors > 0 && (
-                  <span className="text-xs text-amber-400 shrink-0">{progress.errors} err</span>
+                <span className="text-xs text-clay-400 tabular-nums shrink-0">{progress.done}/{progress.total}</span>
+                {progress.errors > 0 && <span className="text-xs text-amber-400 shrink-0">{progress.errors} err</span>}
+                {eta && (
+                  <span className="text-xs text-clay-500 shrink-0 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />{eta}
+                  </span>
                 )}
               </>
             ) : (
@@ -248,54 +375,62 @@ export function StepProgress({
                 <CheckCircle2 className="h-4 w-4 text-kiln-teal shrink-0" />
                 <span className="text-sm text-clay-200">
                   Done — {progress.done} cells enriched
-                  {progress.errors > 0 && (
-                    <span className="text-amber-400 ml-1">({progress.errors} errors)</span>
-                  )}
+                  {progress.errors > 0 && <span className="text-amber-400 ml-1">({progress.errors} errors)</span>}
                 </span>
               </>
             )}
           </div>
 
-          {/* Action buttons */}
           <div className="flex items-center gap-2 shrink-0">
             {phase === "enriching" && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                onClick={handleStop}
-              >
-                <Square className="h-3 w-3 mr-1 fill-current" />
-                Stop
+              <Button variant="outline" size="sm" className="h-7 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300" onClick={handleStop}>
+                <Square className="h-3 w-3 mr-1 fill-current" />Stop
               </Button>
             )}
             {phase === "done" && (
               <>
-                <Button
-                  size="sm"
-                  className="h-7 bg-kiln-teal text-black hover:bg-kiln-teal/90"
-                  onClick={handleDownload}
-                >
-                  <Download className="h-3 w-3 mr-1" />
-                  Download CSV
+                {errorRowCount > 0 && (
+                  <Button variant="outline" size="sm" className="h-7 border-amber-500/30 text-amber-400 hover:bg-amber-500/10" onClick={handleRetry}>
+                    <RefreshCw className="h-3 w-3 mr-1" />Retry {errorRowCount} errors
+                  </Button>
+                )}
+                <Button size="sm" className="h-7 bg-kiln-teal text-black hover:bg-kiln-teal/90" onClick={handleDownload}>
+                  <Download className="h-3 w-3 mr-1" />Download{rowFilter !== "all" ? ` (${rowFilter})` : ""} CSV
                 </Button>
                 {tableId && (
                   <Button variant="outline" size="sm" className="h-7 border-clay-600 text-clay-300" asChild>
-                    <a href={`/tables/${tableId}`}>
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      Table Builder
-                    </a>
+                    <a href={`/tables/${tableId}`}><ExternalLink className="h-3 w-3 mr-1" />Table Builder</a>
                   </Button>
                 )}
-                <button
-                  onClick={onStartOver}
-                  className="text-xs text-clay-500 hover:text-clay-300 flex items-center gap-1 ml-1"
-                >
+                <button onClick={onStartOver} className="text-xs text-clay-500 hover:text-clay-300 flex items-center gap-1 ml-1">
                   <RotateCcw className="h-3 w-3" />
                 </button>
               </>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ── Filter bar (done state) ── */}
+      {phase === "done" && showGrid && (
+        <div className="flex items-center gap-1">
+          {(["all", "success", "errors"] as RowFilter[]).map((f) => {
+            const count = f === "all" ? rows.length : f === "errors" ? errorRowCount : rows.length - errorRowCount;
+            return (
+              <button
+                key={f}
+                onClick={() => setRowFilter(f)}
+                className={cn(
+                  "px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                  rowFilter === f
+                    ? f === "errors" ? "bg-red-500/15 text-red-400" : "bg-kiln-teal/15 text-kiln-teal"
+                    : "text-clay-400 hover:text-clay-200 hover:bg-clay-800",
+                )}
+              >
+                {f === "all" ? "All" : f === "success" ? "Success" : "Errors"} ({count})
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -311,19 +446,14 @@ export function StepProgress({
 
       {/* ── Live spreadsheet grid ── */}
       {showGrid && (
-        <div
-          ref={gridRef}
-          className="rounded-lg border border-clay-700 overflow-auto"
-          style={{ maxHeight: "calc(100vh - 240px)" }}
-        >
+        <div ref={gridRef} className="rounded-lg border border-clay-700 overflow-auto" style={{ maxHeight: "calc(100vh - 280px)" }}>
           <table className="w-full text-xs border-collapse">
             <thead className="sticky top-0 z-10">
               <tr>
-                <th className="px-2 py-2 text-left text-clay-500 font-medium bg-clay-800 border-b border-clay-700 w-10 text-[10px]">
-                  #
-                </th>
+                <th className="px-2 py-2 text-left text-clay-500 font-medium bg-clay-800 border-b border-clay-700 w-10 text-[10px]">#</th>
                 {columns.map((col) => {
                   const typeStyle = COLUMN_TYPE_STYLES[col.column_type];
+                  const cp = columnProgress[col.id];
                   return (
                     <th
                       key={col.id}
@@ -339,45 +469,45 @@ export function StepProgress({
                       {col.column_type !== "input" && col.tool && (
                         <div className="text-[9px] text-clay-500 mt-0.5">{col.tool}</div>
                       )}
+                      {/* Column progress bar */}
+                      {phase === "enriching" && cp && cp.total > 0 && (
+                        <div className="h-0.5 rounded-full bg-clay-700 mt-1 overflow-hidden flex">
+                          <div className="h-full bg-emerald-500 transition-all duration-300" style={{ width: `${((cp.done - cp.errors) / cp.total) * 100}%` }} />
+                          {cp.errors > 0 && <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${(cp.errors / cp.total) * 100}%` }} />}
+                        </div>
+                      )}
                     </th>
                   );
                 })}
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, ri) => (
-                <tr
-                  key={row._row_id}
-                  className="border-b border-clay-800/50 last:border-0 hover:bg-clay-800/30 transition-colors"
-                >
-                  <td className="px-2 py-1.5 text-clay-600 text-[10px] tabular-nums">
-                    {ri + 1}
-                  </td>
+              {filteredRows.map((row, ri) => (
+                <tr key={row._row_id} className="border-b border-clay-800/50 last:border-0 hover:bg-clay-800/30 transition-colors">
+                  <td className="px-2 py-1.5 text-clay-600 text-[10px] tabular-nums">{ri + 1}</td>
                   {columns.map((col) => {
                     const value = row[`${col.id}__value`];
                     const status = (row[`${col.id}__status`] as CellState) || (col.column_type === "input" ? "done" : "empty");
                     const error = row[`${col.id}__error`] as string | undefined;
+                    const isEnrichment = col.column_type !== "input";
+                    const isSelected = selectedCell?.rowId === row._row_id && selectedCell?.columnId === col.id;
 
                     return (
                       <td
                         key={col.id}
+                        onClick={isEnrichment ? () => setSelectedCell({ rowId: row._row_id, columnId: col.id }) : undefined}
                         className={cn(
                           "px-3 py-1.5 max-w-[250px]",
-                          col.column_type === "input"
-                            ? "text-clay-300"
-                            : "",
+                          isEnrichment && "cursor-pointer",
+                          isSelected && "ring-1 ring-kiln-teal/50 bg-kiln-teal/5",
                         )}
                       >
-                        {col.column_type === "input" ? (
-                          <span className="truncate block">
+                        {!isEnrichment ? (
+                          <span className="truncate block text-clay-300">
                             {value != null ? String(value) : <span className="text-clay-600">&mdash;</span>}
                           </span>
                         ) : (
-                          <EnrichmentCell
-                            value={value}
-                            status={status}
-                            error={error}
-                          />
+                          <EnrichmentCell value={value} status={status} error={error} />
                         )}
                       </td>
                     );
@@ -389,20 +519,77 @@ export function StepProgress({
         </div>
       )}
 
+      {/* ── Cell detail panel ── */}
+      {cellDetail && selectedCell && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setSelectedCell(null)} />
+          <div className="fixed right-0 top-0 h-full w-80 bg-clay-800 border-l border-clay-700 z-40 flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-clay-700">
+              <div>
+                <div className="text-sm font-medium text-clay-100">{cellDetail.colName}</div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className={cn(
+                    "h-2 w-2 rounded-full",
+                    cellDetail.status === "done" ? "bg-emerald-500"
+                      : cellDetail.status === "error" ? "bg-red-500"
+                        : cellDetail.status === "running" ? "bg-blue-400"
+                          : "bg-clay-500",
+                  )} />
+                  <span className="text-[10px] text-clay-400 uppercase">{cellDetail.status}</span>
+                </div>
+              </div>
+              <button onClick={() => setSelectedCell(null)} className="text-clay-500 hover:text-clay-300">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-4 space-y-3">
+              {cellDetail.status === "error" && cellDetail.error && (
+                <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3">
+                  <div className="text-[10px] text-red-400 uppercase font-medium mb-1">Error</div>
+                  <div className="text-xs text-red-300 break-words">{cellDetail.error}</div>
+                </div>
+              )}
+              {cellDetail.value != null && (
+                <div>
+                  <div className="text-[10px] text-clay-500 uppercase font-medium mb-1">Value</div>
+                  <pre className="text-xs text-clay-200 bg-clay-900 rounded-md p-3 overflow-auto max-h-96 whitespace-pre-wrap break-words">
+                    {typeof cellDetail.value === "object"
+                      ? JSON.stringify(cellDetail.value, null, 2)
+                      : String(cellDetail.value)}
+                  </pre>
+                </div>
+              )}
+              {cellDetail.value == null && cellDetail.status !== "error" && (
+                <div className="text-sm text-clay-500 text-center py-8">No value yet</div>
+              )}
+            </div>
+            {cellDetail.value != null && (
+              <div className="px-4 py-3 border-t border-clay-700">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-7 border-clay-600 text-clay-300"
+                  onClick={() => {
+                    const text = typeof cellDetail.value === "object"
+                      ? JSON.stringify(cellDetail.value, null, 2)
+                      : String(cellDetail.value);
+                    navigator.clipboard.writeText(text);
+                  }}
+                >
+                  <Copy className="h-3 w-3 mr-1" />Copy value
+                </Button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
       {/* ── Error state ── */}
       {phase === "error" && (
         <div className="flex flex-col items-center gap-4 py-12">
-          <div className="flex items-center gap-2 text-sm text-red-400">
-            <XCircle className="h-4 w-4" />
-            {errorMsg}
-          </div>
-          <Button
-            variant="outline"
-            className="border-clay-600 text-clay-300"
-            onClick={onStartOver}
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Start over
+          <div className="flex items-center gap-2 text-sm text-red-400"><XCircle className="h-4 w-4" />{errorMsg}</div>
+          <Button variant="outline" className="border-clay-600 text-clay-300" onClick={onStartOver}>
+            <RotateCcw className="h-4 w-4 mr-2" />Start over
           </Button>
         </div>
       )}
@@ -415,40 +602,24 @@ export function StepProgress({
 function ConfettiBurst() {
   const [visible, setVisible] = useState(true);
   const colors = ["#4A9EAD", "#22c55e", "#eab308", "#f97316", "#a855f7"];
-
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(false), 2000);
-    return () => clearTimeout(t);
-  }, []);
-
+  useEffect(() => { const t = setTimeout(() => setVisible(false), 2000); return () => clearTimeout(t); }, []);
   if (!visible) return null;
-
   return (
     <span className="relative inline-flex pointer-events-none">
       {Array.from({ length: 12 }).map((_, i) => {
         const angle = (i / 12) * 360;
         const distance = 20 + Math.random() * 15;
-        const color = colors[i % colors.length];
         return (
-          <span
-            key={i}
-            className="absolute w-1.5 h-1.5 rounded-full"
-            style={{
-              backgroundColor: color,
-              animation: "confetti-burst 0.8s ease-out forwards",
-              animationDelay: `${i * 25}ms`,
-              ["--tx" as string]: `${Math.cos((angle * Math.PI) / 180) * distance}px`,
-              ["--ty" as string]: `${Math.sin((angle * Math.PI) / 180) * distance}px`,
-            }}
-          />
+          <span key={i} className="absolute w-1.5 h-1.5 rounded-full" style={{
+            backgroundColor: colors[i % colors.length],
+            animation: "confetti-burst 0.8s ease-out forwards",
+            animationDelay: `${i * 25}ms`,
+            ["--tx" as string]: `${Math.cos((angle * Math.PI) / 180) * distance}px`,
+            ["--ty" as string]: `${Math.sin((angle * Math.PI) / 180) * distance}px`,
+          }} />
         );
       })}
-      <style>{`
-        @keyframes confetti-burst {
-          0% { transform: translate(0, 0) scale(1); opacity: 1; }
-          100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-        }
-      `}</style>
+      <style>{`@keyframes confetti-burst { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; } }`}</style>
     </span>
   );
 }

@@ -73,10 +73,16 @@ export default function EnrichPage() {
   const goNext = useCallback(() => {
     const next = STEPS[stepIdx + 1];
     if (next) {
+      // Save recipe selections when leaving the recipes step
+      if (STEPS[stepIdx].key === "recipes" && selectedRecipeIds.size > 0) {
+        try {
+          localStorage.setItem("enrich-last-recipes", JSON.stringify(Array.from(selectedRecipeIds)));
+        } catch {}
+      }
       setDirection(1);
       setStep(next.key);
     }
-  }, [stepIdx]);
+  }, [stepIdx, selectedRecipeIds]);
 
   const goBack = useCallback(() => {
     const prev = STEPS[stepIdx - 1];

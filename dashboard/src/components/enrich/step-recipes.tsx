@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   Mail,
@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Zap,
   Star,
+  History,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { WorkflowTemplate } from "@/lib/types";
@@ -133,6 +134,25 @@ export function StepRecipes({
   onToggle,
   csvHeaders,
 }: StepRecipesProps) {
+  // Remember last selection
+  const [lastRecipeIds, setLastRecipeIds] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("enrich-last-recipes");
+      if (raw) setLastRecipeIds(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  const handleUseLastSelection = () => {
+    for (const id of lastRecipeIds) {
+      if (!selected.has(id) && recipes.some((r) => r.id === id)) {
+        onToggle(id);
+      }
+    }
+  };
+
+  const showLastSelection = lastRecipeIds.length > 0 && selected.size === 0;
+
   const { recommended, remaining } = useMemo(() => {
     if (!csvHeaders || csvHeaders.length === 0) {
       return { recommended: [] as WorkflowTemplate[], remaining: recipes };
@@ -181,6 +201,19 @@ export function StepRecipes({
           Pick one or more. We&apos;ll handle the rest.
         </p>
       </div>
+
+      {/* Use last selection */}
+      {showLastSelection && (
+        <div className="flex justify-center">
+          <button
+            onClick={handleUseLastSelection}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-clay-600 bg-clay-800/50 text-clay-300 hover:border-clay-500 hover:text-clay-200 transition-colors text-xs"
+          >
+            <History className="h-3 w-3" />
+            Use last selection ({lastRecipeIds.length} recipes)
+          </button>
+        </div>
+      )}
 
       {/* Recipe Combos */}
       {visibleCombos.length > 0 && (
