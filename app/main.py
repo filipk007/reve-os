@@ -163,6 +163,16 @@ async def startup():
     app.state.context_index.build()
     app.state.job_queue._context_index = app.state.context_index
 
+    # Context Rack (modular context injection pipeline)
+    if settings.supabase_context_rack_enabled:
+        from app.core.context_rack import ContextRack
+        from app.core.context_providers import build_default_slots
+        app.state.context_rack = ContextRack(slots=build_default_slots())
+        logger.info("  Context Rack: enabled (source=%s)", settings.supabase_context_source)
+    else:
+        app.state.context_rack = None
+        logger.info("  Context Rack: disabled (using build_prompt)")
+
     # Enrichment cache (Supabase-backed L2 cache for external API results + skill outputs)
     from app.core.enrichment_cache import EnrichmentCache
     app.state.enrichment_cache = EnrichmentCache()

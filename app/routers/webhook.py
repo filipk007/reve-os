@@ -8,7 +8,7 @@ from starlette.responses import StreamingResponse
 from app.config import settings
 from app.core.chain_parser import chain_to_skill_list
 from app.core.claude_executor import SubscriptionLimitError
-from app.core.context_assembler import build_agent_prompts, build_prompt
+from app.core.context_assembler import build_agent_prompts, build_prompt, build_prompt_rack
 from app.core.model_router import resolve_model
 from app.core.pipeline_runner import run_skill_chain
 from app.core.research_fetcher import (
@@ -266,7 +266,6 @@ async def webhook(body: WebhookRequest, request: Request, debug: bool = False):
             }
 
     # Build prompt — agent skills use a different prompt structure
-    context_files = load_context_files(skill_content, body.data, skill_name=primary_skill)
     is_agent = config.get("executor") == "agent"
 
     # Get memory, context index, and learning engine from app state
@@ -287,19 +286,39 @@ async def webhook(body: WebhookRequest, request: Request, debug: bool = False):
     enrichment_cache = getattr(request.app.state, "enrichment_cache", None)
     await _maybe_fetch_research(primary_skill, body.data, enrichment_cache=enrichment_cache)
 
-    if is_agent:
-        prompt = build_agent_prompts(
-            skill_content, context_files, body.data, body.instructions,
-            memory_store=memory_store, context_index=context_index,
-            learning_engine=learning_engine,
-        )
-    else:
-        prompt = build_prompt(
-            skill_content, context_files, body.data, body.instructions,
-            memory_store=memory_store, context_index=context_index,
-            learning_engine=learning_engine,
+    # Context Rack path: rack handles context loading + prompt assembly internally
+    context_rack = getattr(request.app.state, "context_rack", None)
+    if context_rack is not None and not is_agent:
+        prompt = await build_prompt_rack(
+            context_rack,
+            skill_name=primary_skill,
+            skill_content=skill_content,
+            skill_config=config,
+            data=body.data,
+            instructions=body.instructions,
             output_format=output_format,
+            memory_store=memory_store,
+            context_index=context_index,
+            learning_engine=learning_engine,
+            model=model,
         )
+        context_files = []  # Rack loaded them internally; set empty for downstream compat
+    else:
+        # Legacy path: caller loads context files, then build_prompt assembles
+        context_files = load_context_files(skill_content, body.data, skill_name=primary_skill)
+        if is_agent:
+            prompt = build_agent_prompts(
+                skill_content, context_files, body.data, body.instructions,
+                memory_store=memory_store, context_index=context_index,
+                learning_engine=learning_engine,
+            )
+        else:
+            prompt = build_prompt(
+                skill_content, context_files, body.data, body.instructions,
+                memory_store=memory_store, context_index=context_index,
+                learning_engine=learning_engine,
+                output_format=output_format,
+            )
 
     # Refine model with prompt heuristic (layer 4) if smart routing enabled
     if settings.enable_smart_routing and not body.model:
@@ -505,7 +524,6 @@ async def webhook_stream(body: WebhookRequest, request: Request):
     model = resolve_model(request_model=body.model, skill_config=config)
 
     # Build prompt
-    context_files = load_context_files(skill_content, body.data, skill_name=primary_skill)
     memory_store = getattr(request.app.state, "memory_store", None)
     context_index = getattr(request.app.state, "context_index", None)
     learning_engine = getattr(request.app.state, "learning_engine", None)
@@ -525,11 +543,28 @@ async def webhook_stream(body: WebhookRequest, request: Request):
 
             return StreamingResponse(cached_stream(), media_type="text/event-stream")
 
-    prompt = build_prompt(
-        skill_content, context_files, body.data, body.instructions,
-        memory_store=memory_store, context_index=context_index,
-        learning_engine=learning_engine,
-    )
+    # Context Rack path
+    context_rack = getattr(request.app.state, "context_rack", None)
+    if context_rack is not None:
+        prompt = await build_prompt_rack(
+            context_rack,
+            skill_name=primary_skill,
+            skill_content=skill_content,
+            skill_config=config,
+            data=body.data,
+            instructions=body.instructions,
+            memory_store=memory_store,
+            context_index=context_index,
+            learning_engine=learning_engine,
+            model=model,
+        )
+    else:
+        context_files = load_context_files(skill_content, body.data, skill_name=primary_skill)
+        prompt = build_prompt(
+            skill_content, context_files, body.data, body.instructions,
+            memory_store=memory_store, context_index=context_index,
+            learning_engine=learning_engine,
+        )
 
     timeout = config.get("timeout", settings.request_timeout)
 

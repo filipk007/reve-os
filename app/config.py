@@ -74,6 +74,11 @@ class Settings(BaseSettings):
     supabase_cache_enabled: bool = False
     supabase_auth_enabled: bool = False
 
+    # Context Rack (modular context injection pipeline)
+    supabase_context_rack_enabled: bool = False    # Use rack pipeline instead of build_prompt()
+    supabase_context_source: str = "file"          # "file" | "supabase" | "hybrid"
+    context_rack_log_loads: bool = True             # Log context loads to Supabase
+
     # Retry worker
     retry_max_attempts: int = 5
     retry_check_interval: int = 10

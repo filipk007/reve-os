@@ -176,6 +176,64 @@ def build_prompt(
     return prompt
 
 
+async def build_prompt_rack(
+    rack: "ContextRack",
+    skill_name: str,
+    skill_content: str,
+    skill_config: dict,
+    data: dict,
+    *,
+    instructions: str | None = None,
+    output_format: str = "json",
+    memory_store: "MemoryStore | None" = None,
+    context_index: "ContextIndex | None" = None,
+    learning_engine: "LearningEngine | None" = None,
+    skip_semantic: bool = False,
+    execution_id: str | None = None,
+    model: str | None = None,
+) -> str:
+    """Build prompt using the Context Rack pipeline.
+
+    Drop-in async replacement for build_prompt(). Callers switch between them
+    based on the supabase_context_rack_enabled feature flag.
+
+    Returns the prompt string (identical output to build_prompt in file mode).
+    Also fires analytics logging in the background.
+    """
+    from app.core.context_rack import ContextRack, RackContext
+
+    ctx = RackContext.from_request(
+        skill_name=skill_name,
+        skill_content=skill_content,
+        skill_config=skill_config,
+        data=data,
+        instructions=instructions,
+        output_format=output_format,
+        memory_store=memory_store,
+        context_index=context_index,
+        learning_engine=learning_engine,
+        skip_semantic=skip_semantic,
+    )
+
+    prompt, manifest = await rack.assemble(ctx)
+
+    # Fire-and-forget analytics
+    if settings.context_rack_log_loads:
+        from app.core.context_analytics import log_context_load
+        try:
+            await log_context_load(
+                ctx,
+                manifest,
+                execution_id=execution_id,
+                model=model,
+                source_mode=settings.supabase_context_source,
+            )
+        except Exception:
+            pass  # Analytics should never block execution
+
+    return prompt
+
+
 def build_agent_prompts(
     skill_content: str,
     context_files: list[dict[str, str]],
