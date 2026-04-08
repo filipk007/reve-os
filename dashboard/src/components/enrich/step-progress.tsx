@@ -5,13 +5,14 @@ import {
   Download, ExternalLink, RotateCcw, CheckCircle2, XCircle, Loader2, Square,
   Search, Brain, Calculator, Filter, RefreshCw, X, Copy, Clock,
   ChevronUp, ChevronDown, CheckSquare, Search as SearchIcon,
+  FileSpreadsheet, FolderUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Papa from "papaparse";
 import {
   createTable, importTableCsv, addTableColumn, streamTableExecution,
-  exportTableCsv, fetchTableRows, fetchTable,
+  exportTableCsv, fetchTableRows, fetchTable, exportTableToSheet, exportTableToDrive,
 } from "@/lib/api";
 import type { WorkflowTemplate, TableExecutionEvent, TableColumn, TableRow, CellState } from "@/lib/types";
 import { EnrichmentCell } from "@/components/table-builder/enrichment-cell";
@@ -72,6 +73,7 @@ export function StepProgress({
   const [editedCells, setEditedCells] = useState<Set<string>>(new Set());
   const [sortConfig, setSortConfig] = useState<{ columnId: string; direction: "asc" | "desc" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [exporting, setExporting] = useState<"sheets" | "drive" | null>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
 
   // ── Derived ──
@@ -245,6 +247,32 @@ export function StepProgress({
     } catch { setErrorMsg("Failed to export CSV"); }
   }, [tableId, tableName, rowFilter, filteredRows, columns, rows, approvedRows]);
 
+  const handleExportToSheets = useCallback(async () => {
+    if (!tableId) return;
+    setExporting("sheets");
+    try {
+      const result = await exportTableToSheet(tableId, tableName || undefined);
+      window.open(result.url, "_blank");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to export to Sheets");
+    } finally {
+      setExporting(null);
+    }
+  }, [tableId, tableName]);
+
+  const handleExportToDrive = useCallback(async () => {
+    if (!tableId) return;
+    setExporting("drive");
+    try {
+      const result = await exportTableToDrive(tableId);
+      window.open(result.url, "_blank");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to save to Drive");
+    } finally {
+      setExporting(null);
+    }
+  }, [tableId]);
+
   // ── Run ──
   const run = useCallback(async () => {
     if (startedRef.current) return;
@@ -326,6 +354,12 @@ export function StepProgress({
                 {errorRowCount > 0 && <Button variant="outline" size="sm" className="h-7 border-amber-500/30 text-amber-400 hover:bg-amber-500/10" onClick={handleRetry}><RefreshCw className="h-3 w-3 mr-1" />Retry {errorRowCount}</Button>}
                 <Button size="sm" className="h-7 bg-kiln-teal text-black hover:bg-kiln-teal/90" onClick={handleDownload}><Download className="h-3 w-3 mr-1" />{downloadLabel}</Button>
                 {approvedRows.size > 0 && <button onClick={() => { setApprovedRows(new Set()); handleDownload(); }} className="text-[10px] text-clay-500 hover:text-clay-300 underline">all</button>}
+                <Button variant="outline" size="sm" className="h-7 border-clay-600 text-clay-300" onClick={handleExportToSheets} disabled={exporting === "sheets"}>
+                  {exporting === "sheets" ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <FileSpreadsheet className="h-3 w-3 mr-1" />}Sheets
+                </Button>
+                <Button variant="outline" size="sm" className="h-7 border-clay-600 text-clay-300" onClick={handleExportToDrive} disabled={exporting === "drive"}>
+                  {exporting === "drive" ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <FolderUp className="h-3 w-3 mr-1" />}Drive
+                </Button>
                 {tableId && <Button variant="outline" size="sm" className="h-7 border-clay-600 text-clay-300" asChild><a href={`/tables/${tableId}`}><ExternalLink className="h-3 w-3 mr-1" />Table Builder</a></Button>}
                 <button onClick={onStartOver} className="text-xs text-clay-500 hover:text-clay-300 ml-1"><RotateCcw className="h-3 w-3" /></button>
               </>

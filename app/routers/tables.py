@@ -377,6 +377,106 @@ async def import_from_sheet(table_id: str, request: Request):
     return result
 
 
+@router.post("/{table_id}/export-sheet")
+async def export_to_sheet(table_id: str, request: Request):
+    """Export table data to a new Google Sheet. Returns spreadsheet URL."""
+    store = request.app.state.table_store
+    table = store.get(table_id)
+    if not table:
+        return JSONResponse({"error": True, "error_message": "Table not found"}, status_code=404)
+
+    adapter = request.app.state.sheets_adapter
+    if not adapter or not adapter.available:
+        return JSONResponse({"error": True, "error_message": "Google Sheets not available"}, status_code=503)
+
+    body = await request.json() if request.headers.get("content-length") else {}
+    title = body.get("title", table.name)
+    folder_name = body.get("folder", None)
+
+    from app.core.sheets_client import SheetsClient
+
+    sheets_client = adapter._sheets
+
+    # Create spreadsheet (optionally in a Drive folder)
+    folder_id = None
+    if folder_name:
+        root_id = await sheets_client.ensure_root_folder()
+        folder_id = await sheets_client.ensure_subfolder(root_id, folder_name)
+
+    spreadsheet_id = await sheets_client.create_spreadsheet(title, folder_id=folder_id)
+
+    # Export table data to it
+    result = await adapter.export_to_sheet(table_id, spreadsheet_id)
+    url = SheetsClient.get_spreadsheet_url(spreadsheet_id)
+
+    return {
+        "spreadsheet_id": spreadsheet_id,
+        "url": url,
+        "title": title,
+        "exported": result.get("exported", 0),
+    }
+
+
+@router.post("/{table_id}/export-drive")
+async def export_to_drive(table_id: str, request: Request):
+    """Export table data as a CSV file to Google Drive. Returns file URL."""
+    store = request.app.state.table_store
+    table = store.get(table_id)
+    if not table:
+        return JSONResponse({"error": True, "error_message": "Table not found"}, status_code=404)
+
+    sheets_client = getattr(request.app.state, "sheets_client", None)
+    if not sheets_client or not sheets_client.available:
+        return JSONResponse({"error": True, "error_message": "Google Drive not available"}, status_code=503)
+
+    import csv as csv_mod
+    import io
+    import tempfile
+
+    body = await request.json() if request.headers.get("content-length") else {}
+    folder_name = body.get("folder", "Enrichments")
+
+    # Build CSV content
+    rows, _ = store.get_rows(table_id, offset=0, limit=100_000)
+    columns = sorted(table.columns, key=lambda c: c.position)
+    col_map = {c.id: c.name for c in columns if not c.hidden}
+
+    output = io.StringIO()
+    writer = csv_mod.writer(output)
+    writer.writerow(list(col_map.values()))
+    for row in rows:
+        csv_row = []
+        for col_id in col_map:
+            val = row.get(f"{col_id}__value", "")
+            if isinstance(val, dict | list):
+                import json
+                val = json.dumps(val)
+            csv_row.append(val)
+        writer.writerow(csv_row)
+
+    # Write to temp file and upload
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+        f.write(output.getvalue())
+        tmp_path = f.name
+
+    root_id = await sheets_client.ensure_root_folder()
+    folder_id = await sheets_client.ensure_subfolder(root_id, folder_name)
+
+    import time as _time
+    file_name = f"{table.name} — {len(rows)} rows — {_time.strftime('%b %d %Y')}.csv"
+    file_id = await sheets_client.upload_file(tmp_path, file_name, "text/csv", parent_folder_id=folder_id)
+
+    import os
+    os.unlink(tmp_path)
+
+    return {
+        "file_id": file_id,
+        "url": sheets_client.get_file_url(file_id),
+        "file_name": file_name,
+        "rows": len(rows),
+    }
+
+
 # --- Run History ---
 
 

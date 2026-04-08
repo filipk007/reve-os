@@ -1,10 +1,11 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import { Upload, FileSpreadsheet, ClipboardPaste, Clock, Download } from "lucide-react";
+import { Upload, FileSpreadsheet, ClipboardPaste, Clock, Download, Table2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import Papa from "papaparse";
+import { previewSheet } from "@/lib/api";
 
 export interface CsvPreview {
   file: File;
@@ -48,8 +49,11 @@ function formatRelativeTime(timestamp: number): string {
 export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [parsing, setParsing] = useState(false);
-  const [mode, setMode] = useState<"file" | "paste">("file");
+  const [mode, setMode] = useState<"file" | "paste" | "sheets">("file");
   const [pasteText, setPasteText] = useState("");
+  const [sheetUrl, setSheetUrl] = useState("");
+  const [sheetLoading, setSheetLoading] = useState(false);
+  const [sheetError, setSheetError] = useState("");
   const [history, setHistory] = useState<EnrichHistoryEntry[]>([]);
 
   // Load history from localStorage
@@ -132,6 +136,34 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
     });
   }, [pasteText, onParsed]);
 
+  const handleImportSheet = useCallback(async () => {
+    if (!sheetUrl.trim()) return;
+    setSheetLoading(true);
+    setSheetError("");
+    try {
+      const data = await previewSheet(sheetUrl.trim());
+      if (!data.headers || data.headers.length === 0) {
+        setSheetError("Sheet appears to be empty");
+        setSheetLoading(false);
+        return;
+      }
+      // Build CSV text from sheet data to create a File object
+      const csvText = Papa.unparse({ fields: data.headers, data: data.rows });
+      const file = new File([csvText], `sheet-${data.spreadsheet_id}.csv`, { type: "text/csv" });
+      // Fetch full data for totalRows (preview only returns 5)
+      onParsed({
+        file,
+        headers: data.headers,
+        rows: data.rows,
+        totalRows: data.totalRows,
+      });
+    } catch (err) {
+      setSheetError(err instanceof Error ? err.message : "Failed to read sheet");
+    } finally {
+      setSheetLoading(false);
+    }
+  }, [sheetUrl, onParsed]);
+
   const handleDownloadSample = useCallback(() => {
     const blob = new Blob([SAMPLE_CSV], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -183,6 +215,57 @@ export function StepUpload({ preview, onParsed, onClear }: StepUploadProps) {
               <ClipboardPaste className="h-3 w-3" />
               Paste Data
             </button>
+            <button
+              onClick={() => setMode("sheets")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                mode === "sheets"
+                  ? "bg-clay-700 text-clay-100"
+                  : "text-clay-400 hover:text-clay-200",
+              )}
+            >
+              <Table2 className="h-3 w-3" />
+              Google Sheets
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Google Sheets mode */}
+      {mode === "sheets" && !preview && (
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <label className="text-xs text-clay-400">Paste a Google Sheet URL or spreadsheet ID</label>
+            <div className="flex gap-2">
+              <input
+                value={sheetUrl}
+                onChange={(e) => { setSheetUrl(e.target.value); setSheetError(""); }}
+                placeholder="https://docs.google.com/spreadsheets/d/..."
+                className="flex-1 bg-clay-800/50 border border-clay-600 rounded-md px-3 py-2 text-xs text-clay-200 placeholder:text-clay-500 focus:border-kiln-teal/50 focus:outline-none focus:ring-1 focus:ring-kiln-teal/20"
+              />
+              <button
+                onClick={handleImportSheet}
+                disabled={!sheetUrl.trim() || sheetLoading}
+                className={cn(
+                  "px-4 py-2 rounded-md text-xs font-medium transition-colors shrink-0",
+                  sheetUrl.trim() && !sheetLoading
+                    ? "bg-kiln-teal text-black hover:bg-kiln-teal/90"
+                    : "bg-clay-700 text-clay-500 cursor-not-allowed",
+                )}
+              >
+                {sheetLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  "Import"
+                )}
+              </button>
+            </div>
+            {sheetError && (
+              <p className="text-xs text-red-400">{sheetError}</p>
+            )}
+            <p className="text-[10px] text-clay-500">
+              First row will be used as column headers. Make sure the sheet is accessible.
+            </p>
           </div>
         </div>
       )}

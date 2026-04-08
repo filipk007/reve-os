@@ -68,6 +68,43 @@ async def list_folder_sheets(request: Request, name: str):
         )
 
 
+@router.get("/sheets/preview")
+async def preview_sheet(request: Request):
+    """Read a Google Sheet and return headers + rows as JSON (for enrichment wizard import)."""
+    spreadsheet_id = request.query_params.get("spreadsheet_id", "")
+    range_ = request.query_params.get("range", "Sheet1")
+
+    if not spreadsheet_id:
+        return JSONResponse(status_code=400, content={"error": True, "error_message": "Missing spreadsheet_id"})
+
+    # Extract spreadsheet ID from full URL if needed
+    if "docs.google.com" in spreadsheet_id:
+        import re
+        match = re.search(r"/d/([a-zA-Z0-9_-]+)", spreadsheet_id)
+        if match:
+            spreadsheet_id = match.group(1)
+
+    drive_sync = _get_drive_sync(request)
+    if not drive_sync or not drive_sync.available:
+        return JSONResponse(status_code=503, content={"error": True, "error_message": "Google Sheets integration not available"})
+
+    try:
+        values = await drive_sync.sheets_client.read_values(spreadsheet_id, range_)
+        if not values:
+            return {"headers": [], "rows": [], "totalRows": 0}
+        headers = values[0]
+        data_rows = values[1:]
+        return {
+            "headers": headers,
+            "rows": data_rows[:5],  # preview first 5
+            "totalRows": len(data_rows),
+            "spreadsheet_id": spreadsheet_id,
+        }
+    except Exception as e:
+        logger.error("[sheets] Failed to preview sheet %s: %s", spreadsheet_id, e)
+        return JSONResponse(status_code=500, content={"error": True, "error_message": str(e)})
+
+
 @router.get("/sheets/{sheet_id}/info")
 async def get_sheet_info(request: Request, sheet_id: str):
     """Get sheet metadata."""
