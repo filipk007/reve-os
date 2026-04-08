@@ -13,6 +13,7 @@ import Papa from "papaparse";
 import {
   createTable, importTableCsv, addTableColumn, streamTableExecution,
   exportTableCsv, fetchTableRows, fetchTable, exportTableToSheet, exportTableToDrive,
+  getLocalRunnerStatus,
 } from "@/lib/api";
 import type { WorkflowTemplate, TableExecutionEvent, TableColumn, TableRow, CellState } from "@/lib/types";
 import { EnrichmentCell } from "@/components/table-builder/enrichment-cell";
@@ -74,7 +75,21 @@ export function StepProgress({
   const [sortConfig, setSortConfig] = useState<{ columnId: string; direction: "asc" | "desc" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [exporting, setExporting] = useState<"sheets" | "drive" | null>(null);
+  const [runnerConnected, setRunnerConnected] = useState<boolean | null>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
+
+  // Poll local runner status
+  useEffect(() => {
+    let active = true;
+    const check = () => {
+      getLocalRunnerStatus()
+        .then((s) => { if (active) setRunnerConnected(s.connected); })
+        .catch(() => { if (active) setRunnerConnected(false); });
+    };
+    check();
+    const interval = setInterval(check, 10_000);
+    return () => { active = false; clearInterval(interval); };
+  }, []);
 
   // ── Derived ──
   const enrichmentCols = useMemo(() => columns.filter((c) => c.column_type !== "input"), [columns]);
@@ -328,9 +343,28 @@ export function StepProgress({
 
   return (
     <div className="space-y-3">
+      {/* ── Runner disconnected warning ── */}
+      {runnerConnected === false && (phase === "enriching" || isPreGrid) && (
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2.5 flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
+          <span className="text-xs text-amber-300">
+            Local runner not connected — run <code className="font-mono bg-clay-800 px-1 rounded text-amber-200">clay-run --watch</code> on your Mac to process enrichments
+          </span>
+        </div>
+      )}
+
       {/* ── Status bar ── */}
       {phase !== "error" && (
         <div className="flex items-center gap-3">
+          {/* Runner status dot */}
+          <div
+            className={cn(
+              "h-2 w-2 rounded-full shrink-0 transition-colors",
+              runnerConnected === true ? "bg-emerald-500" : runnerConnected === false ? "bg-red-500" : "bg-clay-500",
+            )}
+            title={runnerConnected === true ? "Local runner connected" : runnerConnected === false ? "Local runner disconnected" : "Checking..."}
+          />
+
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {isPreGrid ? (
               <><Loader2 className="h-4 w-4 text-kiln-teal animate-spin shrink-0" /><span className="text-sm text-clay-200">{phase === "creating" ? "Creating table..." : phase === "importing" ? "Importing data..." : "Setting up enrichment..."}</span></>

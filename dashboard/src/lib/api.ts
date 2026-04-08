@@ -2429,6 +2429,14 @@ export function streamTableExecution(
   return controller;
 }
 
+export function getLocalRunnerStatus(): Promise<{
+  connected: boolean;
+  last_seen: number;
+  seconds_ago: number | null;
+}> {
+  return apiFetch("/tables/local-runner-status");
+}
+
 export async function exportTableCsv(tableId: string): Promise<Blob> {
   const res = await fetch(`${API_URL}/tables/${tableId}/export-csv`, {
     headers: { "X-API-Key": API_KEY },
