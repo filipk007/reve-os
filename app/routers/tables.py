@@ -270,7 +270,8 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
     # Load rows
     rows, _ = store.get_rows(table_id, offset=0, limit=100_000)
 
-    pool = request.app.state.pool
+    local_queue = request.app.state.local_job_queue
+    bridge_store = request.app.state.bridge_store
 
     async def event_gen():
         try:
@@ -279,7 +280,8 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
                 rows=rows,
                 request_body=body,
                 table_store=store,
-                pool=pool,
+                local_queue=local_queue,
+                bridge_store=bridge_store,
             ):
                 yield event
         except Exception as e:
@@ -291,6 +293,33 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# --- Local Execution Callback ---
+
+
+@router.post("/local-result/{job_id}")
+async def submit_table_local_result(job_id: str, request: Request):
+    """Callback from local runner (clay-run) with table cell execution results."""
+    body = await request.json()
+    bridge_id = body.get("bridge_id")
+    result = body.get("result")
+    duration_ms = body.get("duration_ms", 0)
+
+    if not bridge_id:
+        return JSONResponse({"error": True, "error_message": "Missing bridge_id"}, status_code=400)
+
+    bridge_store = request.app.state.bridge_store
+    resolved = bridge_store.resolve(bridge_id, {
+        "result": result,
+        "duration_ms": duration_ms,
+    })
+
+    local_queue = request.app.state.local_job_queue
+    local_queue.update_status(job_id, "completed", {"result": result})
+
+    logger.info("[tables] Local result for job %s (bridge=%s, resolved=%s)", job_id, bridge_id, resolved)
+    return {"ok": resolved, "job_id": job_id}
 
 
 # --- Validation ---

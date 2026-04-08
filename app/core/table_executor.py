@@ -23,6 +23,53 @@ _TEMPLATE_RE = re.compile(r"\{\{(\w+)\}\}")
 _PROVIDER_MAP = {p["id"]: p for p in DEEPLINE_PROVIDERS}
 
 
+async def _submit_local(
+    local_queue,
+    bridge_store,
+    prompt: str,
+    model: str = "sonnet",
+    table_id: str = "",
+    column_id: str = "",
+    row_ids: list[str] | None = None,
+    executor_type: str = "cli",
+    max_turns: int = 1,
+    timeout: int = 120,
+) -> dict:
+    """Submit a prompt to the local job queue and await the result via bridge.
+
+    Instead of running claude --print on the VPS, this enqueues a job
+    for pickup by the local runner (clay-run --watch on the user's Mac),
+    then waits for the result to come back via the bridge callback.
+    """
+    import uuid
+
+    bridge_id, future = bridge_store.park()
+    job_id = f"tjob_{uuid.uuid4().hex[:12]}"
+
+    local_queue.enqueue({
+        "id": job_id,
+        "type": "table_cell",
+        "bridge_id": bridge_id,
+        "table_id": table_id,
+        "column_id": column_id,
+        "row_ids": row_ids or [],
+        "prompt": prompt,
+        "model": model,
+        "executor_type": executor_type,
+        "max_turns": max_turns,
+        "status": "pending",
+    })
+
+    logger.info("[table_executor] Enqueued local job %s (bridge=%s, col=%s)", job_id, bridge_id, column_id)
+
+    try:
+        result = await asyncio.wait_for(future, timeout=timeout + 60)
+        return result
+    except asyncio.TimeoutError:
+        local_queue.update_status(job_id, "failed", {"error": "Bridge timeout"})
+        raise RuntimeError(f"Local execution timed out after {timeout + 60}s for column {column_id}")
+
+
 def _resolve_template(template: str, row: dict, columns: list[TableColumn]) -> str:
     """Replace {{column_id}} with the column's value from the row."""
 
@@ -234,7 +281,9 @@ async def execute_table_stream(
     rows: list[dict],
     request_body: ExecuteTableRequest,
     table_store: TableStore,
-    pool,
+    pool=None,
+    local_queue=None,
+    bridge_store=None,
 ):
     """Generator that yields SSE events as columns execute.
 
@@ -473,13 +522,26 @@ async def execute_table_stream(
                                 provider = _PROVIDER_MAP.get(col.tool, {})
                                 needs_agent = provider.get("execution_mode") == "ai_agent"
 
-                            result = await pool.submit(
-                                prompt=prompt,
-                                model=model,
-                                timeout=120,
-                                executor_type="agent" if needs_agent else "cli",
-                                max_turns=15 if needs_agent else 1,
-                            )
+                            if local_queue and bridge_store:
+                                result = await _submit_local(
+                                    local_queue=local_queue,
+                                    bridge_store=bridge_store,
+                                    prompt=prompt,
+                                    model=model,
+                                    table_id=table.id,
+                                    column_id=col.id,
+                                    row_ids=[r["_row_id"] for r in chunk],
+                                    executor_type="agent" if needs_agent else "cli",
+                                    max_turns=15 if needs_agent else 1,
+                                )
+                            else:
+                                result = await pool.submit(
+                                    prompt=prompt,
+                                    model=model,
+                                    timeout=120,
+                                    executor_type="agent" if needs_agent else "cli",
+                                    max_turns=15 if needs_agent else 1,
+                                )
 
                             # Parse result
                             parsed = result.get("result", {})
@@ -781,13 +843,27 @@ async def execute_table_stream(
                                 if provider_info:
                                     needs_agent = provider_info.get("execution_mode") == "ai_agent"
 
-                                result = await pool.submit(
-                                    prompt=prompt,
-                                    model=model,
-                                    timeout=prov.timeout,
-                                    executor_type="agent" if needs_agent else "cli",
-                                    max_turns=15 if needs_agent else 1,
-                                )
+                                if local_queue and bridge_store:
+                                    result = await _submit_local(
+                                        local_queue=local_queue,
+                                        bridge_store=bridge_store,
+                                        prompt=prompt,
+                                        model=model,
+                                        table_id=table.id,
+                                        column_id=col.id,
+                                        row_ids=[row["_row_id"]],
+                                        executor_type="agent" if needs_agent else "cli",
+                                        max_turns=15 if needs_agent else 1,
+                                        timeout=prov.timeout,
+                                    )
+                                else:
+                                    result = await pool.submit(
+                                        prompt=prompt,
+                                        model=model,
+                                        timeout=prov.timeout,
+                                        executor_type="agent" if needs_agent else "cli",
+                                        max_turns=15 if needs_agent else 1,
+                                    )
                                 parsed = result.get("result", {})
                                 if isinstance(parsed, str):
                                     try:
