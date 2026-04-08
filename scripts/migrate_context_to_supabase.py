@@ -18,7 +18,9 @@ Usage:
     python scripts/migrate_context_to_supabase.py --dry-run
 """
 
+import datetime
 import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -28,6 +30,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import yaml
 
 from app.config import settings
+
+
+class _DateEncoder(json.JSONEncoder):
+    """Handle date/datetime from YAML frontmatter."""
+    def default(self, obj):
+        if isinstance(obj, (datetime.date, datetime.datetime)):
+            return obj.isoformat()
+        return super().default(obj)
 
 
 # ── Priority weights (maps file path prefix → priority_weight column) ────────
@@ -74,8 +84,13 @@ def _extract_slug(rel_path: str) -> str:
     parts = rel_path.split("/")
     filename = parts[-1].replace(".md", "")
     # For structured client dirs (clients/slug/profile.md), use the dir name
-    if parts[0] == "clients" and len(parts) > 2:
+    if parts[0] == "clients" and len(parts) > 2 and filename == "profile":
         return parts[1]
+    # For nested client files (clients/slug/sops/foo.md), include subdir
+    if parts[0] == "clients" and len(parts) > 3:
+        return f"{parts[1]}-{'-'.join(parts[2:-1])}-{filename}"
+    if parts[0] == "clients" and len(parts) > 2:
+        return f"{parts[1]}-{filename}"
     # For flat client files (clients/hologram.md), use filename
     if parts[0] == "clients":
         return filename
@@ -189,7 +204,7 @@ def collect_files() -> list[dict]:
                 "title": title,
                 "content": body,
                 "content_hash": content_hash,
-                "metadata": metadata,
+                "metadata": json.loads(json.dumps(metadata, cls=_DateEncoder)),
                 "applicable_skills": _find_applicable_skills(rel_path),
                 "applicable_clients": [],
                 "applicable_signals": [],
@@ -227,7 +242,7 @@ def collect_files() -> list[dict]:
                 "title": title,
                 "content": body if body else raw_content,
                 "content_hash": content_hash,
-                "metadata": metadata,
+                "metadata": json.loads(json.dumps(metadata, cls=_DateEncoder)),
                 "applicable_skills": [],
                 "applicable_clients": [slug],  # Client profiles are scoped to their own client
                 "applicable_signals": [],
