@@ -325,8 +325,12 @@ async def execute_table_stream(
         allowed = set(request_body.row_ids)
         active_rows = [r for r in active_rows if r.get("_row_id") in allowed]
 
-    # Topological sort
-    waves = _topological_sort(exec_columns)
+    # Topological sort — pass ALL columns so input/static deps are pre-resolved
+    waves = _topological_sort(table.columns)
+    # Filter waves to only contain exec columns
+    exec_ids = {c.id for c in exec_columns}
+    waves = [[c for c in wave if c.id in exec_ids] for wave in waves]
+    waves = [w for w in waves if w]  # Remove empty waves
 
     total_cells_done = 0
     total_cells_errored = 0
