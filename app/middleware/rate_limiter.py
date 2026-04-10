@@ -1,15 +1,22 @@
-import time
-from collections import defaultdict
+"""Rate limit middleware backed by the `limits` library (ships with slowapi).
 
+We use `limits` directly rather than slowapi's route decorators because our
+limits are applied per-path-prefix at the middleware layer, not per-route.
+`limits.strategies.MovingWindowRateLimiter` replaces the hand-rolled sliding
+window and is the same engine slowapi uses internally.
+"""
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from limits import RateLimitItemPerMinute
+from limits.storage import MemoryStorage
+from limits.strategies import MovingWindowRateLimiter
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.config import settings
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """In-memory per-IP per-bucket rate limiter using a sliding window counter."""
+    """Per-IP per-bucket rate limiter using a moving window strategy."""
 
     # path prefix → config setting name
     PATH_LIMITS = {
@@ -21,9 +28,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app):
         super().__init__(app)
-        # {(ip, bucket): [timestamps]}
-        self._hits: dict[tuple[str, str], list[float]] = defaultdict(list)
-        self._last_cleanup = time.monotonic()
+        self._storage = MemoryStorage()
+        self._limiter = MovingWindowRateLimiter(self._storage)
 
     def _get_bucket_and_limit(self, path: str) -> tuple[str, int]:
         for prefix, attr in self.PATH_LIMITS.items():
@@ -31,44 +37,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 return prefix, getattr(settings, attr)
         return "_default", settings.rate_limit_default
 
-    MAX_HITS_PER_KEY = 300  # Hard cap per key (prevents list bloat)
-    MAX_TOTAL_KEYS = 10000  # Hard cap on tracked keys
-
-    def _cleanup_old(self):
-        """Evict entries older than 60s. Runs at most once per 30s."""
-        now = time.monotonic()
-        if now - self._last_cleanup < 30:
-            return
-        cutoff = now - 60
-        stale_keys = []
-        for key, timestamps in self._hits.items():
-            self._hits[key] = [t for t in timestamps if t > cutoff]
-            if not self._hits[key]:
-                stale_keys.append(key)
-        for key in stale_keys:
-            del self._hits[key]
-        # Hard cap on total tracked keys
-        if len(self._hits) > self.MAX_TOTAL_KEYS:
-            excess = len(self._hits) - self.MAX_TOTAL_KEYS
-            for key in list(self._hits.keys())[:excess]:
-                del self._hits[key]
-        self._last_cleanup = now
-
     async def dispatch(self, request: Request, call_next):
-        self._cleanup_old()
-
         client_ip = request.client.host if request.client else "unknown"
         bucket, limit = self._get_bucket_and_limit(request.url.path)
-        key = (client_ip, bucket)
-        now = time.monotonic()
-        cutoff = now - 60
 
-        # Prune old hits for this key and enforce hard cap
-        self._hits[key] = [t for t in self._hits[key] if t > cutoff]
-        if len(self._hits[key]) > self.MAX_HITS_PER_KEY:
-            self._hits[key] = self._hits[key][-self.MAX_HITS_PER_KEY:]
-
-        if len(self._hits[key]) >= limit:
+        rate = RateLimitItemPerMinute(limit)
+        if not self._limiter.hit(rate, client_ip, bucket):
             return JSONResponse(
                 status_code=429,
                 content={
@@ -79,5 +53,4 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 headers={"Retry-After": "60"},
             )
 
-        self._hits[key].append(now)
         return await call_next(request)
