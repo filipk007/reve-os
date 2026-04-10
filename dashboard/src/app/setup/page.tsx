@@ -1,17 +1,20 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { CheckCircle2, Circle, Loader2, Terminal, Copy, ExternalLink, Zap } from "lucide-react";
+import { CheckCircle2, Circle, Loader2, Terminal, Copy, ExternalLink, Zap, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getLocalRunnerStatus } from "@/lib/api";
 
-const SETUP_COMMAND = `cd ~/Documents/clay-webhook-os && python3.11 scripts/clay-run.py --watch`;
+const INSTALL_COMMAND = `bash ~/Documents/clay-webhook-os/scripts/install-daemon.sh`;
+const REMOVE_COMMAND = `bash ~/Documents/clay-webhook-os/scripts/install-daemon.sh --remove`;
+const MANUAL_COMMAND = `cd ~/Documents/clay-webhook-os && python3.11 scripts/clay-run.py --watch`;
 
 export default function SetupPage() {
-  const [copied, setCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [connected, setConnected] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
+  const [mode, setMode] = useState<"auto" | "manual">("auto");
 
   const checkStatus = useCallback(async () => {
     setChecking(true);
@@ -25,23 +28,39 @@ export default function SetupPage() {
     }
   }, []);
 
-  // Poll for connection on mount
   useEffect(() => {
     checkStatus();
     const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
   }, [checkStatus]);
 
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(SETUP_COMMAND);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = useCallback((text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   }, []);
+
+  const CopyBlock = ({ command, field, hint }: { command: string; field: string; hint?: string }) => (
+    <div className="space-y-1.5 w-full">
+      <div
+        onClick={() => handleCopy(command, field)}
+        className="flex items-center gap-2 bg-clay-900 border border-clay-700 rounded-lg px-4 py-3 cursor-pointer hover:border-clay-600 transition-colors group"
+      >
+        <code className="text-xs text-kiln-teal font-mono flex-1 break-all select-all">
+          {command}
+        </code>
+        <button className="shrink-0 text-clay-500 group-hover:text-clay-300 transition-colors">
+          {copiedField === field ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+        </button>
+      </div>
+      {hint && <p className="text-[10px] text-clay-500">{hint}</p>}
+    </div>
+  );
 
   const steps = [
     {
       title: "Install Claude Code",
-      description: "This is the AI engine that powers your enrichments. Download it and sign in with your Claude account.",
+      description: "The AI engine that powers enrichments. Download and sign in with your Claude account.",
       action: (
         <Button variant="outline" size="sm" className="h-7 border-clay-600 text-clay-300" asChild>
           <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer">
@@ -52,38 +71,77 @@ export default function SetupPage() {
       hint: "Already have it? Skip to step 2.",
     },
     {
-      title: "Start the runner in Terminal",
-      description: "Open the Terminal app on your Mac (search \"Terminal\" in Spotlight) and paste the command below. Keep this terminal open while you work.",
+      title: "Start the local runner",
+      description: mode === "auto"
+        ? "One command installs the runner as a background service. It auto-starts when your Mac boots — no terminal window needed."
+        : "Run this in Terminal. Keep the window open while you work.",
       action: (
-        <div className="space-y-2 w-full">
-          <div
-            onClick={handleCopy}
-            className="flex items-center gap-2 bg-clay-900 border border-clay-700 rounded-lg px-4 py-3 cursor-pointer hover:border-clay-600 transition-colors group"
-          >
-            <code className="text-xs text-kiln-teal font-mono flex-1 break-all select-all">
-              {SETUP_COMMAND}
-            </code>
-            <button className="shrink-0 text-clay-500 group-hover:text-clay-300 transition-colors">
-              {copied ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+        <div className="space-y-3 w-full">
+          {/* Mode toggle */}
+          <div className="flex gap-1 bg-clay-800 rounded-lg p-0.5 w-fit">
+            <button
+              onClick={() => setMode("auto")}
+              className={cn(
+                "px-3 py-1 rounded-md text-[11px] font-medium transition-colors",
+                mode === "auto" ? "bg-clay-700 text-clay-100" : "text-clay-400 hover:text-clay-300",
+              )}
+            >
+              <Download className="h-3 w-3 inline mr-1" />Auto-start
+            </button>
+            <button
+              onClick={() => setMode("manual")}
+              className={cn(
+                "px-3 py-1 rounded-md text-[11px] font-medium transition-colors",
+                mode === "manual" ? "bg-clay-700 text-clay-100" : "text-clay-400 hover:text-clay-300",
+              )}
+            >
+              <Terminal className="h-3 w-3 inline mr-1" />Manual
             </button>
           </div>
-          <p className="text-[10px] text-clay-500">
-            Click to copy. After pasting, the runner will start polling for jobs.
-          </p>
+
+          {mode === "auto" ? (
+            <>
+              <CopyBlock
+                command={INSTALL_COMMAND}
+                field="install"
+                hint="Click to copy. Paste in Terminal — runs once, then it's hands-free forever."
+              />
+              {connected && (
+                <CopyBlock
+                  command={REMOVE_COMMAND}
+                  field="remove"
+                  hint="To uninstall the background service."
+                />
+              )}
+            </>
+          ) : (
+            <CopyBlock
+              command={MANUAL_COMMAND}
+              field="manual"
+              hint="Click to copy. Keep this terminal open while enriching."
+            />
+          )}
         </div>
       ),
     },
     {
       title: "You're all set",
       description: connected
-        ? "Connected and ready to go. Enrichments will run on your computer."
-        : "Waiting for the runner to connect — this usually takes a few seconds after step 2.",
+        ? "Connected and ready. Enrichments run locally on your Mac — no API keys needed."
+        : "Waiting for the runner to connect — usually takes a few seconds after step 2.",
       action: connected ? (
-        <Button size="sm" className="h-8 bg-kiln-teal text-black hover:bg-kiln-teal/90" asChild>
-          <a href="/enrich">
-            <Zap className="h-3.5 w-3.5 mr-1" />Start Enriching
-          </a>
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" className="h-8 bg-kiln-teal text-black hover:bg-kiln-teal/90" asChild>
+            <a href="/tables">
+              <Zap className="h-3.5 w-3.5 mr-1" />Open Tables
+            </a>
+          </Button>
+          <Button size="sm" variant="outline" className="h-8 border-clay-600 text-clay-300" asChild>
+            <a href="/enrich">
+              Start Enriching
+            </a>
+          </Button>
+        </div>
       ) : (
         <Button variant="outline" size="sm" className="h-7 border-clay-600 text-clay-300" onClick={checkStatus} disabled={checking}>
           {checking ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Circle className="h-3 w-3 mr-1" />}
@@ -102,9 +160,9 @@ export default function SetupPage() {
             <div className="flex items-center justify-center gap-2 mb-4">
               <Terminal className="h-6 w-6 text-kiln-teal" />
             </div>
-            <h1 className="text-xl font-semibold text-clay-100">Start the local runner</h1>
+            <h1 className="text-xl font-semibold text-clay-100">Set up local runner</h1>
             <p className="text-sm text-clay-400 max-w-sm mx-auto">
-              Enrichments run directly on your Mac. Start the runner in Terminal and keep it open while you work.
+              Enrichments run on your Mac using your Claude subscription. No API keys, no per-call billing.
             </p>
           </div>
 
@@ -112,12 +170,9 @@ export default function SetupPage() {
           <div className="space-y-1">
             {steps.map((step, i) => {
               const isDone = i === 2 ? connected === true : i < 2;
-              // Step 3 is "done" when connected
-              // Steps 1-2 we can't detect, so always show as available
 
               return (
                 <div key={i} className="flex gap-4">
-                  {/* Vertical line + dot */}
                   <div className="flex flex-col items-center">
                     <div className={cn(
                       "h-8 w-8 rounded-full flex items-center justify-center shrink-0 border-2 transition-colors",
@@ -134,7 +189,6 @@ export default function SetupPage() {
                     {i < steps.length - 1 && <div className="w-px flex-1 bg-clay-700 my-1" />}
                   </div>
 
-                  {/* Content */}
                   <div className="pb-8 flex-1 min-w-0">
                     <h3 className="text-sm font-medium text-clay-100 mb-1">{step.title}</h3>
                     <p className="text-xs text-clay-400 mb-3 leading-relaxed">{step.description}</p>
@@ -169,6 +223,25 @@ export default function SetupPage() {
             {connected === true && (
               <span className="text-[10px] text-clay-500">Runner active</span>
             )}
+          </div>
+
+          {/* How it works */}
+          <div className="border border-clay-700 rounded-lg p-4 space-y-2">
+            <h3 className="text-xs font-semibold text-clay-300 uppercase tracking-wider">How it works</h3>
+            <div className="space-y-1.5 text-xs text-clay-400">
+              <p>The local runner connects your Mac to the dashboard. When you run a table:</p>
+              <ol className="list-decimal list-inside space-y-1 ml-1">
+                <li>Dashboard sends column config to the server</li>
+                <li>Server queues enrichment jobs for your runner</li>
+                <li>Runner calls Deepline CLI (865+ real API tools) or Claude</li>
+                <li>Results stream back to your table in real-time</li>
+              </ol>
+              <p className="text-clay-500 pt-1">
+                {mode === "auto"
+                  ? "Auto-start mode installs a background service that runs whenever your Mac is on."
+                  : "Manual mode requires keeping a terminal open. Good for testing."}
+              </p>
+            </div>
           </div>
         </div>
       </div>
