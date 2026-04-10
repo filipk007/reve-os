@@ -117,6 +117,10 @@ class TableColumn(BaseModel):
     script_config: ScriptColumnConfig | None = Field(None, description="Config for script column type")
     write_config: WriteColumnConfig | None = Field(None, description="Config for write column type")
 
+    # Context injection
+    context_files: list[str] = Field(default_factory=list, description="Column-level context file refs (additive to table-level)")
+    skip_context: bool = Field(False, description="If true, skip all context injection for this column")
+
     # --- Resilience configs (apply to enrichment, ai, http, waterfall, script) ---
     error_handling: ErrorHandlingConfig | None = Field(None, description="Per-column error handling policy")
     rate_limit: RateLimitConfig | None = Field(None, description="Per-column rate limiting")
@@ -156,6 +160,10 @@ class TableDefinition(BaseModel):
     source_function_id: str | None = None
     linked_sheet_id: str | None = Field(None, description="Google Sheets ID for sync")
     sync_direction: str = Field("none", description="none | pull | push | both")
+    # Context injection
+    client_slug: str | None = Field(None, description="Client profile slug for context injection (e.g. 'hologram')")
+    context_files: list[str] = Field(default_factory=list, description="KB file refs to inject into AI column prompts")
+    context_instructions: str | None = Field(None, description="Instructions applied to every AI column")
 
 
 class TableSummary(BaseModel):
@@ -173,11 +181,17 @@ class TableSummary(BaseModel):
 class CreateTableRequest(BaseModel):
     name: str = Field(..., description="Table name")
     description: str = Field("", description="Optional description")
+    client_slug: str | None = Field(None, description="Client profile slug for context injection")
+    context_files: list[str] = Field(default_factory=list, description="KB file refs to inject")
+    context_instructions: str | None = Field(None, description="Instructions for all AI columns")
 
 
 class UpdateTableRequest(BaseModel):
     name: str | None = None
     description: str | None = None
+    client_slug: str | None = None
+    context_files: list[str] | None = None
+    context_instructions: str | None = None
 
 
 class AddColumnRequest(BaseModel):
@@ -218,6 +232,10 @@ class AddColumnRequest(BaseModel):
     script_config: ScriptColumnConfig | None = None
     write_config: WriteColumnConfig | None = None
 
+    # Context injection
+    context_files: list[str] = Field(default_factory=list, description="Column-level context refs")
+    skip_context: bool = False
+
     # Resilience
     error_handling: ErrorHandlingConfig | None = None
     rate_limit: RateLimitConfig | None = None
@@ -247,6 +265,10 @@ class UpdateColumnRequest(BaseModel):
     lookup_config: LookupColumnConfig | None = None
     script_config: ScriptColumnConfig | None = None
     write_config: WriteColumnConfig | None = None
+
+    # Context injection
+    context_files: list[str] | None = None
+    skip_context: bool | None = None
 
     # Resilience
     error_handling: ErrorHandlingConfig | None = None
@@ -285,3 +307,45 @@ class ValidateTableResponse(BaseModel):
     valid: bool = Field(..., description="True if no blocking errors")
     errors: list[str] = Field(default_factory=list, description="Blocking issues")
     warnings: list[str] = Field(default_factory=list, description="Non-blocking notices")
+
+
+# --- Table Templates ---
+
+class TableTemplateColumn(BaseModel):
+    """Column definition inside a template — same shape as AddColumnRequest but as a dict-like."""
+    name: str
+    column_type: str
+    tool: str | None = None
+    params: dict[str, str] = Field(default_factory=dict)
+    output_key: str | None = None
+    ai_prompt: str | None = None
+    ai_model: str = "sonnet"
+    formula: str | None = None
+    condition: str | None = None
+    condition_label: str | None = None
+    context_files: list[str] = Field(default_factory=list)
+    skip_context: bool = False
+
+
+class TableTemplateVariable(BaseModel):
+    name: str = Field(..., description="Variable name (no braces)")
+    description: str = Field("", description="Human-readable description")
+    required: bool = True
+    default: str | None = None
+
+
+class TableTemplate(BaseModel):
+    id: str = Field(..., description="Template ID (file stem)")
+    name: str = Field(..., description="Display name (may contain {{vars}})")
+    description: str = Field("", description="What this template is for")
+    category: str = Field("general", description="Category: outbound, qualification, research, etc.")
+    client_slug: str | None = None
+    context_files: list[str] = Field(default_factory=list)
+    context_instructions: str | None = None
+    variables: list[TableTemplateVariable] = Field(default_factory=list)
+    columns: list[TableTemplateColumn] = Field(default_factory=list)
+
+
+class InstantiateTemplateRequest(BaseModel):
+    name: str | None = Field(None, description="Override name for the new table (otherwise uses template name)")
+    variables: dict[str, str] = Field(default_factory=dict, description="Variable substitutions")

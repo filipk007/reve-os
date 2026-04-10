@@ -13,6 +13,7 @@ from app.models.tables import (
     ExecuteTableRequest,
     ExpandColumnRequest,
     ImportRowsRequest,
+    InstantiateTemplateRequest,
     ReorderColumnsRequest,
     TableSource,
     UpdateColumnRequest,
@@ -69,13 +70,113 @@ async def submit_table_local_result(job_id: str, request: Request):
     return {"ok": resolved, "job_id": job_id}
 
 
+# --- Table Templates ---
+# NOTE: These routes come before /{table_id} catch-all to avoid routing conflicts
+
+
+@router.get("/templates")
+async def list_table_templates(request: Request):
+    """List all available table templates."""
+    store = getattr(request.app.state, "table_template_store", None)
+    if store is None:
+        return {"templates": []}
+    templates = store.list_all()
+    return {
+        "templates": [t.model_dump() for t in templates],
+        "count": len(templates),
+    }
+
+
+@router.get("/templates/{template_id}")
+async def get_table_template(template_id: str, request: Request):
+    """Get a single template by ID."""
+    store = getattr(request.app.state, "table_template_store", None)
+    if store is None:
+        return JSONResponse({"error": True, "error_message": "Template store not initialized"}, status_code=503)
+    template = store.get(template_id)
+    if template is None:
+        return JSONResponse({"error": True, "error_message": f"Template '{template_id}' not found"}, status_code=404)
+    return template.model_dump()
+
+
+@router.post("/templates/{template_id}/instantiate")
+async def instantiate_table_template(template_id: str, body: InstantiateTemplateRequest, request: Request):
+    """Create a new table from a template, with variable substitution."""
+    template_store = getattr(request.app.state, "table_template_store", None)
+    if template_store is None:
+        return JSONResponse({"error": True, "error_message": "Template store not initialized"}, status_code=503)
+
+    try:
+        resolved = template_store.instantiate(template_id, body.variables)
+    except ValueError as e:
+        return JSONResponse({"error": True, "error_message": str(e)}, status_code=400)
+
+    if resolved is None:
+        return JSONResponse({"error": True, "error_message": f"Template '{template_id}' not found"}, status_code=404)
+
+    table_store = request.app.state.table_store
+
+    # Create the table with resolved context
+    table = table_store.create(
+        name=body.name or resolved.name,
+        description=resolved.description,
+        client_slug=resolved.client_slug,
+        context_files=resolved.context_files,
+        context_instructions=resolved.context_instructions,
+    )
+
+    # Add each column
+    added_cols = []
+    errors = []
+    for tpl_col in resolved.columns:
+        try:
+            col_req = AddColumnRequest(
+                name=tpl_col.name,
+                column_type=tpl_col.column_type,
+                tool=tpl_col.tool,
+                params=tpl_col.params,
+                output_key=tpl_col.output_key,
+                ai_prompt=tpl_col.ai_prompt,
+                ai_model=tpl_col.ai_model,
+                formula=tpl_col.formula,
+                condition=tpl_col.condition,
+                condition_label=tpl_col.condition_label,
+                context_files=tpl_col.context_files,
+                skip_context=tpl_col.skip_context,
+            )
+            table_store.add_column(table.id, col_req)
+            added_cols.append(tpl_col.name)
+        except Exception as e:
+            errors.append(f"{tpl_col.name}: {e}")
+            logger.warning("[tables] Failed to add column %s from template: %s", tpl_col.name, e)
+
+    # Reload table with added columns
+    table = table_store.get(table.id)
+    logger.info(
+        "[tables] Instantiated template '%s' -> table %s (%d cols)",
+        template_id, table.id, len(added_cols),
+    )
+    return {
+        "table": table.model_dump(),
+        "template_id": template_id,
+        "columns_added": added_cols,
+        "errors": errors,
+    }
+
+
 # --- Table CRUD ---
 
 
 @router.post("")
 async def create_table(body: CreateTableRequest, request: Request):
     store = request.app.state.table_store
-    table = store.create(name=body.name, description=body.description)
+    table = store.create(
+        name=body.name,
+        description=body.description,
+        client_slug=body.client_slug,
+        context_files=body.context_files,
+        context_instructions=body.context_instructions,
+    )
     return table.model_dump()
 
 
@@ -318,6 +419,9 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
     local_queue = request.app.state.local_job_queue
     bridge_store = request.app.state.bridge_store
     enrichment_cache = getattr(request.app.state, "enrichment_cache", None)
+    memory_store = getattr(request.app.state, "memory_store", None)
+    learning_engine = getattr(request.app.state, "learning_engine", None)
+    context_index = getattr(request.app.state, "context_index", None)
 
     async def event_gen():
         try:
@@ -329,6 +433,9 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
                 local_queue=local_queue,
                 bridge_store=bridge_store,
                 enrichment_cache=enrichment_cache,
+                memory_store=memory_store,
+                learning_engine=learning_engine,
+                context_index=context_index,
             ):
                 yield event
         except Exception as e:
@@ -340,6 +447,43 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# --- Cell Feedback ---
+
+
+@router.post("/{table_id}/cells/{row_id}/{column_id}/feedback")
+async def submit_cell_feedback(table_id: str, row_id: str, column_id: str, request: Request):
+    """Submit feedback on a cell result to improve future AI outputs."""
+    body = await request.json()
+    note = body.get("note", "")
+    corrected_value = body.get("corrected_value")
+
+    store = request.app.state.table_store
+    table = store.get(table_id)
+    if not table:
+        return JSONResponse({"error": True, "error_message": "Table not found"}, status_code=404)
+
+    learning_engine = getattr(request.app.state, "learning_engine", None)
+    learning_extracted = False
+    if learning_engine and note:
+        learning_engine.extract_learning(
+            skill=f"table:{table_id}:{column_id}",
+            client_slug=table.client_slug,
+            note=note,
+            rating="thumbs_down",
+        )
+        learning_extracted = True
+
+    if corrected_value is not None:
+        store.update_cells(table_id, [{
+            "row_id": row_id,
+            "column_id": column_id,
+            "value": corrected_value,
+            "status": "done",
+        }])
+
+    return {"ok": True, "learning_extracted": learning_extracted}
 
 
 # --- Validation ---

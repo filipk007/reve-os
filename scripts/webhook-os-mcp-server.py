@@ -220,10 +220,21 @@ def tool_list_tables(_args: dict) -> str:
 
 
 def tool_create_table(args: dict) -> str:
-    """Create a new table."""
+    """Create a new table with optional context injection."""
     try:
-        result = api_post("/tables", {"name": args.get("name", "Untitled"), "description": args.get("description", "")})
-        return f"Created table: {result.get('id', '?')} — {result.get('name', '?')}"
+        body = {
+            "name": args.get("name", "Untitled"),
+            "description": args.get("description", ""),
+        }
+        if args.get("client_slug"):
+            body["client_slug"] = args["client_slug"]
+        if args.get("context_files"):
+            body["context_files"] = args["context_files"]
+        if args.get("context_instructions"):
+            body["context_instructions"] = args["context_instructions"]
+        result = api_post("/tables", body)
+        ctx_info = f" (client: {result['client_slug']})" if result.get("client_slug") else ""
+        return f"Created table: {result.get('id', '?')} — {result.get('name', '?')}{ctx_info}"
     except Exception as e:
         return f"Failed to create table: {e}"
 
@@ -308,6 +319,104 @@ def tool_list_table_runs(args: dict) -> str:
         return "\n".join(lines)
     except Exception as e:
         return f"Failed to list runs: {e}"
+
+
+def tool_list_table_templates(_args: dict) -> str:
+    """List all available table templates."""
+    try:
+        data = api_get("/tables/templates")
+        templates = data.get("templates", [])
+        if not templates:
+            return "No table templates available. Create YAML files in table_templates/ to define them."
+        lines = [f"Available table templates ({len(templates)}):\n"]
+        for t in templates:
+            vars_info = ""
+            if t.get("variables"):
+                var_names = [v["name"] for v in t["variables"]]
+                vars_info = f" [vars: {', '.join(var_names)}]"
+            client = f" (client: {t['client_slug']})" if t.get("client_slug") else ""
+            lines.append(f"  - {t['id']}: {t['name']}{client}{vars_info}")
+            if t.get("description"):
+                lines.append(f"      {t['description']}")
+            col_count = len(t.get("columns", []))
+            lines.append(f"      → {col_count} columns ({t.get('category', 'general')})")
+        return "\n".join(lines)
+    except Exception as e:
+        return f"Failed to list templates: {e}"
+
+
+def tool_get_table_template(args: dict) -> str:
+    """Get details of a single template."""
+    try:
+        template_id = args["template_id"]
+        t = api_get(f"/tables/templates/{template_id}")
+        lines = [
+            f"Template: {t['name']} ({t['id']})",
+            f"Category: {t.get('category', 'general')}",
+            f"Description: {t.get('description', '')}",
+        ]
+        if t.get("client_slug"):
+            lines.append(f"Client: {t['client_slug']}")
+        if t.get("variables"):
+            lines.append("\nRequired variables:")
+            for v in t["variables"]:
+                req = " (required)" if v.get("required") else ""
+                default = f" default='{v['default']}'" if v.get("default") else ""
+                lines.append(f"  - {v['name']}: {v.get('description', '')}{req}{default}")
+        if t.get("context_files"):
+            lines.append("\nContext files:")
+            for f in t["context_files"]:
+                lines.append(f"  - {f}")
+        lines.append(f"\nColumns ({len(t.get('columns', []))}):")
+        for c in t.get("columns", []):
+            ai_info = f" -- {c['ai_prompt'][:60]}..." if c.get("ai_prompt") else ""
+            tool_info = f" (tool: {c['tool']})" if c.get("tool") else ""
+            lines.append(f"  - {c['name']} [{c['column_type']}]{tool_info}{ai_info}")
+        return "\n".join(lines)
+    except Exception as e:
+        return f"Failed to get template: {e}"
+
+
+def tool_create_table_from_template(args: dict) -> str:
+    """Instantiate a table from a template with optional variable substitution."""
+    try:
+        template_id = args["template_id"]
+        body = {
+            "name": args.get("name"),
+            "variables": args.get("variables", {}),
+        }
+        result = api_post(f"/tables/templates/{template_id}/instantiate", body)
+        if result.get("error"):
+            return f"Failed: {result.get('error_message')}"
+        table = result.get("table", {})
+        cols_added = result.get("columns_added", [])
+        errors = result.get("errors", [])
+        msg = (
+            f"Created table '{table.get('name')}' (id={table.get('id')}) "
+            f"from template '{template_id}' with {len(cols_added)} columns."
+        )
+        if errors:
+            msg += f"\nWarnings: {len(errors)} column errors:\n" + "\n".join(f"  - {e}" for e in errors)
+        return msg
+    except Exception as e:
+        return f"Failed to instantiate template: {e}"
+
+
+def tool_submit_cell_feedback(args: dict) -> str:
+    """Submit feedback on a table cell to improve future AI outputs."""
+    try:
+        table_id = args["table_id"]
+        row_id = args["row_id"]
+        column_id = args["column_id"]
+        body = {"note": args.get("note", "")}
+        if args.get("corrected_value"):
+            body["corrected_value"] = args["corrected_value"]
+        result = api_post(f"/tables/{table_id}/cells/{row_id}/{column_id}/feedback", body)
+        if result.get("learning_extracted"):
+            return f"Feedback saved and learning extracted for column {column_id}. Will be injected into future runs."
+        return f"Feedback saved for column {column_id}."
+    except Exception as e:
+        return f"Failed to submit feedback: {e}"
 
 
 def tool_bridge_stats(_args: dict) -> str:
@@ -421,19 +530,22 @@ TOOLS = [
     },
     {
         "name": "create_table",
-        "description": "Create a new empty table.",
+        "description": "Create a new table. Optionally scope to a client for automatic context injection into AI columns.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "name": {"type": "string", "description": "Table name"},
                 "description": {"type": "string", "description": "Optional description"},
+                "client_slug": {"type": "string", "description": "Client slug for context injection (e.g. 'hologram'). Auto-loads client profile into AI column prompts."},
+                "context_files": {"type": "array", "items": {"type": "string"}, "description": "KB file paths to inject (e.g. ['knowledge_base/frameworks/value-selling.md'])"},
+                "context_instructions": {"type": "string", "description": "Instructions applied to every AI column in this table"},
             },
             "required": ["name"],
         },
     },
     {
         "name": "add_table_column",
-        "description": "Add a column to a table. Types: input, enrichment, ai, formula, gate, static, http, waterfall, lookup, script, write.",
+        "description": "Add a column to a table. Types: input, enrichment, ai, formula, gate, static, http, waterfall, lookup, script, write. AI columns auto-receive table context (client profile, KB, memory, learnings).",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -444,6 +556,8 @@ TOOLS = [
                 "ai_prompt": {"type": "string", "description": "Prompt for AI columns"},
                 "formula": {"type": "string", "description": "Formula for formula columns"},
                 "condition": {"type": "string", "description": "Condition for gate columns"},
+                "context_files": {"type": "array", "items": {"type": "string"}, "description": "Additional KB files for this column (additive to table-level)"},
+                "skip_context": {"type": "boolean", "description": "Skip context injection for this column (bare prompt)"},
             },
             "required": ["table_id", "name", "column_type"],
         },
@@ -492,6 +606,54 @@ TOOLS = [
         },
     },
     {
+        "name": "list_table_templates",
+        "description": "List pre-wired table templates. Each template bundles columns + context + instructions for a specific use case (outbound, qualification, research). Use this FIRST when a user asks to build a table — check if a template already exists.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "get_table_template",
+        "description": "Get full details of a table template including columns, context files, and required variables.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "template_id": {"type": "string", "description": "Template ID (e.g. 'hologram_outbound_sequence')"},
+            },
+            "required": ["template_id"],
+        },
+    },
+    {
+        "name": "create_table_from_template",
+        "description": "Instantiate a new table from a template with optional variable substitution. One call creates the table and all columns pre-wired with context. Much faster than create_table + multiple add_table_column calls.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "template_id": {"type": "string", "description": "Template to instantiate"},
+                "name": {"type": "string", "description": "Optional override name for the new table"},
+                "variables": {
+                    "type": "object",
+                    "description": "Variable substitutions for templates with {{vars}}. E.g. {'client_slug': 'hologram', 'client_name': 'Hologram'}",
+                    "additionalProperties": {"type": "string"},
+                },
+            },
+            "required": ["template_id"],
+        },
+    },
+    {
+        "name": "submit_cell_feedback",
+        "description": "Submit feedback on a table cell result to improve future AI outputs. Corrections are persisted and injected into future prompts via the learning engine.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "table_id": {"type": "string"},
+                "row_id": {"type": "string"},
+                "column_id": {"type": "string"},
+                "note": {"type": "string", "description": "What was wrong and how to fix it"},
+                "corrected_value": {"type": "string", "description": "Optional: the correct value"},
+            },
+            "required": ["table_id", "row_id", "column_id", "note"],
+        },
+    },
+    {
         "name": "bridge_stats",
         "description": "Get statistics for the synchronous webhook bridge — pending requests, capacity, timeouts.",
         "inputSchema": {"type": "object", "properties": {}},
@@ -512,6 +674,10 @@ TOOL_HANDLERS = {
     "run_table": tool_run_table,
     "validate_table": tool_validate_table,
     "list_table_runs": tool_list_table_runs,
+    "submit_cell_feedback": tool_submit_cell_feedback,
+    "list_table_templates": tool_list_table_templates,
+    "get_table_template": tool_get_table_template,
+    "create_table_from_template": tool_create_table_from_template,
     "bridge_stats": tool_bridge_stats,
 }
 

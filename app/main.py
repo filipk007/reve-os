@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.core.cache import ResultCache
 from app.core.circuit_breaker import CircuitBreaker
+from app.core.telemetry import init_telemetry, is_enabled as telemetry_enabled
 from app.core.cleanup_worker import DataCleanupWorker
 from app.core.context_index import ContextIndex
 from app.core.context_store import ContextStore
@@ -26,6 +27,7 @@ from app.core.learning_engine import LearningEngine
 from app.core.local_job_queue import LocalJobQueue
 from app.core.memory_store import MemoryStore
 from app.core.pipeline_store import PipelineStore
+from app.core.table_template_store import TableTemplateStore
 from app.core.play_store import PlayStore
 from app.core.prompt_cache import PromptCache
 from app.core.retry_worker import RetryWorker
@@ -117,6 +119,11 @@ app.include_router(research.router)
 
 @app.on_event("startup")
 async def startup():
+    # Initialize LLM observability (Phoenix/OpenTelemetry).
+    # No-op unless PHOENIX_ENABLED=1 and `pip install -e .[telemetry]` was run.
+    init_telemetry(project_name="clay-webhook-os")
+    app.state.telemetry_enabled = telemetry_enabled()
+
     app.state.pool = WorkerPool(max_workers=settings.max_workers)
     app.state.cache = ResultCache(ttl=settings.cache_ttl, max_size=settings.cache_max_entries)
     app.state.event_bus = EventBus()
@@ -136,6 +143,8 @@ async def startup():
     app.state.feedback_store.load()
     app.state.pipeline_store = PipelineStore(pipelines_dir=settings.pipelines_dir)
     app.state.pipeline_store.load()
+    app.state.table_template_store = TableTemplateStore(templates_dir=settings.table_templates_dir)
+    app.state.table_template_store.load()
     app.state.play_store = PlayStore(plays_dir=settings.plays_dir, pipelines_dir=settings.pipelines_dir)
     app.state.play_store.load()
     app.state.experiment_store = ExperimentStore(

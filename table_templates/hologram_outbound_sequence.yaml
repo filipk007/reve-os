@@ -1,0 +1,79 @@
+id: hologram_outbound_sequence
+name: "Hologram Outbound Sequence Builder"
+description: "Full cold outbound workflow for Hologram IoT prospects — enrich, research, qualify, and generate email/LinkedIn sequence."
+category: outbound
+client_slug: hologram
+context_files:
+  - knowledge_base/frameworks/josh-braun-pvc.md
+  - knowledge_base/sequences/cold-email-sequence.md
+context_instructions: |
+  Focus on carrier diversity and IoT connectivity reliability angles.
+  Lead with pain (single-carrier failures, rural coverage gaps), not product features.
+  Hologram's sweet spot is SMB (6-200 employees) with connected hardware products.
+
+columns:
+  - name: "Company"
+    column_type: input
+  - name: "Domain"
+    column_type: input
+  - name: "First Name"
+    column_type: input
+  - name: "Last Name"
+    column_type: input
+  - name: "Title"
+    column_type: input
+  - name: "Enrich Company"
+    column_type: enrichment
+    tool: parallel
+    params:
+      domain: "{{Domain}}"
+    output_key: intelligence
+  - name: "Find Email"
+    column_type: enrichment
+    tool: findymail
+    params:
+      first_name: "{{First Name}}"
+      last_name: "{{Last Name}}"
+      domain: "{{Domain}}"
+    output_key: email
+  - name: "Research"
+    column_type: ai
+    ai_prompt: |
+      Research this company's IoT connectivity setup, hardware products, and
+      any signals of carrier failover issues or expansion pain.
+      Return {products, connectivity_setup, pain_signals, expansion_signals}.
+    ai_model: sonnet
+  - name: "Qualify"
+    column_type: ai
+    ai_prompt: |
+      Score this company 1-10 for Hologram ICP fit.
+      Return {score, reasoning, top_signal, disqualifiers}.
+    ai_model: sonnet
+  - name: "Angle"
+    column_type: ai
+    ai_prompt: |
+      Pick the single best angle to reach out based on the research.
+      Options: carrier_diversity, rural_coverage, scale_reliability, cost_optimization, failover_architecture.
+      Return {angle, rationale, personalization_hook}.
+    ai_model: sonnet
+  - name: "Email 1"
+    column_type: ai
+    ai_prompt: |
+      Write the first cold email. Under 90 words. Problem-first opener.
+      Reference a specific signal from research. End with a soft CTA.
+      Return {subject, body}.
+    ai_model: opus
+  - name: "Email 2"
+    column_type: ai
+    ai_prompt: |
+      Write a follow-up bump email 3 days later. Under 50 words.
+      Different angle than Email 1. No "just checking in".
+      Return {subject, body}.
+    ai_model: sonnet
+  - name: "LinkedIn DM"
+    column_type: ai
+    ai_prompt: |
+      Write a LinkedIn connection request note. Under 280 characters.
+      Reference the personalization_hook from the Angle column.
+      Return {note}.
+    ai_model: sonnet

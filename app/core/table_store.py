@@ -53,7 +53,14 @@ class TableStore:
 
     # --- CRUD ---
 
-    def create(self, name: str, description: str = "") -> TableDefinition:
+    def create(
+        self,
+        name: str,
+        description: str = "",
+        client_slug: str | None = None,
+        context_files: list[str] | None = None,
+        context_instructions: str | None = None,
+    ) -> TableDefinition:
         table_id = uuid.uuid4().hex[:12]
         now = time.time()
         table = TableDefinition(
@@ -64,6 +71,9 @@ class TableStore:
             row_count=0,
             created_at=now,
             updated_at=now,
+            client_slug=client_slug,
+            context_files=context_files or [],
+            context_instructions=context_instructions,
         )
         table_dir = self.base_dir / table_id
         table_dir.mkdir(parents=True, exist_ok=True)
@@ -165,6 +175,8 @@ class TableStore:
             lookup_config=req.lookup_config,
             script_config=req.script_config,
             write_config=req.write_config,
+            context_files=req.context_files,
+            skip_context=req.skip_context,
             error_handling=req.error_handling,
             rate_limit=req.rate_limit,
         )

@@ -296,6 +296,9 @@ async def execute_table_stream(
     local_queue=None,
     bridge_store=None,
     enrichment_cache=None,
+    memory_store=None,
+    learning_engine=None,
+    context_index=None,
 ):
     """Generator that yields SSE events as columns execute.
 
@@ -303,6 +306,9 @@ async def execute_table_stream(
     """
     start_time = time.time()
     rate_limiter = _ColumnRateLimiter()
+
+    # Pre-load table-level context files once per execution
+    table_context_pieces = _load_table_context(table, context_index)
 
     # Filter to executable columns
     exec_types = {"enrichment", "ai", "formula", "gate", "http", "waterfall", "lookup", "script", "write"}
@@ -710,8 +716,12 @@ async def execute_table_stream(
                         last_error = None
                         for attempt in range(max_retries + 1):
                             try:
-                                # Build prompt for this column + chunk
-                                prompt = _build_column_prompt(col, chunk, table.columns)
+                                # Build prompt for this column + chunk (with context if configured)
+                                prompt = _build_column_prompt_with_context(
+                                    col, chunk, table.columns, table,
+                                    table_context_pieces, memory_store,
+                                    learning_engine, context_index,
+                                )
                                 needs_agent = False
                                 if col.tool:
                                     provider = _PROVIDER_MAP.get(col.tool, {})
@@ -1437,6 +1447,421 @@ def _build_column_prompt(col: TableColumn, rows: list[dict], all_columns: list[T
     parts.append("Return ONLY the JSON array, no explanation.")
 
     return "\n".join(parts)
+
+
+def _extract_row_fields(row: dict, all_columns: list[TableColumn]) -> dict:
+    """Extract a flat dict of column values from a row for entity/memory lookup.
+
+    Maps column IDs to common field names so entity_utils.extract_entity_key()
+    and context_index.search_by_data() can find what they need.
+    """
+    data = {}
+    # Common field name mappings for entity resolution
+    _ENTITY_FIELD_MAP = {
+        "company_domain": "company_domain",
+        "domain": "company_domain",
+        "website": "company_domain",
+        "email": "email",
+        "contact_email": "email",
+        "person_email": "email",
+        "company_name": "company_name",
+        "company": "company_name",
+        "title": "title",
+        "job_title": "title",
+        "role": "title",
+        "industry": "industry",
+    }
+    for c in all_columns:
+        val = row.get(f"{c.id}__value")
+        if val is not None:
+            data[c.id] = val
+            # Map to canonical names for entity resolution and semantic search
+            canonical = _ENTITY_FIELD_MAP.get(c.id)
+            if canonical and canonical not in data:
+                data[canonical] = val
+    return data
+
+
+# ── Column intent detection ──────────────────────────────────────────────
+# Infers what kind of task a column performs from its prompt/name so we can
+# auto-select the right client profile sections (like SKILL_CLIENT_SECTIONS
+# does for webhook skills). No need for manual config.
+
+_COLUMN_INTENT_KEYWORDS: dict[str, list[str]] = {
+    "qualification": ["qualify", "score", "icp", "fit", "qualification", "disqualify"],
+    "email": ["email", "cold email", "outreach", "message", "write.*email", "draft"],
+    "research": ["research", "investigate", "analyze", "summary", "overview", "profile"],
+    "competitive": ["compet", "alternative", "vs ", "versus", "compare", "displacement"],
+    "persona": ["persona", "stakeholder", "buying committee", "decision maker"],
+    "discovery": ["discovery", "question", "pain point", "challenge"],
+}
+
+# Maps detected intent → client profile sections to load (mirrors SKILL_CLIENT_SECTIONS)
+_INTENT_CLIENT_SECTIONS: dict[str, list[str]] = {
+    "qualification": [
+        "What They Sell", "Target ICP", "Qualification Criteria",
+        "Competitive Landscape", "Closed-Won Archetypes",
+    ],
+    "email": [
+        "What They Sell", "Tone Preferences",
+        "Campaign Angles Worth Testing", "Campaign Angles",
+        "Recent News & Signals",
+    ],
+    "research": [
+        "What They Sell", "Target ICP", "Competitive Landscape",
+        "Vertical Messaging",
+    ],
+    "competitive": [
+        "What They Sell", "Competitive Landscape", "Battle Cards",
+        "Common Objections",
+    ],
+    "persona": [
+        "What They Sell", "Target ICP", "Multi-Threading Guide",
+    ],
+    "discovery": [
+        "What They Sell", "Target ICP", "Discovery Questions",
+    ],
+}
+
+# Fallback: if we can't detect intent, load these essential sections
+_DEFAULT_CLIENT_SECTIONS = [
+    "What They Sell", "Target ICP", "Tone Preferences",
+]
+
+
+def _detect_column_intent(col: TableColumn) -> str | None:
+    """Detect the intent of a column from its name and ai_prompt."""
+    text = f"{col.name} {col.ai_prompt or ''}".lower()
+    for intent, keywords in _COLUMN_INTENT_KEYWORDS.items():
+        for kw in keywords:
+            if re.search(kw, text):
+                return intent
+    return None
+
+
+def _get_client_sections_for_column(col: TableColumn) -> list[str]:
+    """Determine which client profile sections this column needs."""
+    intent = _detect_column_intent(col)
+    if intent:
+        return _INTENT_CLIENT_SECTIONS.get(intent, _DEFAULT_CLIENT_SECTIONS)
+    return _DEFAULT_CLIENT_SECTIONS
+
+
+def _load_table_context(table: TableDefinition, context_index=None) -> list[dict[str, str]]:
+    """Pre-load table-level context files from disk. Called once per execution.
+
+    Loads: client profile (raw — filtered per-column later), defaults, and
+    explicit context_files. Does NOT load industry/persona — those are
+    row-data-driven and handled per-column.
+    """
+    from app.config import settings
+    from app.core.skill_loader import load_file
+
+    files: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    # 1. Defaults layer — knowledge_base/_defaults/*.md (auto-loaded for all)
+    defaults_dir = settings.knowledge_dir / "_defaults"
+    if defaults_dir.exists():
+        for f in sorted(defaults_dir.iterdir()):
+            if f.suffix == ".md":
+                rel = f"knowledge_base/_defaults/{f.name}"
+                content = f.read_text()
+                if content:
+                    files.append({"path": rel, "content": content})
+                    seen.add(rel)
+
+    # 2. Client profile (raw — will be filtered per-column in the prompt builder)
+    if table.client_slug:
+        for candidate in [
+            f"clients/{table.client_slug}/profile.md",
+            f"clients/{table.client_slug}.md",
+        ]:
+            content = load_file(candidate)
+            if content:
+                files.append({"path": candidate, "content": content, "_raw": True})
+                seen.add(candidate)
+                break
+
+    # 3. Explicit context_files from table definition
+    for ref in (table.context_files or []):
+        if ref in seen:
+            continue
+        content = load_file(ref)
+        if content:
+            files.append({"path": ref, "content": content})
+            seen.add(ref)
+
+    return files
+
+
+def _filter_context_for_column(
+    table_context_pieces: list[dict[str, str]],
+    col: TableColumn,
+    row_data: dict,
+) -> list[dict[str, str]]:
+    """Intelligently filter table context for a specific column.
+
+    - Client profiles: filtered to only the sections this column needs
+      (inferred from column intent) + persona matching from row title
+    - Signal files: filtered to matching signal type
+    - Everything else: passed through
+    """
+    from app.core.context_filter import (
+        filter_client_profile,
+        filter_signal_sections,
+        match_persona_subsection,
+        split_markdown_sections,
+    )
+
+    filtered = []
+    sections_needed = _get_client_sections_for_column(col)
+
+    for ctx in table_context_pieces:
+        path = ctx["path"]
+        content = ctx["content"]
+
+        # Client profiles — smart section filtering
+        if path.startswith("clients/") and ctx.get("_raw"):
+            sections = split_markdown_sections(content)
+            parts = []
+            # Keep H1 title
+            first_line = content.split("\n")[0]
+            if first_line.startswith("# "):
+                parts.append(first_line)
+                parts.append("")
+
+            for section_name in sections_needed:
+                if section_name in sections:
+                    parts.append(f"## {section_name}")
+                    parts.append(sections[section_name])
+
+            # Auto-extract persona if row has title data
+            title = row_data.get("title") or row_data.get("job_title") or row_data.get("role")
+            if title and "Personas" in sections:
+                persona = match_persona_subsection(sections["Personas"], title)
+                if persona:
+                    parts.append("## Personas")
+                    parts.append(persona)
+
+            # Auto-extract signal playbook row if row has signal data
+            signal_type = row_data.get("signal_type")
+            if signal_type and "Signal Playbook" in sections:
+                from app.core.context_filter import _extract_signal_playbook_row
+                row_text = _extract_signal_playbook_row(sections["Signal Playbook"], signal_type)
+                if row_text:
+                    parts.append("## Signal Playbook")
+                    parts.append(row_text)
+
+            filtered_content = "\n".join(parts).strip()
+            if filtered_content:
+                original_len = len(content)
+                filtered_len = len(filtered_content)
+                reduction = round((1 - filtered_len / original_len) * 100) if original_len else 0
+                logger.info(
+                    "[table-context] client profile filtered: %d -> %d chars (%d%% reduction) for column %s (intent: %s)",
+                    original_len, filtered_len, reduction, col.id, _detect_column_intent(col) or "default",
+                )
+                filtered.append({"path": path, "content": filtered_content})
+
+        # Signal files — filter to matching type
+        elif "signals/" in path and row_data.get("signal_type"):
+            filtered_content = filter_signal_sections(content, row_data["signal_type"])
+            filtered.append({"path": path, "content": filtered_content})
+
+        # Everything else — pass through
+        else:
+            filtered.append({"path": path, "content": content})
+
+    return filtered
+
+
+def _build_column_prompt_with_context(
+    col: TableColumn,
+    rows: list[dict],
+    all_columns: list[TableColumn],
+    table: TableDefinition,
+    table_context_pieces: list[dict[str, str]],
+    memory_store=None,
+    learning_engine=None,
+    context_index=None,
+) -> str:
+    """Build a context-enriched prompt for an AI/enrichment column.
+
+    Smart context injection:
+    - Client profiles filtered to relevant sections per column intent
+    - Persona auto-matched from row title data
+    - Industry files auto-loaded from row industry data
+    - Defaults layer always included
+    - Semantic discovery from row data
+    - Memory per-entity, learnings per-column with client fallback
+    - Prompt size logging for monitoring
+
+    Falls back to bare _build_column_prompt when no context is configured.
+    """
+    from app.config import settings
+    from app.core.context_assembler import _context_priority, _get_role
+    from app.core.skill_loader import load_file
+
+    has_context = (
+        table.client_slug
+        or table.context_files
+        or table.context_instructions
+        or col.context_files
+    )
+    if col.skip_context or not has_context:
+        return _build_column_prompt(col, rows, all_columns)
+
+    parts: list[str] = []
+
+    # Layer 1: System instruction
+    parts.append("You are a data enrichment assistant. Process each row and return results as a JSON array.")
+    parts.append("")
+
+    # Layer 2: Task
+    if col.column_type == "ai" and col.ai_prompt:
+        parts.append(f"## Task\n{col.ai_prompt}")
+    elif col.tool:
+        provider = _PROVIDER_MAP.get(col.tool, {})
+        desc = provider.get("ai_fallback_description") or provider.get("description", "")
+        parts.append(f"## Task\nUsing {provider.get('name', col.tool)}: {desc}")
+    parts.append("")
+
+    # Extract first row data for context-aware decisions
+    first_row_data = _extract_row_fields(rows[0], all_columns) if rows else {}
+
+    # Layer 2.5: Memory (single-row chunks only — per-entity recall)
+    if memory_store is not None and len(rows) == 1:
+        try:
+            entries = memory_store.query(first_row_data)
+            if entries:
+                memory_text = memory_store.format_for_prompt(entries)
+                parts.append(f"---\n\n{memory_text}\n")
+        except Exception:
+            pass  # Memory is best-effort
+
+    # Layer 2.7: Learnings (column-specific → client-level fallback)
+    if learning_engine is not None:
+        try:
+            learnings_text = learning_engine.format_for_prompt(
+                client_slug=table.client_slug,
+                skill=f"table:{table.id}:{col.id}",
+            )
+            if not learnings_text:
+                learnings_text = learning_engine.format_for_prompt(
+                    client_slug=table.client_slug,
+                )
+            if learnings_text:
+                parts.append(f"---\n\n{learnings_text}\n")
+        except Exception:
+            pass
+
+    # Layer 3: Context files — intelligently filtered per column
+    filtered_context = _filter_context_for_column(table_context_pieces, col, first_row_data)
+    seen = {c["path"] for c in filtered_context}
+
+    # Column-level explicit context (additive)
+    for ref in (col.context_files or []):
+        if ref in seen:
+            continue
+        content = load_file(ref)
+        if content:
+            filtered_context.append({"path": ref, "content": content})
+            seen.add(ref)
+
+    # Layer 3.3: Row-data-driven auto-context
+    # Industry file — auto-load from row data if available
+    industry = first_row_data.get("industry")
+    if industry:
+        industry_slug = re.sub(r"[^a-z0-9]+", "-", industry.lower()).strip("-")
+        for candidate in [
+            f"knowledge_base/industries/{industry_slug}.md",
+            f"knowledge_base/industries/{industry.lower().replace(' ', '-')}.md",
+        ]:
+            if candidate in seen:
+                break
+            content = load_file(candidate)
+            if content:
+                filtered_context.append({"path": candidate, "content": content})
+                seen.add(candidate)
+                break
+
+    # Layer 3.5: Semantic discovery (auto-find relevant KB from row data)
+    if context_index is not None and first_row_data:
+        try:
+            semantic_hits = context_index.search_by_data(first_row_data, top_k=2)
+            for rel_path, score in semantic_hits:
+                if rel_path in seen:
+                    continue
+                # Skip client profiles in semantic — already handled above
+                if rel_path.startswith("clients/"):
+                    continue
+                content = load_file(rel_path)
+                if content:
+                    filtered_context.append({"path": rel_path, "content": content})
+                    seen.add(rel_path)
+                    logger.info("[table-context] semantic: %s (score=%.3f)", rel_path, score)
+        except Exception:
+            pass
+
+    # Assemble context section
+    if filtered_context:
+        sorted_ctx = sorted(filtered_context, key=_context_priority)
+        parts.append(f"---\n\n# Context ({len(sorted_ctx)} files)\n")
+        for i, ctx in enumerate(sorted_ctx, 1):
+            role = _get_role(ctx["path"])
+            parts.append(f"{i}. `{ctx['path']}` -- {role}")
+        parts.append("")
+        for ctx in sorted_ctx:
+            parts.append(f"\n## {ctx['path']}\n\n{ctx['content']}")
+        parts.append("")
+
+    # Layer 4: Table-wide instructions
+    if table.context_instructions:
+        parts.append(f"---\n\n## Instructions\n{table.context_instructions}\n")
+
+    # Layer 5: Data
+    parts.append("---\n\n## Data")
+    parts.append(f"Process these {len(rows)} rows and return a JSON array with one result per row:")
+    parts.append("")
+
+    for i, row in enumerate(rows):
+        row_data = {}
+        if col.params:
+            for param_name, template in col.params.items():
+                row_data[param_name] = _resolve_template(template, row, all_columns)
+        else:
+            for c in all_columns:
+                if c.column_type in ("input", "static", "enrichment", "ai", "formula"):
+                    val = row.get(f"{c.id}__value")
+                    if val is not None:
+                        row_data[c.name] = val
+        parts.append(f"Row {i + 1}: {json.dumps(row_data)}")
+
+    parts.append("")
+
+    # Layer 6: Output format
+    output_key = col.output_key
+    if output_key:
+        parts.append(f'Return a JSON array where each element has at least a "{output_key}" field.')
+    else:
+        parts.append("Return a JSON array with one result per row. Each element should be a string or object.")
+    parts.append("Return ONLY the JSON array, no explanation.")
+
+    prompt = "\n".join(parts)
+
+    # Prompt size monitoring
+    char_count = len(prompt)
+    token_est = char_count // 4
+    if token_est > settings.prompt_size_warn_tokens:
+        logger.warning(
+            "[table-context] Large prompt for col=%s: chars=%d, tokens_est=%d (threshold=%d)",
+            col.id, char_count, token_est, settings.prompt_size_warn_tokens,
+        )
+    else:
+        logger.info("[table-context] col=%s prompt: chars=%d, tokens_est=%d", col.id, char_count, token_est)
+
+    return prompt
 
 
 def _sse(data: dict) -> str:
