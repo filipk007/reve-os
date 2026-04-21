@@ -403,7 +403,7 @@ export default function PublicPortalPage() {
               {portal.recent_updates.map((update) => {
                 const hasAuthor = update.author_name || update.author_org;
                 const isInternal = !update.author_org || update.author_org === "internal";
-                const orgLabel = isInternal ? "The Kiln" : (portal.name || "Client");
+                const orgLabel = isInternal ? "Revenueable" : (portal.name || "Client");
                 const initial = isInternal ? "K" : (orgLabel[0] || "C").toUpperCase();
                 const isDeliverable = update.type === "deliverable";
                 const needsApproval = isDeliverable && update.approval_status && (update.approval_status === "pending_review" || update.approval_status === "resubmitted");
@@ -562,7 +562,7 @@ export default function PublicPortalPage() {
 
         {/* Footer */}
         <div className="pt-8 border-t border-clay-700 text-center">
-          <p className="text-xs text-clay-300">Powered by The Kiln</p>
+          <p className="text-xs text-clay-300">Powered by Revenueable</p>
         </div>
       </div>
     </div>

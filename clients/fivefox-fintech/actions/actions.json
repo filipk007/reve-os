@@ -1,0 +1,34 @@
+[
+  {
+    "id": "act_1e37d02b",
+    "title": "Review & approve: Deliverable Handoff",
+    "description": "",
+    "owner": "client",
+    "due_date": null,
+    "status": "done",
+    "priority": "high",
+    "recurrence": null,
+    "project_id": null,
+    "blocked_by_client": false,
+    "blocked_reason": "",
+    "blocked_at": null,
+    "created_at": 1775634886.8766062,
+    "updated_at": 1775635171.489533
+  },
+  {
+    "id": "act_0d324b8a",
+    "title": "Review & approve: Deliverable Handoff",
+    "description": "",
+    "owner": "client",
+    "due_date": null,
+    "status": "open",
+    "priority": "high",
+    "recurrence": null,
+    "project_id": null,
+    "blocked_by_client": false,
+    "blocked_reason": "",
+    "blocked_at": null,
+    "created_at": 1775635592.879233,
+    "updated_at": 1775640803.0401862
+  }
+]

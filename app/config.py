@@ -13,6 +13,7 @@ class Settings(BaseSettings):
         "https://dashboard-beta-sable-36.vercel.app",
         "http://localhost:3000",
         "http://localhost:3001",
+        "https://app.revenueable.com",
     ]
 
     # Rate limiting (requests per minute per IP)
@@ -20,7 +21,7 @@ class Settings(BaseSettings):
     rate_limit_batch: int = 10
     rate_limit_pipeline: int = 20
     rate_limit_chat: int = 30
-    rate_limit_default: int = 120
+    rate_limit_default: int = 600
 
     # Channel server (free chat via Claude Code Channels)
     channel_server_url: str = "http://127.0.0.1:8789"

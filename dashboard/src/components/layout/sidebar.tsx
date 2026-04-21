@@ -312,13 +312,7 @@ export function Sidebar() {
         {/* Logo */}
         <div className="mb-5 px-3 flex items-center gap-3">
           <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-clay-700 border border-clay-500">
-            <Image
-              src="/brand-assets/the-kiln-logo.png"
-              alt="The Kiln"
-              width={24}
-              height={24}
-              className="invert"
-            />
+            <span className="text-white font-bold text-lg">R</span>
           </div>
           <h1 className="hidden lg:block text-lg font-bold text-clay-100 font-[family-name:var(--font-sans)] tracking-tight">
             Webhook OS
@@ -343,13 +337,7 @@ export function Sidebar() {
           <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
           <div className="mb-5 px-3 flex items-center gap-3">
             <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-clay-700 border border-clay-500">
-              <Image
-                src="/brand-assets/the-kiln-logo.png"
-                alt="The Kiln"
-                width={24}
-                height={24}
-                className="invert"
-              />
+              <span className="text-white font-bold text-lg">R</span>
             </div>
             <h1 className="text-lg font-bold text-clay-100 font-[family-name:var(--font-sans)] tracking-tight">
               Webhook OS

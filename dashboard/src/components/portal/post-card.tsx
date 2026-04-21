@@ -120,7 +120,7 @@ export const PostCard = forwardRef<HTMLDivElement, PostCardProps>(
     const hasBody = !!update.body;
 
     const isInternal = !update.author_org || update.author_org === "internal";
-    const orgLabel = isInternal ? "The Kiln" : (clientName || "Client");
+    const orgLabel = isInternal ? "Revenueable" : (clientName || "Client");
     const hasAuthor = update.author_name || update.author_org;
     const fullDate = new Date(update.created_at * 1000).toLocaleString(undefined, {
       dateStyle: "medium",

@@ -176,7 +176,7 @@ export function DocumentsView({
                       <p className="text-sm font-medium text-clay-100 truncate">{d.title}</p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span className="text-[11px] text-clay-300">
-                          {d.author_name || (isInternal ? "The Kiln" : clientName || "Client")}
+                          {d.author_name || (isInternal ? "Revenueable" : clientName || "Client")}
                         </span>
                         <span className="text-clay-600 text-[10px]">&middot;</span>
                         <span className="text-[11px] text-clay-300">

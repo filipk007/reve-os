@@ -373,6 +373,9 @@ export function TableGrid({
                       style={{
                         width: cell.column.getSize(),
                         maxWidth: cell.column.getSize(),
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                         position:
                           isSystem || tableCol?.frozen ? "sticky" : undefined,
                         left:

@@ -160,7 +160,7 @@ export function UpdateComposer({ slug, clientName, projectId: initialProjectId, 
     toast.success(`Template "${template.title}" applied`);
   };
 
-  const internalLabel = "The Kiln";
+  const internalLabel = "Revenueable";
   const clientLabel = clientName || "Client";
 
   return (

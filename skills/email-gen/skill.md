@@ -1,5 +1,7 @@
 ---
-model_tier: standard
+model_tier: light
+semantic_context: false
+skip_defaults: true
 ---
 
 # Email Generator — Cold Outbound (Josh Braun PVC)
@@ -61,6 +63,7 @@ Before writing the email, select the best outreach angle for this prospect:
 6. CTA must be low-commitment (not "book a call" — more like "worth exploring?")
 7. Match tone to industry: tech = casual, finance = professional, startup = direct
 8. If data is insufficient for personalization, set confidence_score < 0.5
+9. Never use em dashes (—). That signals AI generated conted. Always use normal hyphens (-) instead.
 
 ## PVC Framework Application
 - P (Permission): Open with something that earns the right to their attention.

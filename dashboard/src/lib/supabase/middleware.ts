@@ -50,8 +50,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Domain restriction — only @thekiln.com emails allowed
-  if (user.email && !user.email.endsWith("@thekiln.com")) {
+  // Domain restriction — only @revenueable.com emails allowed
+  if (user.email && !user.email.endsWith("@revenueable.com")) {
     await supabase.auth.signOut();
     const url = request.nextUrl.clone();
     url.pathname = "/login";

@@ -188,8 +188,8 @@ class ContextStore:
             if ch in category or ch in filename:
                 raise ValueError("Invalid path component")
 
-        # Slugify category (preserve leading underscore for special folders like _defaults)
-        category = re.sub(r"[^a-z0-9_]+", "-", category.lower()).strip("-")
+        # Slugify category
+        category = re.sub(r"[^a-z0-9]+", "-", category.lower()).strip("-")
 
         # Ensure .md extension
         if not filename.endswith(".md"):
