@@ -230,6 +230,108 @@ def run_claude(prompt: str, model: str = "sonnet") -> tuple[str, float]:
     return proc.stdout.strip(), duration_ms
 
 
+def run_deepline(tool_id: str, payload: dict) -> tuple[str, float]:
+    """Execute: deepline tools execute <tool_id> --payload '<json>' --json.
+
+    Returns (unwrapped_json_string, duration_ms).
+    Unwraps the Deepline envelope: {job_id, status, result: {data: {...}}} → inner data.
+    """
+    start = time.time()
+    try:
+        result = subprocess.run(
+            ["deepline", "tools", "execute", tool_id, "--payload", json.dumps(payload), "--json"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+    except FileNotFoundError:
+        print("Error: 'deepline' CLI not found.")
+        return "", (time.time() - start) * 1000
+    except subprocess.TimeoutExpired:
+        print(f"Error: deepline timed out after 120s for tool {tool_id}")
+        return "", (time.time() - start) * 1000
+
+    duration_ms = (time.time() - start) * 1000
+
+    if result.returncode != 0:
+        stderr = result.stderr.strip()
+        print(f"Error: deepline exited with code {result.returncode}")
+        if stderr:
+            print(f"  stderr: {stderr[:500]}")
+        return "", duration_ms
+
+    # Unwrap the Deepline response envelope
+    raw = result.stdout.strip()
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, dict):
+            # Unwrap {job_id, status, result: {data: {...}}} → data
+            inner = parsed.get("result", parsed)
+            if isinstance(inner, dict):
+                data = inner.get("data", inner)
+            else:
+                data = inner
+
+            # Handle CSV-output tools (parallel_search, apollo_people_search, etc.)
+            # These return {extracted_csv: "/tmp/file.csv", preview: "..."} — read the CSV
+            if isinstance(data, dict) and "extracted_csv" in data:
+                csv_path = data["extracted_csv"]
+                csv_rows = None
+                try:
+                    with open(csv_path, newline="", encoding="utf-8-sig") as cf:
+                        reader = csv.DictReader(cf)
+                        csv_rows = list(reader)
+                except (FileNotFoundError, OSError):
+                    csv_rows = None
+
+                if csv_rows:
+                    data = {"results": csv_rows, "count": len(csv_rows)}
+                else:
+                    # CSV file gone — parse the preview field (first few rows as CSV string)
+                    preview = data.get("preview", "")
+                    if preview:
+                        try:
+                            import io
+                            reader = csv.DictReader(io.StringIO(preview))
+                            preview_rows = list(reader)
+                            if preview_rows:
+                                data = {"results": preview_rows, "count": data.get("extracted_csv_rows", len(preview_rows))}
+                            else:
+                                data = {"raw_preview": preview, "count": data.get("extracted_csv_rows", 0)}
+                        except Exception:
+                            data = {"raw_preview": preview, "count": data.get("extracted_csv_rows", 0)}
+                    else:
+                        data = {"results": [], "count": 0}
+
+            # Handle extract-style results (parallel_extract returns {results: [...]})
+            if isinstance(data, dict) and "results" in data and isinstance(data["results"], list):
+                # Keep as-is — already structured
+                pass
+
+            # Normalize tool-specific nesting (e.g. {organization: {...}} → org dict)
+            if isinstance(data, dict):
+                _UNWRAP = {
+                    "apollo_organization": "organization",
+                    "apollo_people_match": "person",
+                    "apollo_people_search": "people",
+                    "apollo_people_enrich": "person",
+                    "hunter_email": "email",
+                    "leadmagic_company": "company",
+                    "leadmagic_email": "email",
+                    "pdl_person": "person",
+                    "pdl_company": "company",
+                }
+                for prefix, key in _UNWRAP.items():
+                    if tool_id.startswith(prefix) and key in data:
+                        data = data[key]
+                        break
+            return json.dumps(data), duration_ms
+    except (json.JSONDecodeError, TypeError):
+        pass
+
+    return raw, duration_ms
+
+
 def parse_json_output(text: str) -> dict | None:
     """Extract JSON from Claude's response. Handles markdown fences and task wrappers."""
     import re
@@ -527,9 +629,15 @@ def cmd_watch(client: ClayClient) -> None:
                 job = client.get_job(job_summary["id"])
                 client.update_job_status(job["id"], "running")
 
-                # Execute
-                print(f"  Running in Claude Code ({job['model']})...")
-                output, duration_ms = run_claude(job["prompt"], model=job["model"])
+                # Execute — route based on executor type
+                if job.get("executor_type") == "deepline":
+                    tool_id = job["deepline_tool"]
+                    payload = job.get("deepline_payload", {})
+                    print(f"  Running Deepline tool: {tool_id}...")
+                    output, duration_ms = run_deepline(tool_id, payload)
+                else:
+                    print(f"  Running in Claude Code ({job['model']})...")
+                    output, duration_ms = run_claude(job["prompt"], model=job["model"])
 
                 if not output:
                     client.update_job_status(job["id"], "failed")
@@ -551,7 +659,8 @@ def cmd_watch(client: ClayClient) -> None:
                             json={"bridge_id": bridge_id, "result": result, "duration_ms": int(duration_ms)},
                         )
                         r.raise_for_status()
-                        print(f"  Done in {duration_ms/1000:.1f}s — bridge resolved")
+                        executor_label = "deepline" if job.get("executor_type") == "deepline" else "claude"
+                        print(f"  Done in {duration_ms/1000:.1f}s via {executor_label} — bridge resolved")
                     else:
                         print("  Failed: Missing bridge_id")
                         client.update_job_status(job["id"], "failed")
@@ -611,11 +720,17 @@ def cmd_daemon(client: ClayClient) -> None:
                 job = client.get_job(job_summary["id"])
                 client.update_job_status(job["id"], "running")
 
-                # Execute prompt via Claude Code
-                log.info("Streaming execution in Claude Code (%s)...", job["model"])
-                output, duration_ms = run_claude_streaming(
-                    job["prompt"], job["model"], job["id"], client,
-                )
+                # Execute — route based on executor type
+                if job.get("executor_type") == "deepline":
+                    tool_id = job["deepline_tool"]
+                    payload = job.get("deepline_payload", {})
+                    log.info("Running Deepline tool: %s", tool_id)
+                    output, duration_ms = run_deepline(tool_id, payload)
+                else:
+                    log.info("Streaming execution in Claude Code (%s)...", job["model"])
+                    output, duration_ms = run_claude_streaming(
+                        job["prompt"], job["model"], job["id"], client,
+                    )
 
                 if not output:
                     client.update_job_status(job["id"], "failed")
@@ -639,7 +754,8 @@ def cmd_daemon(client: ClayClient) -> None:
                             json={"bridge_id": bridge_id, "result": result, "duration_ms": int(duration_ms)},
                         )
                         r.raise_for_status()
-                        log.info("Table cell done in %.1fs — bridge %s resolved", duration_ms / 1000, bridge_id)
+                        executor_label = "deepline" if job.get("executor_type") == "deepline" else "claude"
+                        log.info("Table cell done in %.1fs via %s — bridge %s resolved", duration_ms / 1000, executor_label, bridge_id)
                     else:
                         log.warning("Table cell job %s missing bridge_id", job["id"])
                         client.update_job_status(job["id"], "failed")

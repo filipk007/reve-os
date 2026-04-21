@@ -13,6 +13,7 @@ from app.models.tables import (
     ExecuteTableRequest,
     ExpandColumnRequest,
     ImportRowsRequest,
+    InstantiateTemplateRequest,
     ReorderColumnsRequest,
     TableSource,
     UpdateColumnRequest,
@@ -24,13 +25,158 @@ router = APIRouter(prefix="/tables", tags=["tables"])
 logger = logging.getLogger("clay-webhook-os")
 
 
+# --- Local Runner Status ---
+# NOTE: These must be defined BEFORE the /{table_id} catch-all route
+
+
+@router.get("/local-runner-status")
+async def local_runner_status(request: Request):
+    """Check if the local runner (clay-run --watch) is connected."""
+    import time as _time
+    last_seen = getattr(request.app.state, "local_runner_last_seen", 0)
+    now = _time.time()
+    connected = (now - last_seen) < 30  # seen within last 30s
+    return {
+        "connected": connected,
+        "last_seen": last_seen,
+        "seconds_ago": round(now - last_seen) if last_seen > 0 else None,
+    }
+
+
+# --- Local Execution Callback ---
+
+
+@router.post("/local-result/{job_id}")
+async def submit_table_local_result(job_id: str, request: Request):
+    """Callback from local runner (clay-run) with table cell execution results."""
+    body = await request.json()
+    bridge_id = body.get("bridge_id")
+    result = body.get("result")
+    duration_ms = body.get("duration_ms", 0)
+
+    if not bridge_id:
+        return JSONResponse({"error": True, "error_message": "Missing bridge_id"}, status_code=400)
+
+    bridge_store = request.app.state.bridge_store
+    resolved = bridge_store.resolve(bridge_id, {
+        "result": result,
+        "duration_ms": duration_ms,
+    })
+
+    local_queue = request.app.state.local_job_queue
+    local_queue.update_status(job_id, "completed", {"result": result})
+
+    logger.info("[tables] Local result for job %s (bridge=%s, resolved=%s)", job_id, bridge_id, resolved)
+    return {"ok": resolved, "job_id": job_id}
+
+
+# --- Table Templates ---
+# NOTE: These routes come before /{table_id} catch-all to avoid routing conflicts
+
+
+@router.get("/templates")
+async def list_table_templates(request: Request):
+    """List all available table templates."""
+    store = getattr(request.app.state, "table_template_store", None)
+    if store is None:
+        return {"templates": []}
+    templates = store.list_all()
+    return {
+        "templates": [t.model_dump() for t in templates],
+        "count": len(templates),
+    }
+
+
+@router.get("/templates/{template_id}")
+async def get_table_template(template_id: str, request: Request):
+    """Get a single template by ID."""
+    store = getattr(request.app.state, "table_template_store", None)
+    if store is None:
+        return JSONResponse({"error": True, "error_message": "Template store not initialized"}, status_code=503)
+    template = store.get(template_id)
+    if template is None:
+        return JSONResponse({"error": True, "error_message": f"Template '{template_id}' not found"}, status_code=404)
+    return template.model_dump()
+
+
+@router.post("/templates/{template_id}/instantiate")
+async def instantiate_table_template(template_id: str, body: InstantiateTemplateRequest, request: Request):
+    """Create a new table from a template, with variable substitution."""
+    template_store = getattr(request.app.state, "table_template_store", None)
+    if template_store is None:
+        return JSONResponse({"error": True, "error_message": "Template store not initialized"}, status_code=503)
+
+    try:
+        resolved = template_store.instantiate(template_id, body.variables)
+    except ValueError as e:
+        return JSONResponse({"error": True, "error_message": str(e)}, status_code=400)
+
+    if resolved is None:
+        return JSONResponse({"error": True, "error_message": f"Template '{template_id}' not found"}, status_code=404)
+
+    table_store = request.app.state.table_store
+
+    # Create the table with resolved context
+    table = table_store.create(
+        name=body.name or resolved.name,
+        description=resolved.description,
+        client_slug=resolved.client_slug,
+        context_files=resolved.context_files,
+        context_instructions=resolved.context_instructions,
+    )
+
+    # Add each column
+    added_cols = []
+    errors = []
+    for tpl_col in resolved.columns:
+        try:
+            col_req = AddColumnRequest(
+                name=tpl_col.name,
+                column_type=tpl_col.column_type,
+                tool=tpl_col.tool,
+                params=tpl_col.params,
+                output_key=tpl_col.output_key,
+                ai_prompt=tpl_col.ai_prompt,
+                ai_model=tpl_col.ai_model,
+                formula=tpl_col.formula,
+                condition=tpl_col.condition,
+                condition_label=tpl_col.condition_label,
+                context_files=tpl_col.context_files,
+                skip_context=tpl_col.skip_context,
+            )
+            table_store.add_column(table.id, col_req)
+            added_cols.append(tpl_col.name)
+        except Exception as e:
+            errors.append(f"{tpl_col.name}: {e}")
+            logger.warning("[tables] Failed to add column %s from template: %s", tpl_col.name, e)
+
+    # Reload table with added columns
+    table = table_store.get(table.id)
+    logger.info(
+        "[tables] Instantiated template '%s' -> table %s (%d cols)",
+        template_id, table.id, len(added_cols),
+    )
+    return {
+        "table": table.model_dump(),
+        "template_id": template_id,
+        "columns_added": added_cols,
+        "errors": errors,
+    }
+
+
 # --- Table CRUD ---
 
 
 @router.post("")
 async def create_table(body: CreateTableRequest, request: Request):
     store = request.app.state.table_store
-    table = store.create(name=body.name, description=body.description)
+    table = store.create(
+        name=body.name,
+        description=body.description,
+        client_slug=body.client_slug,
+        context_files=body.context_files,
+        context_instructions=body.context_instructions,
+    )
     return table.model_dump()
 
 
@@ -272,6 +418,10 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
 
     local_queue = request.app.state.local_job_queue
     bridge_store = request.app.state.bridge_store
+    enrichment_cache = getattr(request.app.state, "enrichment_cache", None)
+    memory_store = getattr(request.app.state, "memory_store", None)
+    learning_engine = getattr(request.app.state, "learning_engine", None)
+    context_index = getattr(request.app.state, "context_index", None)
 
     async def event_gen():
         try:
@@ -282,6 +432,10 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
                 table_store=store,
                 local_queue=local_queue,
                 bridge_store=bridge_store,
+                enrichment_cache=enrichment_cache,
+                memory_store=memory_store,
+                learning_engine=learning_engine,
+                context_index=context_index,
             ):
                 yield event
         except Exception as e:
@@ -295,48 +449,41 @@ async def execute_table(table_id: str, body: ExecuteTableRequest, request: Reque
     )
 
 
-# --- Local Runner Status ---
+# --- Cell Feedback ---
 
 
-@router.get("/local-runner-status")
-async def local_runner_status(request: Request):
-    """Check if the local runner (clay-run --watch) is connected."""
-    import time as _time
-    last_seen = getattr(request.app.state, "local_runner_last_seen", 0)
-    now = _time.time()
-    connected = (now - last_seen) < 30  # seen within last 30s
-    return {
-        "connected": connected,
-        "last_seen": last_seen,
-        "seconds_ago": round(now - last_seen) if last_seen > 0 else None,
-    }
-
-
-# --- Local Execution Callback ---
-
-
-@router.post("/local-result/{job_id}")
-async def submit_table_local_result(job_id: str, request: Request):
-    """Callback from local runner (clay-run) with table cell execution results."""
+@router.post("/{table_id}/cells/{row_id}/{column_id}/feedback")
+async def submit_cell_feedback(table_id: str, row_id: str, column_id: str, request: Request):
+    """Submit feedback on a cell result to improve future AI outputs."""
     body = await request.json()
-    bridge_id = body.get("bridge_id")
-    result = body.get("result")
-    duration_ms = body.get("duration_ms", 0)
+    note = body.get("note", "")
+    corrected_value = body.get("corrected_value")
 
-    if not bridge_id:
-        return JSONResponse({"error": True, "error_message": "Missing bridge_id"}, status_code=400)
+    store = request.app.state.table_store
+    table = store.get(table_id)
+    if not table:
+        return JSONResponse({"error": True, "error_message": "Table not found"}, status_code=404)
 
-    bridge_store = request.app.state.bridge_store
-    resolved = bridge_store.resolve(bridge_id, {
-        "result": result,
-        "duration_ms": duration_ms,
-    })
+    learning_engine = getattr(request.app.state, "learning_engine", None)
+    learning_extracted = False
+    if learning_engine and note:
+        learning_engine.extract_learning(
+            skill=f"table:{table_id}:{column_id}",
+            client_slug=table.client_slug,
+            note=note,
+            rating="thumbs_down",
+        )
+        learning_extracted = True
 
-    local_queue = request.app.state.local_job_queue
-    local_queue.update_status(job_id, "completed", {"result": result})
+    if corrected_value is not None:
+        store.update_cells(table_id, [{
+            "row_id": row_id,
+            "column_id": column_id,
+            "value": corrected_value,
+            "status": "done",
+        }])
 
-    logger.info("[tables] Local result for job %s (bridge=%s, resolved=%s)", job_id, bridge_id, resolved)
-    return {"ok": resolved, "job_id": job_id}
+    return {"ok": True, "learning_extracted": learning_extracted}
 
 
 # --- Validation ---

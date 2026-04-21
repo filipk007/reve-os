@@ -1,0 +1,53 @@
+id: twelve_labs_account_qualification
+name: "Twelve Labs Account Qualification"
+description: "Qualify media/AI companies for Twelve Labs video understanding platform. Scores fit and identifies key decision makers."
+category: qualification
+client_slug: twelve-labs
+context_files:
+  - knowledge_base/industries/media-entertainment.md
+context_instructions: |
+  Twelve Labs sells video understanding AI to media, sports, and entertainment companies.
+  Sweet spot: companies with large video archives OR building video-native products.
+  Disqualify: pure SaaS with no video workflows, consumer social apps.
+
+columns:
+  - name: "Company"
+    column_type: input
+  - name: "Domain"
+    column_type: input
+  - name: "Industry"
+    column_type: input
+  - name: "Enrich"
+    column_type: enrichment
+    tool: parallel
+    params:
+      domain: "{{Domain}}"
+    output_key: intelligence
+  - name: "Video Infrastructure Signals"
+    column_type: ai
+    ai_prompt: |
+      Analyze if this company has meaningful video workflows.
+      Look for: video archives, media production, sports analytics, content moderation,
+      video-first products, engineering job posts mentioning video/ML.
+      Return {has_video_workflows, evidence, confidence_0_1}.
+    ai_model: sonnet
+  - name: "Qualify"
+    column_type: ai
+    ai_prompt: |
+      Score 1-10 for Twelve Labs ICP fit. 10 = active video AI buyer, 1 = no fit.
+      Disqualify if pure SaaS with no video or consumer social.
+      Return {score, tier, reasoning, disqualifiers}.
+    ai_model: opus
+  - name: "Buying Committee"
+    column_type: ai
+    ai_prompt: |
+      Identify the buying committee for video AI at this company.
+      Return {economic_buyer_title, technical_buyer_title, champion_title, blocker_risks}.
+    ai_model: sonnet
+  - name: "Talk Track"
+    column_type: ai
+    ai_prompt: |
+      Generate a discovery call talk track tailored to this company.
+      Lead with their specific video workflow pain.
+      Return {opener, key_questions, differentiation_points}.
+    ai_model: sonnet

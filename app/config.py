@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     deepline_api_key: str = ""
     deepline_base_url: str = "https://code.deepline.com"
     deepline_timeout: int = 60
+    deepline_cli_enabled: bool = True  # Try to load Deepline tool cache from CLI at startup
 
     # Serper.dev web search (company qualification)
     serper_api_key: str = ""
@@ -103,6 +104,7 @@ class Settings(BaseSettings):
     pipelines_dir: Path = base_dir / "pipelines"
     plays_dir: Path = base_dir / "plays"
     functions_dir: Path = base_dir / "functions"
+    table_templates_dir: Path = base_dir / "table_templates"
     data_dir: Path = base_dir / "data"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}

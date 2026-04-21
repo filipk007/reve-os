@@ -1,0 +1,70 @@
+id: cold_outbound_generic
+name: "Cold Outbound for {{client_name}}"
+description: "Generic cold outbound template. Works for any client — just pass client_slug, client_name, and focus_angle at instantiation."
+category: outbound
+
+variables:
+  - name: client_slug
+    description: "Client slug (matches clients/{slug}.md filename)"
+    required: true
+  - name: client_name
+    description: "Display name of the client (e.g. 'Hologram', 'Twelve Labs')"
+    required: true
+  - name: focus_angle
+    description: "Primary value angle to emphasize (e.g. 'cost savings', 'time to market')"
+    required: false
+    default: "their core pain point"
+
+client_slug: "{{client_slug}}"
+context_instructions: |
+  Outbound for {{client_name}}. Focus on {{focus_angle}}.
+  Keep emails under 90 words. Lead with pain, not product.
+
+columns:
+  - name: "Company"
+    column_type: input
+  - name: "Domain"
+    column_type: input
+  - name: "First Name"
+    column_type: input
+  - name: "Last Name"
+    column_type: input
+  - name: "Title"
+    column_type: input
+  - name: "Enrich Company"
+    column_type: enrichment
+    tool: parallel
+    params:
+      domain: "{{Domain}}"
+    output_key: intelligence
+  - name: "Find Email"
+    column_type: enrichment
+    tool: findymail
+    params:
+      first_name: "{{First Name}}"
+      last_name: "{{Last Name}}"
+      domain: "{{Domain}}"
+    output_key: email
+  - name: "Qualify"
+    column_type: ai
+    ai_prompt: |
+      Score this company 1-10 for {{client_name}}'s ICP fit.
+      Return {score, reasoning, disqualifiers}.
+  - name: "Research"
+    column_type: ai
+    ai_prompt: |
+      Research this company's pain points relevant to {{client_name}}.
+      Focus on signals related to {{focus_angle}}.
+      Return {pain_points, signals, talk_track_hook}.
+  - name: "Cold Email"
+    column_type: ai
+    ai_model: opus
+    ai_prompt: |
+      Write a cold email for {{client_name}}.
+      Under 90 words. Reference a specific pain_point from research.
+      Emphasize {{focus_angle}}. Return {subject, body}.
+  - name: "LinkedIn Note"
+    column_type: ai
+    ai_prompt: |
+      Write a LinkedIn connection note for {{client_name}}.
+      Under 280 characters. Return {note}.

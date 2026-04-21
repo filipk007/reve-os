@@ -524,6 +524,14 @@ export interface ToolDefinition {
   source: "deepline" | "skill" | "function";
   inputs: { name: string; type: string }[];
   outputs: { key: string; type: string; description?: string }[];
+  input_schema?: {
+    fields: Array<{
+      name: string;
+      type: string;
+      required: boolean;
+      description?: string;
+    }>;
+  };
   model_tier?: string;
   execution_mode?: string;
   speed?: "fast" | "medium" | "slow" | "instant";
@@ -1275,4 +1283,21 @@ export interface BridgeStats {
   total_resolved: number;
   total_timed_out: number;
   total_duplicates: number;
+}
+
+// --- Research (entity lookup) ---
+
+export interface MemoryEntryResponse {
+  skill: string;
+  timestamp: number;
+  summary: string;
+  key_fields: Record<string, unknown>;
+  ttl: number;
+}
+
+export interface ResearchMemoryResponse {
+  entity_type: string | null;
+  entity_id: string | null;
+  entries: MemoryEntryResponse[];
+  found?: boolean;
 }

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog";
 import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -37,12 +38,14 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <TooltipProvider>
-          <Sidebar />
-          <main id="main-content" className="relative flex-1 overflow-auto z-[2]">{children}</main>
-          <KeyboardShortcutsDialog />
-          <OnboardingProvider />
-        </TooltipProvider>
+        <QueryProvider>
+          <TooltipProvider>
+            <Sidebar />
+            <main id="main-content" className="relative flex-1 overflow-auto z-[2]">{children}</main>
+            <KeyboardShortcutsDialog />
+            <OnboardingProvider />
+          </TooltipProvider>
+        </QueryProvider>
         <Toaster
           position="bottom-right"
           toastOptions={{

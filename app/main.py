@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.core.cache import ResultCache
 from app.core.circuit_breaker import CircuitBreaker
+from app.core.telemetry import init_telemetry, is_enabled as telemetry_enabled
 from app.core.cleanup_worker import DataCleanupWorker
 from app.core.context_index import ContextIndex
 from app.core.context_store import ContextStore
@@ -26,6 +27,7 @@ from app.core.learning_engine import LearningEngine
 from app.core.local_job_queue import LocalJobQueue
 from app.core.memory_store import MemoryStore
 from app.core.pipeline_store import PipelineStore
+from app.core.table_template_store import TableTemplateStore
 from app.core.play_store import PlayStore
 from app.core.prompt_cache import PromptCache
 from app.core.retry_worker import RetryWorker
@@ -58,6 +60,7 @@ from app.routers import (
     pipelines,
     plays,
     portal,
+    research,
     sheets,
     tables,
     usage,
@@ -111,10 +114,16 @@ app.include_router(portal.router)
 app.include_router(tables.router)
 app.include_router(channels.router)
 app.include_router(bridge.router)
+app.include_router(research.router)
 
 
 @app.on_event("startup")
 async def startup():
+    # Initialize LLM observability (Phoenix/OpenTelemetry).
+    # No-op unless PHOENIX_ENABLED=1 and `pip install -e .[telemetry]` was run.
+    init_telemetry(project_name="clay-webhook-os")
+    app.state.telemetry_enabled = telemetry_enabled()
+
     app.state.pool = WorkerPool(max_workers=settings.max_workers)
     app.state.cache = ResultCache(ttl=settings.cache_ttl, max_size=settings.cache_max_entries)
     app.state.event_bus = EventBus()
@@ -134,6 +143,8 @@ async def startup():
     app.state.feedback_store.load()
     app.state.pipeline_store = PipelineStore(pipelines_dir=settings.pipelines_dir)
     app.state.pipeline_store.load()
+    app.state.table_template_store = TableTemplateStore(templates_dir=settings.table_templates_dir)
+    app.state.table_template_store.load()
     app.state.play_store = PlayStore(plays_dir=settings.plays_dir, pipelines_dir=settings.pipelines_dir)
     app.state.play_store.load()
     app.state.experiment_store = ExperimentStore(
@@ -186,6 +197,21 @@ async def startup():
     # Function store
     app.state.function_store = FunctionStore(functions_dir=settings.functions_dir)
     app.state.function_store.load()
+
+    # Deepline tool cache (dynamic catalog from CLI)
+    from app.core.tool_catalog import deepline_cache
+    if settings.deepline_cli_enabled:
+        try:
+            await deepline_cache.refresh()
+            deepline_cache.start_background_refresh()
+            app.state.deepline_cache = deepline_cache
+            logger.info("  Deepline: %d tools loaded (refresh every 6h)", len(deepline_cache.tools))
+        except Exception as e:
+            logger.warning("  Deepline: CLI not available (%s) — using static catalog", e)
+            app.state.deepline_cache = deepline_cache
+    else:
+        app.state.deepline_cache = deepline_cache
+        logger.info("  Deepline: CLI disabled via config")
 
     # Table store (Clay-style table builder)
     from app.core.table_store import TableStore
@@ -393,6 +419,10 @@ async def shutdown():
     if hasattr(app.state, "cleanup_worker"):
         await app.state.cleanup_worker.stop()
         logger.info("  Cleanup worker stopped")
+
+    if hasattr(app.state, "deepline_cache"):
+        app.state.deepline_cache.stop()
+        logger.info("  Deepline cache refresh stopped")
 
     if hasattr(app.state, "reminder_worker_portal"):
         await app.state.reminder_worker_portal.stop()
