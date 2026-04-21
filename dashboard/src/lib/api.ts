@@ -2591,3 +2591,29 @@ export function searchResearchMemory(
 ): Promise<ResearchMemoryResponse> {
   return apiFetch(`/research/memory/search?q=${encodeURIComponent(query)}`);
 }
+
+// Transcripts
+export interface TranscriptFile {
+  bucket: "inbox" | "processed";
+  path: string;
+  client_slug: string;
+  filename: string;
+  size: number;
+  mtime: number;
+}
+
+export function listTranscripts(): Promise<{
+  inbox: TranscriptFile[];
+  processed: TranscriptFile[];
+}> {
+  return apiFetch("/transcripts");
+}
+
+export function markTranscriptProcessed(
+  path: string
+): Promise<{ ok: boolean; path: string }> {
+  return apiFetch("/transcripts/mark-processed", {
+    method: "POST",
+    body: JSON.stringify({ path }),
+  });
+}

@@ -63,6 +63,7 @@ from app.routers import (
     research,
     sheets,
     tables,
+    transcripts,
     usage,
     webhook,
 )
@@ -115,6 +116,7 @@ app.include_router(tables.router)
 app.include_router(channels.router)
 app.include_router(bridge.router)
 app.include_router(research.router)
+app.include_router(transcripts.router)
 
 
 @app.on_event("startup")
