@@ -2617,3 +2617,29 @@ export function markTranscriptProcessed(
     body: JSON.stringify({ path }),
   });
 }
+
+export function listTranscriptClients(): Promise<{ clients: string[] }> {
+  return apiFetch("/transcripts/clients");
+}
+
+export function importGdoc(body: {
+  url: string;
+  client_slug: string;
+  filename?: string;
+}): Promise<{ ok: boolean; path: string; filename: string; client_slug: string; size: number }> {
+  return apiFetch("/transcripts/import-gdoc", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function publicImportGdoc(
+  slug: string,
+  token: string,
+  url: string,
+): Promise<{ ok: boolean; path: string; filename: string; client_slug: string; size: number }> {
+  return publicFetch(`/transcripts/import-gdoc/public`, token, {
+    method: "POST",
+    body: JSON.stringify({ url, client_slug: slug }),
+  });
+}

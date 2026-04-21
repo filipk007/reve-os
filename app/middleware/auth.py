@@ -60,6 +60,12 @@ class DualAuthMiddleware(BaseHTTPMiddleware):
         if request.method == "GET" and path.endswith("/view"):
             return await call_next(request)
 
+        # Allow share-token authenticated public endpoints
+        # (e.g. /portal/{slug}/.../public, /transcripts/import-gdoc/public).
+        # The endpoint itself MUST validate the ?token= query param.
+        if (path.endswith("/public") or "/public/" in path) and request.query_params.get("token"):
+            return await call_next(request)
+
         # Allow client channel endpoints (token-validated in endpoint)
         if path.startswith("/channels/client"):
             return await call_next(request)

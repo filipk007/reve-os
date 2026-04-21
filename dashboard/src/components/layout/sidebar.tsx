@@ -98,7 +98,7 @@ const POWER_NAV_SECTIONS: NavSection[] = [
       { href: "/context", label: "Context", icon: FolderTree, shortcut: "5" },
       { href: "/context/rack", label: "Rack", icon: Layers, shortcut: "" },
       { href: "/debugger", label: "Debugger", icon: Bug, shortcut: "6" },
-      { href: "/clients/twelve-labs", label: "Communication", icon: Users, shortcut: "7" },
+      { href: "/clients", label: "Clients", icon: Users, shortcut: "7" },
     ],
   },
 ];

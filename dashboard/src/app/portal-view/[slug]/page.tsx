@@ -8,6 +8,7 @@ import {
   publicAcknowledgeSOP,
   publicProcessApproval,
   publicPostComment,
+  publicImportGdoc,
 } from "@/lib/api";
 import type { PublicPortalView } from "@/lib/types";
 import { cn, formatRelativeTime } from "@/lib/utils";
@@ -72,6 +73,24 @@ export default function PublicPortalPage() {
   const [processingAction, setProcessingAction] = useState<string | null>(null);
   const [revisionInput, setRevisionInput] = useState<string | null>(null);
   const [revisionNotes, setRevisionNotes] = useState("");
+  const [transcriptUrl, setTranscriptUrl] = useState("");
+  const [importingTranscript, setImportingTranscript] = useState(false);
+  const [transcriptStatus, setTranscriptStatus] = useState<string | null>(null);
+
+  const handleImportTranscript = async () => {
+    if (!transcriptUrl.trim()) return;
+    setImportingTranscript(true);
+    setTranscriptStatus(null);
+    try {
+      const res = await publicImportGdoc(slug, token, transcriptUrl.trim());
+      setTranscriptStatus(`✓ Submitted: ${res.filename}`);
+      setTranscriptUrl("");
+    } catch (e) {
+      setTranscriptStatus(e instanceof Error ? e.message : "Import failed");
+    } finally {
+      setImportingTranscript(false);
+    }
+  };
 
   const loadPortal = useCallback(() => {
     if (!token) return;
@@ -231,6 +250,47 @@ export default function PublicPortalPage() {
           >
             {portal.status}
           </span>
+        </div>
+
+        {/* Transcript drop — Google Doc URL */}
+        <div className="bg-clay-850 border border-clay-700 rounded-lg p-4 retro-raised">
+          <div className="flex items-center gap-2 mb-2">
+            <FileText className="h-4 w-4" style={brandColor ? { color: brandColor } : { color: "#5eead4" }} />
+            <h3 className="text-sm font-semibold text-clay-100">Submit a call transcript</h3>
+          </div>
+          <p className="text-[12px] text-clay-300 mb-3">
+            Paste a Google Doc URL with your call transcript. Set sharing to{" "}
+            <span className="text-clay-100">Anyone with the link → Viewer</span> first.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="url"
+              placeholder="https://docs.google.com/document/d/…"
+              value={transcriptUrl}
+              onChange={(e) => setTranscriptUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !importingTranscript && transcriptUrl.trim()) {
+                  e.preventDefault();
+                  handleImportTranscript();
+                }
+              }}
+              className="flex-1 bg-clay-900 border border-clay-600 rounded px-3 py-2 text-sm text-clay-100 placeholder:text-clay-500 focus:outline-none focus:border-clay-400"
+              disabled={importingTranscript}
+            />
+            <button
+              onClick={handleImportTranscript}
+              disabled={importingTranscript || !transcriptUrl.trim()}
+              className="px-4 py-2 rounded text-sm font-medium bg-clay-700 hover:bg-clay-600 text-clay-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+            >
+              {importingTranscript ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {importingTranscript ? "Submitting…" : "Submit"}
+            </button>
+          </div>
+          {transcriptStatus && (
+            <div className={cn("mt-2 text-[12px]", transcriptStatus.startsWith("✓") ? "text-emerald-400" : "text-amber-400")}>
+              {transcriptStatus}
+            </div>
+          )}
         </div>
 
         {/* SOPs */}
