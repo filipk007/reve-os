@@ -121,39 +121,19 @@ export interface PushResult {
   errors: { job_id: string; error: string }[];
 }
 
-// Context Hub types
-export interface CompanyInfo {
-  domain: string;
-  industry: string;
-  size: string;
-  stage: string;
-  hq: string;
-  founded: string;
-}
-
-export interface TonePreferences {
-  formality: string;
-  approach: string;
-  avoid: string;
-}
+// Context Hub types — v2 client profile schema
 
 export interface ClientProfile {
   slug: string;
   name: string;
-  company: CompanyInfo;
+  who_they_are: string;
   what_they_sell: string;
-  icp: string;
-  competitive_landscape: string;
-  recent_news: string;
   value_proposition: string;
-  tone: TonePreferences;
-  campaign_angles: string;
-  notes: string;
-  personas: string;
-  battle_cards: string;
-  signal_playbook: string;
-  proven_responses: string;
-  active_campaigns: string;
+  tone_preferences: string;
+  social_proof: string;
+  market_feedback: string;
+  target_icp: string;
+  competitive_landscape: string;
   raw_markdown: string;
 }
 

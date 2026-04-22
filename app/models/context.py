@@ -1,84 +1,59 @@
 from pydantic import BaseModel
 
 
-class CompanyInfo(BaseModel):
-    domain: str = ""
-    industry: str = ""
-    size: str = ""
-    stage: str = ""
-    hq: str = ""
-    founded: str = ""
-
-
-class TonePreferences(BaseModel):
-    formality: str = ""
-    approach: str = ""
-    avoid: str = ""
-
-
 class ClientProfile(BaseModel):
+    """Client profile v2 schema.
+
+    Loads sections for email-gen (outbound copy): Who They Are, What They Sell,
+    Value Proposition, Tone Preferences, Social Proof, Market Feedback.
+
+    Strategy-skill-only sections: Target ICP, Competitive Landscape.
+
+    Market Feedback is an append-only dated log written by the
+    transcript-feedback-loop skill.
+    """
+
     slug: str
     name: str
-    company: CompanyInfo = CompanyInfo()
+    who_they_are: str = ""
     what_they_sell: str = ""
-    icp: str = ""
-    competitive_landscape: str = ""
-    recent_news: str = ""
     value_proposition: str = ""
-    tone: TonePreferences = TonePreferences()
-    campaign_angles: str = ""
-    notes: str = ""
-    personas: str = ""
-    battle_cards: str = ""
-    signal_playbook: str = ""
-    proven_responses: str = ""
-    active_campaigns: str = ""
+    tone_preferences: str = ""
+    social_proof: str = ""
+    market_feedback: str = ""
+    target_icp: str = ""
+    competitive_landscape: str = ""
     raw_markdown: str = ""
 
 
 class ClientSummary(BaseModel):
     slug: str
     name: str
-    industry: str = ""
-    stage: str = ""
-    domain: str = ""
 
 
 class CreateClientRequest(BaseModel):
     slug: str
     name: str
-    company: CompanyInfo = CompanyInfo()
+    who_they_are: str = ""
     what_they_sell: str = ""
-    icp: str = ""
-    competitive_landscape: str = ""
-    recent_news: str = ""
     value_proposition: str = ""
-    tone: TonePreferences = TonePreferences()
-    campaign_angles: str = ""
-    notes: str = ""
-    personas: str = ""
-    battle_cards: str = ""
-    signal_playbook: str = ""
-    proven_responses: str = ""
-    active_campaigns: str = ""
+    tone_preferences: str = ""
+    social_proof: str = ""
+    market_feedback: str = ""
+    target_icp: str = ""
+    competitive_landscape: str = ""
 
 
 class UpdateClientRequest(BaseModel):
     name: str | None = None
-    company: CompanyInfo | None = None
+    who_they_are: str | None = None
     what_they_sell: str | None = None
-    icp: str | None = None
-    competitive_landscape: str | None = None
-    recent_news: str | None = None
     value_proposition: str | None = None
-    tone: TonePreferences | None = None
-    campaign_angles: str | None = None
-    notes: str | None = None
-    personas: str | None = None
-    battle_cards: str | None = None
-    signal_playbook: str | None = None
-    proven_responses: str | None = None
-    active_campaigns: str | None = None
+    tone_preferences: str | None = None
+    social_proof: str | None = None
+    market_feedback: str | None = None
+    target_icp: str | None = None
+    competitive_landscape: str | None = None
 
 
 class KnowledgeBaseFile(BaseModel):

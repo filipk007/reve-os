@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ClientList } from "@/components/context/client-list";
-import { ClientEditor } from "@/components/context/client-editor";
+import { ClientEditor, type ClientEditorPayload } from "@/components/context/client-editor";
 import { KnowledgeBrowser } from "@/components/context/knowledge-browser";
 import { KnowledgeEditor } from "@/components/context/knowledge-editor";
 import { PromptPreview } from "@/components/context/prompt-preview";
@@ -97,14 +97,14 @@ export function ContextTab() {
     }
   };
 
-  const handleSaveClient = async (data: Parameters<typeof createClient>[0]) => {
+  const handleSaveClient = async (data: ClientEditorPayload) => {
     setSaving(true);
     try {
       if (editingClient) {
-        await updateClient(editingClient.slug, data);
+        await updateClient(editingClient.slug, { ...data });
         toast.success("Client updated");
       } else {
-        await createClient(data);
+        await createClient({ ...data });
         toast.success("Client created");
       }
       setEditorOpen(false);

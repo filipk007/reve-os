@@ -9,11 +9,9 @@ from app.core.skill_loader import list_skills, load_context_files, load_skill, l
 from app.models.context import (
     ClientProfile,
     ClientSummary,
-    CompanyInfo,
     CreateClientRequest,
     KnowledgeBaseFile,
     PromptPreviewResponse,
-    TonePreferences,
     UpdateClientRequest,
 )
 
@@ -54,13 +52,7 @@ class ContextStore:
                 continue
             profile = self._parse_client_markdown(slug, content)
             results.append(
-                ClientSummary(
-                    slug=profile.slug,
-                    name=profile.name,
-                    industry=profile.company.industry,
-                    stage=profile.company.stage,
-                    domain=profile.company.domain,
-                )
+                ClientSummary(slug=profile.slug, name=profile.name)
             )
         return results
 
@@ -80,20 +72,14 @@ class ContextStore:
         profile = ClientProfile(
             slug=data.slug,
             name=data.name,
-            company=data.company,
+            who_they_are=data.who_they_are,
             what_they_sell=data.what_they_sell,
-            icp=data.icp,
-            competitive_landscape=data.competitive_landscape,
-            recent_news=data.recent_news,
             value_proposition=data.value_proposition,
-            tone=data.tone,
-            campaign_angles=data.campaign_angles,
-            notes=data.notes,
-            personas=data.personas,
-            battle_cards=data.battle_cards,
-            signal_playbook=data.signal_playbook,
-            proven_responses=data.proven_responses,
-            active_campaigns=data.active_campaigns,
+            tone_preferences=data.tone_preferences,
+            social_proof=data.social_proof,
+            market_feedback=data.market_feedback,
+            target_icp=data.target_icp,
+            competitive_landscape=data.competitive_landscape,
         )
         md = self._render_client_markdown(profile)
         profile.raw_markdown = md
@@ -281,6 +267,14 @@ class ContextStore:
     # ── Internal: Markdown parsing ───────────────────────────────
 
     def _parse_client_markdown(self, slug: str, content: str) -> ClientProfile:
+        """Parse a v2 client profile into structured fields.
+
+        v2 sections (all optional, stripped of leading/trailing whitespace):
+        Who They Are, What They Sell, Value Proposition, Tone Preferences,
+        Social Proof, Market Feedback, Target ICP, Competitive Landscape.
+
+        Unknown sections are preserved in raw_markdown for round-trip safety.
+        """
         sections = self._split_sections(content)
 
         # Extract name from H1 or first line
@@ -289,55 +283,17 @@ class ContextStore:
         if h1_match:
             name = h1_match.group(1).strip()
 
-        company = CompanyInfo()
-        company_section = sections.get("Company", "")
-        if company_section:
-            company = CompanyInfo(
-                domain=self._extract_bullet(company_section, "Domain"),
-                industry=self._extract_bullet(company_section, "Industry"),
-                size=self._extract_bullet(company_section, "Size"),
-                stage=self._extract_bullet(company_section, "Stage"),
-                hq=self._extract_bullet(company_section, "HQ"),
-                founded=self._extract_bullet(company_section, "Founded"),
-            )
-
-        tone = TonePreferences()
-        tone_section = sections.get("Tone Preferences", "")
-        if tone_section:
-            tone = TonePreferences(
-                formality=self._extract_bullet(tone_section, "Formality"),
-                approach=self._extract_bullet(tone_section, "Approach"),
-                avoid=self._extract_bullet(
-                    tone_section, "Things to avoid"
-                ) or self._extract_bullet(tone_section, "Avoid"),
-            )
-
         return ClientProfile(
             slug=slug,
             name=name,
-            company=company,
+            who_they_are=sections.get("Who They Are", "").strip(),
             what_they_sell=sections.get("What They Sell", "").strip(),
-            icp=sections.get("Target ICP", sections.get("Target ICP — Who Twelve Labs Sells To", "")).strip(),
+            value_proposition=sections.get("Value Proposition", "").strip(),
+            tone_preferences=sections.get("Tone Preferences", "").strip(),
+            social_proof=sections.get("Social Proof", "").strip(),
+            market_feedback=sections.get("Market Feedback", "").strip(),
+            target_icp=sections.get("Target ICP", "").strip(),
             competitive_landscape=sections.get("Competitive Landscape", "").strip(),
-            recent_news=sections.get(
-                "Recent News & Signals (good for personalization)",
-                sections.get("Recent News", ""),
-            ).strip(),
-            value_proposition=sections.get(
-                "Value Proposition (for outbound on their behalf)",
-                sections.get("Value Proposition", ""),
-            ).strip(),
-            tone=tone,
-            campaign_angles=sections.get(
-                "Campaign Angles Worth Testing",
-                sections.get("Campaign Angles", sections.get("Campaign Notes", "")),
-            ).strip(),
-            notes=sections.get("Notes", sections.get("Campaign Notes", "")).strip(),
-            personas=sections.get("Personas", "").strip(),
-            battle_cards=sections.get("Battle Cards", "").strip(),
-            signal_playbook=sections.get("Signal Playbook", "").strip(),
-            proven_responses=sections.get("Proven Responses", "").strip(),
-            active_campaigns=sections.get("Active Campaigns", "").strip(),
             raw_markdown=content,
         )
 
@@ -360,109 +316,37 @@ class ContextStore:
 
         return sections
 
-    def _extract_bullet(self, text: str, key: str) -> str:
-        pattern = re.compile(
-            rf"[-*]\s+\*\*{re.escape(key)}:\*\*\s*(.+)", re.IGNORECASE
-        )
-        match = pattern.search(text)
-        if match:
-            val = match.group(1).strip()
-            return val if val != "—" else ""
-        return ""
-
     def _render_client_markdown(self, profile: ClientProfile) -> str:
+        """Render a v2 client profile back out to markdown.
+
+        Section order matches the v2 template. Empty sections are omitted
+        (except the H1 title). Any content not recognized by the parser
+        is lost on round-trip — callers should fetch raw_markdown if they
+        need to preserve out-of-schema content.
+        """
         lines: list[str] = []
         lines.append(f"# {profile.name}")
         lines.append("")
-        lines.append("## Company")
-        c = profile.company
-        lines.append(f"- **Domain:** {c.domain or '—'}")
-        lines.append(f"- **Industry:** {c.industry or '—'}")
-        lines.append(f"- **Size:** {c.size or '—'}")
-        lines.append(f"- **Stage:** {c.stage or '—'}")
-        if c.hq:
-            lines.append(f"- **HQ:** {c.hq}")
-        if c.founded:
-            lines.append(f"- **Founded:** {c.founded}")
-        lines.append("")
 
-        if profile.what_they_sell:
-            lines.append("## What They Sell")
+        # Order must match v2 template:
+        # Who They Are → What They Sell → Value Proposition → Tone Preferences
+        # → Social Proof → Market Feedback → Target ICP → Competitive Landscape
+        v2_sections: list[tuple[str, str]] = [
+            ("Who They Are", profile.who_they_are),
+            ("What They Sell", profile.what_they_sell),
+            ("Value Proposition", profile.value_proposition),
+            ("Tone Preferences", profile.tone_preferences),
+            ("Social Proof", profile.social_proof),
+            ("Market Feedback", profile.market_feedback),
+            ("Target ICP", profile.target_icp),
+            ("Competitive Landscape", profile.competitive_landscape),
+        ]
+        for heading, body in v2_sections:
+            if not body.strip():
+                continue
+            lines.append(f"## {heading}")
             lines.append("")
-            lines.append(profile.what_they_sell)
-            lines.append("")
-
-        if profile.icp:
-            lines.append("## Target ICP")
-            lines.append("")
-            lines.append(profile.icp)
-            lines.append("")
-
-        if profile.competitive_landscape:
-            lines.append("## Competitive Landscape")
-            lines.append("")
-            lines.append(profile.competitive_landscape)
-            lines.append("")
-
-        if profile.recent_news:
-            lines.append("## Recent News")
-            lines.append("")
-            lines.append(profile.recent_news)
-            lines.append("")
-
-        if profile.value_proposition:
-            lines.append("## Value Proposition")
-            lines.append("")
-            lines.append(profile.value_proposition)
-            lines.append("")
-
-        lines.append("## Tone Preferences")
-        t = profile.tone
-        lines.append(f"- **Formality:** {t.formality or '—'}")
-        lines.append(f"- **Approach:** {t.approach or '—'}")
-        lines.append(f"- **Things to avoid:** {t.avoid or '—'}")
-        lines.append("")
-
-        if profile.campaign_angles:
-            lines.append("## Campaign Angles")
-            lines.append("")
-            lines.append(profile.campaign_angles)
-            lines.append("")
-
-        if profile.notes:
-            lines.append("## Notes")
-            lines.append("")
-            lines.append(profile.notes)
-            lines.append("")
-
-        if profile.personas:
-            lines.append("## Personas")
-            lines.append("")
-            lines.append(profile.personas)
-            lines.append("")
-
-        if profile.battle_cards:
-            lines.append("## Battle Cards")
-            lines.append("")
-            lines.append(profile.battle_cards)
-            lines.append("")
-
-        if profile.signal_playbook:
-            lines.append("## Signal Playbook")
-            lines.append("")
-            lines.append(profile.signal_playbook)
-            lines.append("")
-
-        if profile.proven_responses:
-            lines.append("## Proven Responses")
-            lines.append("")
-            lines.append(profile.proven_responses)
-            lines.append("")
-
-        if profile.active_campaigns:
-            lines.append("## Active Campaigns")
-            lines.append("")
-            lines.append(profile.active_campaigns)
+            lines.append(body.rstrip())
             lines.append("")
 
         return "\n".join(lines)

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import { ClientEditor } from "@/components/context/client-editor";
+import { ClientEditor, type ClientEditorPayload } from "@/components/context/client-editor";
 import { KnowledgeEditor } from "@/components/context/knowledge-editor";
 import { PromptPreview } from "@/components/context/prompt-preview";
 import { FileTree } from "@/components/context/file-tree";
@@ -174,14 +174,14 @@ export default function ContextPage() {
     [explorer, handleEditFile]
   );
 
-  const handleSaveClient = async (data: Parameters<typeof createClient>[0]) => {
+  const handleSaveClient = async (data: ClientEditorPayload) => {
     setClientSaving(true);
     try {
       if (editingClient) {
-        await updateClient(editingClient.slug, data);
+        await updateClient(editingClient.slug, { ...data });
         toast.success("Client updated");
       } else {
-        await createClient(data);
+        await createClient({ ...data });
         toast.success("Client created");
       }
       setClientEditorOpen(false);
