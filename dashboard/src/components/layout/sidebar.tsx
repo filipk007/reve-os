@@ -29,6 +29,7 @@ import {
   ArrowLeftRight,
   Layers,
   FileText,
+  ClipboardCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -94,6 +95,7 @@ const POWER_NAV_SECTIONS: NavSection[] = [
     accentColor: "kiln-teal",
     items: [
       { href: "/outbound", label: "Outbound", icon: Send, shortcut: "4" },
+      { href: "/review", label: "Review", icon: ClipboardCheck, shortcut: "R" },
       { href: "/transcripts", label: "Transcripts", icon: FileText, shortcut: "" },
       { href: "/context", label: "Context", icon: FolderTree, shortcut: "5" },
       { href: "/context/rack", label: "Rack", icon: Layers, shortcut: "" },

@@ -1,4 +1,4 @@
-# Camel Digital
+# Hologram
 
 <!--
 PROFILE SCHEMA v2

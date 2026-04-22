@@ -3,19 +3,34 @@ import re
 import yaml
 
 from app.config import settings
-from app.core.context_filter import filter_client_profile, filter_signal_sections
+from app.core.context_filter import filter_client_profile
 
 _skill_cache: dict[str, tuple[float, dict, str]] = {}
 
 
 def list_skills() -> list[str]:
+    """List all skills, including nested skills one level deep.
+
+    A top-level directory with skill.md is a flat skill (e.g. 'classify').
+    A top-level directory WITHOUT skill.md whose child directories contain
+    skill.md files yields nested skill names (e.g. 'email-gen/new-hire').
+    """
     if not settings.skills_dir.exists():
         return []
-    return sorted(
-        d.name
-        for d in settings.skills_dir.iterdir()
-        if d.is_dir() and (d / "skill.md").exists()
-    )
+    skills: list[str] = []
+    for d in settings.skills_dir.iterdir():
+        if not d.is_dir():
+            continue
+        if d.name.startswith("_"):  # _archived, _legacy, etc.
+            continue
+        if (d / "skill.md").exists():
+            skills.append(d.name)
+            continue
+        # Walk one level deeper for nested skills (e.g. email-gen/new-hire)
+        for sub in d.iterdir():
+            if sub.is_dir() and not sub.name.startswith("_") and (sub / "skill.md").exists():
+                skills.append(f"{d.name}/{sub.name}")
+    return sorted(skills)
 
 
 def parse_frontmatter(content: str) -> tuple[dict, str]:
@@ -91,7 +106,7 @@ def parse_context_refs(skill_content: str) -> list[str]:
 
 def resolve_template_vars(ref_path: str, data: dict) -> str:
     resolved = ref_path
-    for var in ("client_slug", "persona_slug"):
+    for var in ("client_slug",):
         placeholder = "{{" + var + "}}"
         if placeholder in resolved:
             value = data.get(var, "")
@@ -117,8 +132,6 @@ def _maybe_filter_content(
     path: str, content: str, data: dict, skill_name: str | None
 ) -> str:
     """Apply smart context filtering based on file type and skill."""
-    if "signals/" in path and data.get("signal_type"):
-        return filter_signal_sections(content, data["signal_type"])
     if path.startswith("clients/") and skill_name:
         return filter_client_profile(
             content, skill_name, data.get("title"), data.get("signal_type")
@@ -170,20 +183,6 @@ def load_context_files(
             content = _maybe_filter_content(resolved, content, data, skill_name)
             seen.add(resolved)
             files.append({"path": resolved, "content": content})
-
-    # --- Auto-load industry context (exact slug match) ---
-    industry = data.get("industry", "")
-    if industry:
-        slug = re.sub(r"[^a-z0-9]+", "-", industry.lower()).strip("-")
-        industries_dir = settings.knowledge_dir / "industries"
-        if industries_dir.exists():
-            industry_file = industries_dir / f"{slug}.md"
-            if industry_file.exists():
-                rel = f"knowledge_base/industries/{slug}.md"
-                if rel not in seen:
-                    content = industry_file.read_text()
-                    seen.add(rel)
-                    files.append({"path": rel, "content": content})
 
     # --- Truncate context files if context_max_chars is set ---
     if context_max_chars and isinstance(context_max_chars, int):

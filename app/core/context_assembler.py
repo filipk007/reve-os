@@ -22,9 +22,6 @@ _PRIORITY_ORDER = [
     "knowledge_base/objections/",
     "knowledge_base/competitive/",
     "knowledge_base/sequences/",
-    "knowledge_base/signals/",
-    "knowledge_base/personas/",
-    "knowledge_base/industries/",
     "clients/",
 ]
 
@@ -34,9 +31,6 @@ _CATEGORY_ROLES = {
     "objections": "Objection handling",
     "competitive": "Competitive intelligence",
     "sequences": "Sequence templates",
-    "signals": "Signal patterns",
-    "personas": "Persona profiles",
-    "industries": "Industry context",
     "clients": "Client profile",
 }
 

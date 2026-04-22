@@ -549,6 +549,76 @@ export function rerunWithFeedback(
   return apiFetch(`/feedback/rerun/${jobId}`, { method: "POST" });
 }
 
+// Review Queue (Phase 4 — Review tab)
+export interface ReviewJob {
+  id: string;
+  skill: string;
+  row_id?: string | null;
+  status: string;
+  duration_ms?: number;
+  created_at: number;
+  client_slug?: string | null;
+  current_rating: "thumbs_up" | "thumbs_down" | null;
+  feedback_count: number;
+  feedback: FeedbackEntry[];
+  result_preview: string;
+  input_tokens_est?: number;
+  output_tokens_est?: number;
+  cost_est_usd?: number;
+}
+
+export function fetchReviewQueue(params?: {
+  skill?: string;
+  client_slug?: string;
+  state?: "all" | "unrated" | "thumbs_up" | "thumbs_down";
+  limit?: number;
+}): Promise<{ total: number; jobs: ReviewJob[] }> {
+  const sp = new URLSearchParams();
+  if (params?.skill) sp.set("skill", params.skill);
+  if (params?.client_slug) sp.set("client_slug", params.client_slug);
+  if (params?.state) sp.set("state", params.state);
+  if (params?.limit) sp.set("limit", String(params.limit));
+  const qs = sp.toString();
+  return apiFetch(`/feedback/review-queue${qs ? `?${qs}` : ""}`);
+}
+
+export function submitFeedbackBulk(body: {
+  job_ids: string[];
+  rating: "thumbs_up" | "thumbs_down";
+  note?: string;
+}): Promise<{
+  total: number;
+  ok: number;
+  failed: number;
+  learnings_extracted: number;
+  results: Array<{ job_id: string; ok: boolean; feedback_id?: string; error?: string }>;
+}> {
+  return apiFetch("/feedback/bulk", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function runPatternMining(): Promise<{
+  total_feedback: number;
+  patterns: Array<{ term: string; count: number }>;
+  by_skill: Record<string, { count: number; top_terms: Array<{ term: string; count: number }> }>;
+  by_client: Record<string, { count: number; top_terms: Array<{ term: string; count: number }> }>;
+  last_run: number;
+}> {
+  return apiFetch("/feedback/patterns/mine", { method: "POST" });
+}
+
+export function fetchLatestPatterns(): Promise<{
+  patterns: Array<{ term: string; count: number }>;
+  by_skill?: Record<string, { count: number; top_terms: Array<{ term: string; count: number }> }>;
+  by_client?: Record<string, { count: number; top_terms: Array<{ term: string; count: number }> }>;
+  last_run: number;
+  total_feedback?: number;
+}> {
+  return apiFetch("/feedback/patterns/latest");
+}
+
 // Usage tracking
 export function fetchUsage(): Promise<UsageSummary> {
   return apiFetch("/usage");

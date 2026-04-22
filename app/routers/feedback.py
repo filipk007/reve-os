@@ -8,6 +8,143 @@ router = APIRouter(prefix="/feedback", tags=["feedback"])
 logger = logging.getLogger("clay-webhook-os")
 
 
+# ── Review Queue ─────────────────────────────────────────────
+
+
+@router.get("/review-queue")
+async def review_queue(
+    request: Request,
+    skill: str | None = None,
+    client_slug: str | None = None,
+    state: str = "all",  # all | unrated | thumbs_up | thumbs_down
+    limit: int = 100,
+):
+    """Return recent jobs with their feedback entries joined.
+
+    Powers the Review tab. Filters:
+    - skill: exact match
+    - client_slug: exact match (from job.data.client_slug)
+    - state: all | unrated (no feedback yet) | thumbs_up | thumbs_down
+    """
+    queue = request.app.state.job_queue
+    store = request.app.state.feedback_store
+
+    jobs = queue.get_jobs(limit=min(max(limit, 10), 500))
+    results = []
+    for j in jobs:
+        job_obj = queue.get_job(j["id"])
+        if job_obj is None:
+            continue
+        if skill and j.get("skill") != skill:
+            continue
+        job_client = (job_obj.data or {}).get("client_slug") or None
+        if client_slug and job_client != client_slug:
+            continue
+
+        feedback_entries = store.get_job_feedback(j["id"])
+        current_rating = feedback_entries[-1].rating if feedback_entries else None
+
+        if state == "unrated" and current_rating is not None:
+            continue
+        if state == "thumbs_up" and current_rating != "thumbs_up":
+            continue
+        if state == "thumbs_down" and current_rating != "thumbs_down":
+            continue
+
+        # Extract a short result preview
+        preview = ""
+        try:
+            if isinstance(job_obj.result, dict):
+                for key in ("email_subject", "email_body", "output", "summary"):
+                    if key in job_obj.result and isinstance(job_obj.result[key], str):
+                        preview = job_obj.result[key][:240]
+                        break
+                if not preview:
+                    import json
+                    preview = json.dumps(job_obj.result)[:240]
+        except Exception:
+            preview = ""
+
+        results.append({
+            **j,
+            "client_slug": job_client,
+            "current_rating": current_rating,
+            "feedback_count": len(feedback_entries),
+            "feedback": [e.model_dump() for e in feedback_entries],
+            "result_preview": preview,
+            "status": job_obj.status,
+        })
+
+    return {
+        "total": len(results),
+        "jobs": results,
+    }
+
+
+@router.post("/bulk")
+async def submit_feedback_bulk(request: Request):
+    """Submit same rating + optional note to multiple jobs at once.
+
+    Body: {"job_ids": [...], "rating": "thumbs_up"|"thumbs_down", "note": "..."}
+    Each job is processed independently — partial failures are reported.
+    """
+    body = await request.json()
+    job_ids = body.get("job_ids") or []
+    rating = body.get("rating")
+    note = body.get("note") or None
+    if not isinstance(job_ids, list) or not job_ids:
+        raise HTTPException(status_code=400, detail="job_ids must be a non-empty list")
+    if rating not in ("thumbs_up", "thumbs_down"):
+        raise HTTPException(status_code=400, detail="rating must be thumbs_up or thumbs_down")
+
+    store = request.app.state.feedback_store
+    queue = request.app.state.job_queue
+    learning_engine = getattr(request.app.state, "learning_engine", None)
+
+    results = []
+    learnings_extracted = 0
+    for jid in job_ids:
+        job = queue.get_job(jid)
+        if job is None:
+            results.append({"job_id": jid, "ok": False, "error": "job_not_found"})
+            continue
+        client_slug = (job.data or {}).get("client_slug")
+        entry = FeedbackEntry(
+            job_id=jid,
+            skill=job.skill,
+            model=job.model,
+            client_slug=client_slug,
+            rating=rating,
+            note=note,
+        )
+        try:
+            saved = store.submit(entry)
+            results.append({"job_id": jid, "ok": True, "feedback_id": saved.id})
+
+            if learning_engine and rating == "thumbs_down" and note:
+                try:
+                    learning_engine.extract_learning(
+                        skill=job.skill,
+                        client_slug=client_slug,
+                        note=note,
+                        rating=rating,
+                    )
+                    learnings_extracted += 1
+                except Exception as e:
+                    logger.warning("[feedback/bulk] learning extract failed: %s", e)
+        except Exception as e:
+            results.append({"job_id": jid, "ok": False, "error": str(e)})
+
+    ok_count = sum(1 for r in results if r["ok"])
+    return {
+        "total": len(job_ids),
+        "ok": ok_count,
+        "failed": len(job_ids) - ok_count,
+        "learnings_extracted": learnings_extracted,
+        "results": results,
+    }
+
+
 @router.post("")
 async def submit_feedback(body: SubmitFeedbackRequest, request: Request):
     store = request.app.state.feedback_store

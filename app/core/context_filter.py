@@ -32,11 +32,12 @@ SIGNAL_TYPE_TO_SECTION: dict[str, str] = {
 SKILL_CLIENT_SECTIONS: dict[str, list[str]] = {
     # --- Content Generation (5) ---
     "email-gen": [
+        "Who They Are",
         "What They Sell",
+        "Value Proposition",
         "Tone Preferences",
-        "Campaign Angles Worth Testing",
-        "Campaign Angles",
-        "Recent News & Signals",
+        "Social Proof",
+        "Market Feedback",
     ],
     "sequence-writer": [
         "What They Sell",
@@ -309,7 +310,12 @@ def filter_client_profile(
     - Auto-extracts matching Signal Playbook row if signal_type is provided
     - Falls back to full content if skill is unknown
     """
+    # Nested skill names inherit parent's allowlist.
+    # E.g. "email-gen/new-hire" falls back to "email-gen".
     needed = SKILL_CLIENT_SECTIONS.get(skill_name)
+    if not needed and "/" in skill_name:
+        parent = skill_name.split("/", 1)[0]
+        needed = SKILL_CLIENT_SECTIONS.get(parent)
     if not needed:
         return content
 
