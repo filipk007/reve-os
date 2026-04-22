@@ -36,52 +36,27 @@ outbound) for scale-ups lacking in-house marketing capacity.
 - **Full stack under one roof via UBO** — branding, video, web dev, outbound all from one studio; no vendor daisy-chain when the HubSpot build needs a landing page, video, or campaign wrapped around it.
 
 ## Tone Preferences
-- **Voice:** Pragmatic, peer-to-peer with marketing/ops/RevOps leads. Diagnostic not pitchy. Damian's own posture: "here's what I see, here's what's buildable" — not "book a demo to hear our process."
-- **Formality:** Direct. NL market reads corporate-speak as spam; the rest of Europe reads it as AI-generated. Match the prospect's register, always one notch below formal.
-- **Language matching (strict — never mix):**
-  - NL/BE prospects → Dutch copy
-  - Wider EU prospects → English copy
-  - Never interleave both in a single email
-- **Sentence length:** Short, specific. 75-125 words per cold email. Longer for existing-customer nurture.
-- **Forbidden phrases (both languages):**
-  - NL specific: "gratis" (reads as spam — use "vrijblijvend"), "consultaties" (too formal — use "consults"), long formal English phrases dropped into Dutch
-  - English specific: "hope this finds you well", "reaching out", "touching base", "synergy", "leverage"
-  - Both: "AI-powered / AI-driven" (prospects flagged AI feature churn as a *pain*, not a benefit), "full-service", "growth partner", "growth hacker", "transform / transformation", "HubSpot ROI"
-  - Saturated competitor claims to avoid: "systems and teams that don't collaborate" (BrightDigital), "grow faster/smarter/structurally with HubSpot", "marketing and sales as one machine / seamlessly", "your extension of the team"
-- **Required phrasing:**
-  - Reference a specific portal reality (messy workflows, inherited mess, junk deals, unused hub, missing data)
-  - Concrete mechanism over claim (what gets built, what the audit surfaces — not outcomes promised)
-  - Low-friction CTA (never "book a call" — prefer "worth a look?", "open to a 10-min audit?", "want me to send the teardown?")
-- **Jargon the ICP uses freely (OK to use):** MQL, SQL, lifecycle stage, pipeline, workflow, automation, custom object, lead scoring, attribution, sales-marketing alignment, RevOps, onboarding, portal, CAPI, backend events.
-- **High-resonance metaphors (Reddit + NL):**
-  - English: "technical debt" (r/hubspot), "junk deals", "invisible dependencies", "a maze, not a MAP", "stop the bleeding before you clean"
-  - Dutch: "versnipperde data" (fragmented), "opschonen" (clean up), "geen grip op" (no grip on)
-- **Credibility numbers to borrow from Reddit portal-audit stats:** "typically 28% contacts missing emails, 12% duplicates, 34% no company, 41% missing job titles" — concrete, borrowable hooks.
+- **Voice:** Pragmatic, peer-to-peer with marketing/ops/RevOps leads. Diagnostic not pitchy.
+- **Formality:** Direct. One notch below formal. No corporate theater.
+- **Language:** NL/BE prospects → Dutch. Wider EU → English. Never mix in one email.
+- **Sentence length:** Short. 75-125 words per cold email.
+- **Forbidden phrases:**
+  - NL: "gratis" (use "vrijblijvend"), "consultaties" (use "consults")
+  - EN: "hope this finds you well", "reaching out", "touching base", "synergy", "leverage"
+  - Both: "AI-powered / AI-driven", "full-service", "growth partner", "growth hacker", "transform / transformation", "HubSpot ROI"
 
 ## Social Proof
 
-### Client Logos (unquantified)
-Profield, Voltar, WDJ, AB, Maxilia, AddComm — visible on ubx.nl homepage.
-Rating 9.2.
+### Client Logos
+Profield, Voltar, WDJ, AB, Maxilia, AddComm. Rating 9.2 (ubx.nl).
 
-### External Market Validation
-- **The *vrijblijvend* portal audit as a lead mechanism is known-working.** r/hubspot practitioner u/tripleM1988: "We tend to do audits like this for free, then put a proposal together for a paid project. It's a great lead hook; many agencies do this." Confirms UBX's primary outbound wedge is not a gimmick — it's established market practice UBX can claim credibility within.
-- **Mid-market willingness-to-pay anchor**: r/hubspot u/adamsandltd: "It's a hard roll to afford below $3-5mm in revenue for most businesses. So if there's a way to get it done for under $10k a year that would have a large appeal." Validates €5M+ ARR as the buyer-budget floor and ~€9K/year ($10K) as the psychological ceiling for ongoing HubSpot ops service. UBX engagements should scope above freelancer anchors ($300-$800 one-time / $100-$250/month) but inside the $10K/year framing for mid-market.
-- **Post-cleanup SLA justification**: r/hubspot mod u/RyanGunnHS: "Are you setting up automation to keep the data clean after the initial cleanup? Because if you are not doing that, the exact same problem is going to crop back up in 6 months." Confirms the ongoing partner upsell is a shared-consensus best practice, not a sales fabrication.
+### Named Engagements (for copy, anecdotal until public case studies exist)
+- **Global Dime** (payments scale-up): automated manual Excel investor tracking + DocuSign→HubSpot updates, unified merchant/partner/investor pipelines with custom objects.
+- **Gray Parrot** (UK/NL): ongoing HubSpot ops partner for team that inherited the portal but can't keep up with feature pace.
+- **Elitac Wearables**: Marketing Hub Pro + Sales Hub Pro + Data Hub Starter, lead scoring, marketing-sales dashboards.
 
-### Gap: Quantified Case Studies
-No public, numbered case studies available yet. Biggest proof gap vs.
-competitors (BrightDigital publishes 500+ client count + 150 professionals;
-Webs publishes "226+ five-star reviews, results in 30-90 days, 300+
-implementations"; BrixCRM publishes the AFAS-HubSpot connector + named
-Bricsys integration). Before scaling outbound, collect 2-3 UBX case studies
-with: hours saved, integrations shipped, pipeline lift, attribution
-improvement. Minimum viable: one number per case study.
-
-### Internal Proof Anecdotes (for copy, until public case studies exist)
-- **Global Dime** (payments scale-up, CCO-level buyer): manual Excel tracking of investor payments, DocuSign → HubSpot updates done one-by-one, multiple disconnected pipelines (merchants, partners, resellers, investors). UBX scope: automate the Excel flow, unify pipelines, custom objects for investor tier tracking.
-- **Gray Parrot** (UK + NL, marketing lead returning from maternity leave): knows HubSpot but can't keep up with feature pace ("obviously they develop really fast and with AI now there's constantly new features"). UBX positioning: ongoing ops partner for teams where HubSpot is owned but not specialized-in.
-- **Elitac Wearables** (wearables scale-up): "Er is beperkt inzicht in welke marketingactiviteiten bijdragen aan nieuwe opportunities." UBX scope: Marketing Hub Pro + Sales Hub Pro + Data Hub Starter upgrade, lead scoring setup, marketing-sales dashboards.
+### Gap
+No quantified case studies public yet. Collect 2-3 with one number each (hours saved / integrations shipped / pipeline lift) before scaling outbound.
 
 ## Market Feedback
 
