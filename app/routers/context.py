@@ -155,7 +155,7 @@ class CreateSkillRequest(BaseModel):
     content: str = Field(..., description="Initial skill.md content")
 
 
-@router.get("/skills/{name}/content")
+@router.get("/skills/{name:path}/content")
 async def get_skill_content(name: str):
     from app.core.skill_loader import get_skill_raw
 
@@ -165,7 +165,7 @@ async def get_skill_content(name: str):
     return {"name": name, "content": content}
 
 
-@router.put("/skills/{name}/content")
+@router.put("/skills/{name:path}/content")
 async def update_skill_content(name: str, body: UpdateSkillRequest, request: Request):
     from app.core.skill_loader import save_skill
 
@@ -197,7 +197,7 @@ async def create_skill_endpoint(body: CreateSkillRequest):
     return {"name": body.name, "content": body.content}
 
 
-@router.delete("/skills/{name}")
+@router.delete("/skills/{name:path}")
 async def delete_skill_endpoint(name: str):
     from app.core.skill_loader import delete_skill
 
@@ -210,7 +210,7 @@ async def delete_skill_endpoint(name: str):
 # ── Skill Versions ─────────────────────────────────────────
 
 
-@router.get("/skills/{name}/versions")
+@router.get("/skills/{name:path}/versions")
 async def list_skill_versions(name: str, request: Request):
     version_store = getattr(request.app.state, "skill_version_store", None)
     if not version_store:
@@ -219,7 +219,7 @@ async def list_skill_versions(name: str, request: Request):
     return {"name": name, "versions": versions}
 
 
-@router.get("/skills/{name}/versions/{version_number}")
+@router.get("/skills/{name:path}/versions/{version_number}")
 async def get_skill_version(name: str, version_number: int, request: Request):
     version_store = getattr(request.app.state, "skill_version_store", None)
     if not version_store:
@@ -230,7 +230,7 @@ async def get_skill_version(name: str, version_number: int, request: Request):
     return {"name": name, "version": version_number, "content": content}
 
 
-@router.post("/skills/{name}/rollback/{version_number}")
+@router.post("/skills/{name:path}/rollback/{version_number}")
 async def rollback_skill_version(name: str, version_number: int, request: Request):
     version_store = getattr(request.app.state, "skill_version_store", None)
     if not version_store:

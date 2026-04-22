@@ -13,21 +13,21 @@ router = APIRouter(tags=["experiments"])
 
 # --- Variant endpoints ---
 
-@router.get("/skills/{skill}/variants")
+@router.get("/skills/{skill:path}/variants")
 async def list_variants(skill: str, request: Request):
     store = request.app.state.experiment_store
     variants = store.list_variants(skill)
     return {"skill": skill, "variants": [v.model_dump() for v in variants]}
 
 
-@router.post("/skills/{skill}/variants")
+@router.post("/skills/{skill:path}/variants")
 async def create_variant(skill: str, body: CreateVariantRequest, request: Request):
     store = request.app.state.experiment_store
     variant = store.create_variant(skill, body)
     return variant.model_dump()
 
 
-@router.post("/skills/{skill}/variants/fork")
+@router.post("/skills/{skill:path}/variants/fork")
 async def fork_variant(skill: str, request: Request):
     store = request.app.state.experiment_store
     variant = store.fork_default(skill, label=f"{skill} — Fork")
@@ -36,7 +36,7 @@ async def fork_variant(skill: str, request: Request):
     return variant.model_dump()
 
 
-@router.get("/skills/{skill}/variants/{variant_id}")
+@router.get("/skills/{skill:path}/variants/{variant_id}")
 async def get_variant(skill: str, variant_id: str, request: Request):
     store = request.app.state.experiment_store
     variant = store.get_variant(skill, variant_id)
@@ -45,7 +45,7 @@ async def get_variant(skill: str, variant_id: str, request: Request):
     return variant.model_dump()
 
 
-@router.put("/skills/{skill}/variants/{variant_id}")
+@router.put("/skills/{skill:path}/variants/{variant_id}")
 async def update_variant(skill: str, variant_id: str, body: CreateVariantRequest, request: Request):
     store = request.app.state.experiment_store
     variant = store.update_variant(skill, variant_id, body)
@@ -54,7 +54,7 @@ async def update_variant(skill: str, variant_id: str, body: CreateVariantRequest
     return variant.model_dump()
 
 
-@router.delete("/skills/{skill}/variants/{variant_id}")
+@router.delete("/skills/{skill:path}/variants/{variant_id}")
 async def delete_variant(skill: str, variant_id: str, request: Request):
     store = request.app.state.experiment_store
     deleted = store.delete_variant(skill, variant_id)
