@@ -230,7 +230,7 @@ class ChannelOrchestrator:
             logger.warning(
                 "[channel-orchestrator] Unknown tool: %s", tool_id,
             )
-            return {f"_step_error": f"Unknown tool: {tool_id}"}
+            return {"_step_error": f"Unknown tool: {tool_id}"}
 
         tool_prompt = (
             f"Use the {tool_meta.get('name', tool_id)} tool.\n"

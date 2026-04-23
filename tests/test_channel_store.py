@@ -154,9 +154,9 @@ class TestListSessions:
         assert all(isinstance(s, SessionSummary) for s in result)
 
     def test_list_sessions_sorted_by_updated_at_desc(self, store: ChannelStore):
-        s1 = store.create_session("func-1", "Older")
+        store.create_session("func-1", "Older")
         # Ensure s2 has a later timestamp
-        s2 = store.create_session("func-2", "Newer")
+        store.create_session("func-2", "Newer")
         result = store.list_sessions()
         assert len(result) == 2
         assert result[0].updated_at >= result[1].updated_at

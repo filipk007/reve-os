@@ -1,25 +1,23 @@
 import json
 import logging
+import re
 import time
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from app.core.tool_catalog import get_tool_catalog, get_tool_categories
-import re
-
 from app.config import settings
+from app.core.tool_catalog import get_tool_catalog, get_tool_categories
 from app.models.functions import (
     AssembleFunctionRequest,
     BatchExecutionRequest,
     ConsolidatedPrompt,
     CreateFolderRequest,
     CreateFunctionRequest,
-    FunnelStage,
     MoveFunctionRequest,
-    PrepareRequest,
     PreparedFunction,
     PreparedStep,
+    PrepareRequest,
     PreviewRequest,
     QueueLocalRequest,
     RenameFolderRequest,
@@ -710,7 +708,7 @@ async def generate_clay_config(request: Request, func_id: str):
 
     body_template = {
         "data": {
-            inp.name: f"/{{{{Column Name}}}}" for inp in func.inputs
+            inp.name: "/{{Column Name}}" for inp in func.inputs
         },
     }
 
@@ -748,7 +746,7 @@ async def generate_clay_config(request: Request, func_id: str):
             "1. In Clay, add an HTTP API column",
             "2. Set Method to POST",
             f"3. Set URL to: {webhook_url}",
-            f"4. Add Header: Content-Type → application/json",
+            "4. Add Header: Content-Type → application/json",
             f"5. Add Header: x-api-key → {api_key}",
             f"6. Set Timeout to {timeout} (2 minutes)",
             "7. Set Body to the body_template above — replace /{{Column Name}} with your actual Clay column references using /Column Name syntax",
@@ -838,13 +836,13 @@ async def batch_stream(request: Request, func_id: str, body: BatchExecutionReque
     and a final result with funnel metrics.
     """
     import time as _time
-    from app.core.pipeline_runner import evaluate_condition
+
     from app.core.consolidated_runner import (
-        build_consolidated_prompt,
-        parse_consolidated_output,
-        build_task_sections,
         assemble_prompt,
+        build_task_sections,
+        parse_consolidated_output,
     )
+    from app.core.pipeline_runner import evaluate_condition
 
     store = request.app.state.function_store
     func = store.get(func_id)
@@ -932,7 +930,7 @@ async def batch_stream(request: Request, func_id: str, body: BatchExecutionReque
                     chunk = active_rows[chunk_start:chunk_start + chunk_size]
 
                     # Build a temporary function with just this one step for consolidated execution
-                    from app.models.functions import FunctionDefinition, FunctionStep
+                    from app.models.functions import FunctionDefinition
                     single_step_func = FunctionDefinition(
                         id=f"{func.id}__step_{step_idx}",
                         name=f"{func.name} - Step {step_idx + 1}",
@@ -1406,14 +1404,14 @@ async def prepare_function(request: Request, func_id: str, body: PrepareRequest)
                     f"Task: {provider['description']}\n\n"
                     f"Inputs:\n"
                     + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
-                    + f"\n\nReturn a JSON object with ONLY these keys:\n"
+                    + "\n\nReturn a JSON object with ONLY these keys:\n"
                     + "\n".join(output_hints)
-                    + f"\n\nRULES:\n"
-                    f"- Search the web to find real, factual data.\n"
-                    f"- For domains: return just the domain (e.g. 'salesforce.com'), not a full URL.\n"
-                    f"- For LinkedIn company URLs: return https://linkedin.com/company/{{slug}}\n"
-                    f"- NEVER return null — if unsure, search the web and provide your best answer.\n"
-                    f"- Return ONLY a valid JSON object. No markdown, no explanation, no code fences.\n"
+                    + "\n\nRULES:\n"
+                    "- Search the web to find real, factual data.\n"
+                    "- For domains: return just the domain (e.g. 'salesforce.com'), not a full URL.\n"
+                    "- For LinkedIn company URLs: return https://linkedin.com/company/{slug}\n"
+                    "- NEVER return null — if unsure, search the web and provide your best answer.\n"
+                    "- Return ONLY a valid JSON object. No markdown, no explanation, no code fences.\n"
                 )
 
                 data_categories = {"Research", "People Search", "Company Enrichment"}
@@ -1805,7 +1803,6 @@ async def queue_local_job(request: Request, func_id: str, body: QueueLocalReques
     execute the AI call via Claude Code on the user's machine.
     """
     from app.core.consolidated_runner import assemble_prompt, build_task_sections
-    from app.core.tool_catalog import DEEPLINE_PROVIDERS
 
     store = request.app.state.function_store
     func = store.get(func_id)

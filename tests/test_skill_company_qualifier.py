@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 import yaml
 
-
 SKILL_PATH = Path(__file__).resolve().parent.parent / "skills" / "company-qualifier" / "skill.md"
 CLIENT_PATH = Path(__file__).resolve().parent.parent / "clients" / "hologram.md"
 

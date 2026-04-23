@@ -4,7 +4,6 @@ from pathlib import Path
 import yaml
 
 from app.core.atomic_writer import atomic_write_text
-
 from app.models.pipelines import CreatePipelineRequest, PipelineDefinition, PipelineStepConfig, UpdatePipelineRequest
 
 logger = logging.getLogger("clay-webhook-os")

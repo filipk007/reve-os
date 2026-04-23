@@ -15,7 +15,7 @@ import aiohttp
 from app.core.table_store import TableStore
 from app.core.tool_catalog import DEEPLINE_PROVIDERS, LEGACY_ALIASES, deepline_cache, get_provider_rate_limit_ms
 from app.core.url_guard import validate_url
-from app.models.tables import CellState, ExecuteTableRequest, TableColumn, TableDefinition
+from app.models.tables import ExecuteTableRequest, TableColumn, TableDefinition
 
 logger = logging.getLogger("clay-webhook-os")
 
@@ -522,7 +522,7 @@ async def execute_table_stream(
                 if use_deepline:
                     # ── Deepline path: parallel per-row with cache + normalization ──
                     logger.info("[table_executor] Deepline routing: col=%s tool=%s rows=%d", col.id, effective_tool, len(col_rows))
-                    from app.core.deepline_executor import _normalize_result, _cache_ttl_for_tool
+                    from app.core.deepline_executor import _cache_ttl_for_tool, _normalize_result
                     from app.core.entity_utils import extract_entity_key as _extract_entity
 
                     _DEEPLINE_CONCURRENCY = 5
@@ -1190,7 +1190,7 @@ async def execute_table_stream(
                             row[f"{col.id}__error"] = f"Source table '{cfg.source_table_id}' not found"
                             col_errors += 1
                             total_cells_errored += 1
-                            yield _sse({"type": "cell_update", "row_id": row["_row_id"], "column_id": col.id, "status": "error", "error": f"Source table not found"})
+                            yield _sse({"type": "cell_update", "row_id": row["_row_id"], "column_id": col.id, "status": "error", "error": "Source table not found"})
                     else:
                         for row in col_rows:
                             row_id = row["_row_id"]
@@ -1608,7 +1608,6 @@ def _filter_context_for_column(
     - Everything else: passed through
     """
     from app.core.context_filter import (
-        filter_client_profile,
         filter_signal_sections,
         match_persona_subsection,
         split_markdown_sections,

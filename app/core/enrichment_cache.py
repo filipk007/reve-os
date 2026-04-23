@@ -14,7 +14,6 @@ existing code paths.
 import hashlib
 import json
 import logging
-import time
 
 from app.config import settings
 from app.core.entity_utils import extract_entity_key
@@ -305,6 +304,6 @@ class EnrichmentCache:
 
 def _expires_at_iso(ttl_seconds: int) -> str:
     """Return an ISO-8601 timestamp ttl_seconds from now."""
-    from datetime import datetime, timezone, timedelta
+    from datetime import datetime, timedelta, timezone
 
     return (datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)).isoformat()

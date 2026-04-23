@@ -1,8 +1,6 @@
 """Tests for app/routers/channels.py — chat session endpoints + SSE streaming."""
 
-import asyncio
-import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -10,8 +8,6 @@ from fastapi.testclient import TestClient
 from app.models.channels import (
     ChannelMessage,
     ChannelSession,
-    CreateSessionRequest,
-    SendMessageRequest,
     SessionSummary,
 )
 from app.routers.channels import router

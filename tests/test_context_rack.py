@@ -13,15 +13,12 @@ We test with real skills from the skills/ directory to catch any
 formatting differences in production-like conditions.
 """
 
-import asyncio
 import pytest
 
-from app.config import settings
 from app.core.context_assembler import build_prompt
-from app.core.context_rack import ContextRack, RackContext
 from app.core.context_providers import build_default_slots
+from app.core.context_rack import ContextRack, RackContext
 from app.core.skill_loader import list_skills, load_context_files, load_skill, load_skill_config
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -129,7 +126,7 @@ class TestRackParity:
                         f"{skill_name}: length mismatch (old={len(old)}, new={len(new)})"
                     )
 
-        assert not failures, f"Parity failures:\n" + "\n".join(failures)
+        assert not failures, "Parity failures:\n" + "\n".join(failures)
 
     @pytest.mark.asyncio
     async def test_parity_rich_data(self):
@@ -154,7 +151,7 @@ class TestRackParity:
                         f"{skill_name}: length mismatch (old={len(old)}, new={len(new)})"
                     )
 
-        assert not failures, f"Parity failures:\n" + "\n".join(failures)
+        assert not failures, "Parity failures:\n" + "\n".join(failures)
 
     @pytest.mark.asyncio
     async def test_parity_markdown_format(self):

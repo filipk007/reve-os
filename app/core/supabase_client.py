@@ -9,9 +9,8 @@ returns None and all callers skip Supabase operations.
 
 import logging
 
-from supabase import create_client, Client
-
 from app.config import settings
+from supabase import Client, create_client
 
 logger = logging.getLogger("clay-webhook-os")
 

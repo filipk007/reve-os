@@ -4,9 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.core.bridge_store import BridgeStore
 from app.core.cache import ResultCache
+from app.core.channel_orchestrator import ChannelOrchestrator
+from app.core.channel_proxy import ChannelProxy
+from app.core.channel_store import ChannelStore
 from app.core.circuit_breaker import CircuitBreaker
-from app.core.telemetry import init_telemetry, is_enabled as telemetry_enabled
 from app.core.cleanup_worker import DataCleanupWorker
 from app.core.context_index import ContextIndex
 from app.core.context_store import ContextStore
@@ -15,9 +18,6 @@ from app.core.dedup import RequestDeduplicator
 from app.core.destination_store import DestinationStore
 from app.core.event_bus import EventBus
 from app.core.execution_history import ExecutionHistory
-from app.core.channel_store import ChannelStore
-from app.core.channel_orchestrator import ChannelOrchestrator
-from app.core.channel_proxy import ChannelProxy
 from app.core.experiment_store import ExperimentStore
 from app.core.feedback_loop import FeedbackLoop
 from app.core.feedback_store import FeedbackStore
@@ -27,17 +27,18 @@ from app.core.learning_engine import LearningEngine
 from app.core.local_job_queue import LocalJobQueue
 from app.core.memory_store import MemoryStore
 from app.core.pipeline_store import PipelineStore
-from app.core.table_template_store import TableTemplateStore
 from app.core.play_store import PlayStore
 from app.core.prompt_cache import PromptCache
 from app.core.retry_worker import RetryWorker
+from app.core.run_tracker import RunTracker
+from app.core.script_store import ScriptStore
 from app.core.skill_loader import list_skills
 from app.core.skill_version_store import SkillVersionStore
 from app.core.subscription_monitor import SubscriptionMonitor
+from app.core.table_template_store import TableTemplateStore
+from app.core.telemetry import init_telemetry
+from app.core.telemetry import is_enabled as telemetry_enabled
 from app.core.usage_store import UsageStore
-from app.core.bridge_store import BridgeStore
-from app.core.run_tracker import RunTracker
-from app.core.script_store import ScriptStore
 from app.core.worker_pool import WorkerPool
 from app.middleware.auth import DualAuthMiddleware
 from app.middleware.error_handler import ErrorHandlerMiddleware
@@ -178,8 +179,8 @@ async def startup():
 
     # Context Rack (modular context injection pipeline)
     if settings.supabase_context_rack_enabled:
-        from app.core.context_rack import ContextRack
         from app.core.context_providers import build_default_slots
+        from app.core.context_rack import ContextRack
         app.state.context_rack = ContextRack(slots=build_default_slots())
         logger.info("  Context Rack: enabled (source=%s)", settings.supabase_context_source)
     else:
@@ -283,8 +284,8 @@ async def startup():
     )
 
     # Google Sheets integration (graceful degradation if gws not installed)
-    from app.core.sheets_client import SheetsClient
     from app.core.drive_sync import DriveSync
+    from app.core.sheets_client import SheetsClient
     sheets_client = SheetsClient()
     if sheets_client.available:
         app.state.drive_sync = DriveSync(sheets_client)
@@ -394,7 +395,7 @@ async def startup():
     await app.state.reminder_worker_portal.start()
     await app.state.status_report_worker.start()
 
-    skills = list_skills()
+    list_skills()
 
     # Log RSS at startup for memory baseline
     from app.core.cleanup_worker import _get_rss_mb

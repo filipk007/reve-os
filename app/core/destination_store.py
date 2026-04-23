@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 import httpx
 
 from app.core.atomic_writer import atomic_write_json
-
 from app.core.job_queue import Job, JobStatus
 from app.models.destinations import (
     CreateDestinationRequest,

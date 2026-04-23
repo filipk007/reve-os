@@ -72,7 +72,6 @@ class TestList:
         history.save(rec1)
 
         # Small delay to ensure different mtime
-        import os
         time.sleep(0.05)
 
         rec2 = _make_record(timestamp=2000.0)

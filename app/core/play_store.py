@@ -5,7 +5,6 @@ from pathlib import Path
 import yaml
 
 from app.core.atomic_writer import atomic_write_text
-
 from app.models.plays import (
     ClayConfigRequest,
     CreatePlayRequest,

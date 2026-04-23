@@ -5,7 +5,6 @@ import uuid
 from pathlib import Path
 
 from app.core.atomic_writer import atomic_write_text
-
 from app.models.datasets import Dataset, DatasetColumn, DatasetSummary
 
 logger = logging.getLogger("clay-webhook-os")

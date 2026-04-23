@@ -114,7 +114,7 @@ class EmailNotifier:
             f"Deliverable Ready — {client_name}",
             f"<p><strong>{title}</strong></p><p>{preview}</p>"
             f"<p style='color:#94a3b8;font-style:italic;'>Please review and approve at your earliest convenience.</p>"
-            + (f"<p style='color:#64748b;font-size:11px;'>Reply to this email to add a comment.</p>" if reply_to else ""),
+            + ("<p style='color:#64748b;font-size:11px;'>Reply to this email to add a comment.</p>" if reply_to else ""),
             self._portal_url(slug),
         )
         await self._send_email(recipients, f"Deliverable: {title} — {client_name}", html, reply_to=reply_to)
@@ -129,7 +129,7 @@ class EmailNotifier:
         html = _html_wrapper(
             f"{type_.title()} — {client_name}",
             f"<p><strong>{title}</strong></p><p>{preview}</p>"
-            + (f"<p style='color:#64748b;font-size:11px;'>Reply to this email to add a comment.</p>" if reply_to else ""),
+            + ("<p style='color:#64748b;font-size:11px;'>Reply to this email to add a comment.</p>" if reply_to else ""),
             self._portal_url(slug),
         )
         await self._send_email(recipients, f"{type_.title()}: {title} — {client_name}", html, reply_to=reply_to)
@@ -171,7 +171,7 @@ class EmailNotifier:
             f"New Comment — {client_name}",
             f"<p><strong>{author}</strong> commented on <strong>{update_title}</strong></p>"
             f"<blockquote style='border-left:3px solid #2dd4bf;padding-left:12px;color:#cbd5e1;margin:12px 0;'>{preview}</blockquote>"
-            + (f"<p style='color:#64748b;font-size:11px;'>Reply to this email to add a comment.</p>" if reply_to else ""),
+            + ("<p style='color:#64748b;font-size:11px;'>Reply to this email to add a comment.</p>" if reply_to else ""),
             self._portal_url(slug),
         )
         await self._send_email(recipients, f"Comment on {update_title} — {client_name}", html, reply_to=reply_to)

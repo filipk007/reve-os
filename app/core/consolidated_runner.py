@@ -275,7 +275,7 @@ def build_task_sections(func: FunctionDefinition, data: dict, function_store=Non
                     f"Goal: Given the inputs below, find: {output_summary}.\n\n"
                     f"Inputs:\n"
                     + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
-                    + f"\n\nExpected output keys:\n"
+                    + "\n\nExpected output keys:\n"
                     + "\n".join(step_hints)
                     + f"\n\n{search_instruction}"
                     + flow_note

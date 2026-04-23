@@ -6,7 +6,6 @@ Pattern: Same as memory_store — directory-based JSON, atomic writes.
 
 import json
 import logging
-import time
 import uuid
 from pathlib import Path
 

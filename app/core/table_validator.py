@@ -21,7 +21,7 @@ def validate_table(table: TableDefinition) -> dict:
     warnings: list[str] = []
 
     col_ids = {c.id for c in table.columns}
-    col_map = {c.id: c for c in table.columns}
+    {c.id: c for c in table.columns}
 
     # 1. Check for duplicate column IDs
     seen_ids: set[str] = set()

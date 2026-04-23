@@ -1,12 +1,11 @@
 """Tests for app.core.sheets_client — gws subprocess wrapper."""
 
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from app.core.sheets_client import SheetsClient, _gws_available
-
 
 # ── Availability ─────────────────────────────────────────
 

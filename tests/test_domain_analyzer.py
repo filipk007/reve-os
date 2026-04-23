@@ -1,6 +1,6 @@
 """Tests for app.core.domain_analyzer — pure keyword/exclusion analysis."""
 
-from app.core.domain_analyzer import DomainSignals, analyze_domain_signals
+from app.core.domain_analyzer import analyze_domain_signals
 
 
 class TestAnalyzeDomainSignals:

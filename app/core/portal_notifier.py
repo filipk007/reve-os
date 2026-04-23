@@ -6,7 +6,6 @@ Non-blocking: failures are logged but never raise to the caller.
 """
 
 import logging
-import time
 
 import httpx
 

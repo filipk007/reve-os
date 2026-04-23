@@ -8,7 +8,7 @@ import logging
 
 from fastapi import APIRouter, Request
 
-from app.core.entity_utils import extract_entity_key, slugify
+from app.core.entity_utils import extract_entity_key
 
 router = APIRouter(prefix="/research", tags=["research"])
 logger = logging.getLogger("clay-webhook-os")

@@ -695,10 +695,10 @@ async def test_notification(request: Request, slug: str):
 async def receive_inbound_email(request: Request):
     """Receive inbound emails from SendGrid Inbound Parse and post as comments."""
     from app.core.email_bridge import (
+        extract_sender_email,
+        extract_sender_name,
         parse_reply_address,
         strip_quoted_content,
-        extract_sender_name,
-        extract_sender_email,
         verify_sender,
     )
 
@@ -818,7 +818,7 @@ async def create_thread(request: Request, slug: str, project_id: str, body: Crea
         author=body.author, author_org=body.author_org,
     )
     if notifier:
-        client_name = store._client_name(slug)
+        store._client_name(slug)
         asyncio.create_task(notifier.notify_thread_created(slug, body.title, body.author))
     if email_notifier:
         asyncio.create_task(email_notifier.notify_thread_created(slug, body.title, body.author))

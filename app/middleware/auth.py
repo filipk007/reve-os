@@ -4,9 +4,9 @@ import logging
 from datetime import datetime, timezone
 
 import jwt
-from jwt import PyJWKClient
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from jwt import PyJWKClient
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.config import settings

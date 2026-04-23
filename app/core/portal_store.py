@@ -297,7 +297,7 @@ updated_at: {now}
             return []
 
         try:
-            lines = [l for l in path.read_text().splitlines() if l.strip()]
+            lines = [line for line in path.read_text().splitlines() if line.strip()]
         except OSError:
             return []
 
@@ -1033,7 +1033,7 @@ updated_at: {now}
         if not path.exists():
             return []
         try:
-            lines = [l for l in path.read_text().splitlines() if l.strip()]
+            lines = [line for line in path.read_text().splitlines() if line.strip()]
         except OSError:
             return []
         entries = []
@@ -1371,7 +1371,7 @@ updated_at: {now}
         if not path.exists():
             return []
         try:
-            lines = [l for l in path.read_text().splitlines() if l.strip()]
+            lines = [line for line in path.read_text().splitlines() if line.strip()]
         except OSError:
             return []
         comments = []
@@ -1438,7 +1438,7 @@ updated_at: {now}
             return {"last_viewed_at": None, "view_count_7d": 0, "view_count_30d": 0}
 
         try:
-            lines = [l for l in path.read_text().splitlines() if l.strip()]
+            lines = [line for line in path.read_text().splitlines() if line.strip()]
         except OSError:
             return {"last_viewed_at": None, "view_count_7d": 0, "view_count_30d": 0}
 

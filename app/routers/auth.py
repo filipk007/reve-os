@@ -167,7 +167,7 @@ async def create_api_key(body: CreateKeyRequest, request: Request):
     key_prefix = raw_key[:12]
 
     try:
-        response = (
+        (
             client.table("api_keys")
             .insert({
                 "key_hash": key_hash,

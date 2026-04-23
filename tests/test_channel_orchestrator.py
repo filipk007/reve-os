@@ -3,8 +3,6 @@
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from app.core.channel_orchestrator import ChannelOrchestrator
 from app.models.functions import (
     FunctionDefinition,
@@ -241,7 +239,7 @@ async def test_skill_step_execution():
          patch("app.core.channel_orchestrator.build_prompt", return_value="full prompt text") as mock_build_prompt, \
          patch("app.core.channel_orchestrator.resolve_model", return_value="sonnet") as mock_resolve:
 
-        events = await _collect_events(orchestrator, "test-func", [{"company_name": "Acme"}])
+        await _collect_events(orchestrator, "test-func", [{"company_name": "Acme"}])
 
         mock_load_skill.assert_called_once_with("email-gen")
         mock_config.assert_called_once_with("email-gen")
@@ -265,7 +263,7 @@ async def test_call_ai_step():
     )
     orchestrator = _make_orchestrator(func=func)
 
-    events = await _collect_events(orchestrator, "test-func", [{"company_name": "Acme"}])
+    await _collect_events(orchestrator, "test-func", [{"company_name": "Acme"}])
 
     # Should have called pool.submit
     orchestrator._pool.submit.assert_called_once()
@@ -291,7 +289,7 @@ async def test_param_resolution():
     )
     orchestrator = _make_orchestrator(func=func)
 
-    events = await _collect_events(
+    await _collect_events(
         orchestrator, "test-func",
         [{"company_name": "Acme", "domain": "acme.com"}],
     )

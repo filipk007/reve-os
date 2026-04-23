@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from app.core.atomic_writer import atomic_write_text
-
 from app.models.usage import DailyUsage, UsageEntry, UsageError, UsageSummary
 
 logger = logging.getLogger("clay-webhook-os")

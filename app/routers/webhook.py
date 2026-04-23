@@ -704,7 +704,6 @@ async def webhook_function(function_id: str, body: FunctionWebhookRequest, reque
 @router.post("/webhook/functions/{function_id}/stream")
 async def webhook_function_stream(function_id: str, body: FunctionWebhookRequest, request: Request):
     """SSE streaming variant — yields step traces as they complete."""
-    import time as _time
 
     sub_monitor = getattr(request.app.state, "subscription_monitor", None)
     if sub_monitor and sub_monitor.is_paused:
@@ -751,6 +750,7 @@ async def webhook_function_consolidated_stream(function_id: str, body: FunctionW
     Intermediate outputs flow naturally within the single prompt.
     """
     import time as _time
+
     from app.core.consolidated_runner import (
         build_consolidated_prompt,
         parse_consolidated_output,
@@ -1185,17 +1185,17 @@ async def _run_function_stream(body: WebhookRequest, request: Request):
                 f"Task: {tool_meta['description']}\n\n"
                 f"Inputs:\n"
                 + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
-                + (f"\n\nAlready found (DO NOT re-lookup these):\n"
+                + ("\n\nAlready found (DO NOT re-lookup these):\n"
                    + "\n".join(f"- {k}: {v}" for k, v in already_found.items())
                    if already_found else "")
-                + f"\n\nReturn a JSON object with ONLY these keys:\n"
+                + "\n\nReturn a JSON object with ONLY these keys:\n"
                 + "\n".join(output_hints)
-                + f"\n\nRULES:\n"
-                f"- Search the web to find real, factual data.\n"
-                f"- For domains: return just the domain (e.g. 'salesforce.com'), not a full URL.\n"
-                f"- For LinkedIn company URLs: return https://linkedin.com/company/{{slug}}\n"
-                f"- NEVER return null — if unsure, search the web and provide your best answer.\n"
-                f"- Return ONLY a valid JSON object. No markdown, no explanation, no code fences.\n"
+                + "\n\nRULES:\n"
+                "- Search the web to find real, factual data.\n"
+                "- For domains: return just the domain (e.g. 'salesforce.com'), not a full URL.\n"
+                "- For LinkedIn company URLs: return https://linkedin.com/company/{slug}\n"
+                "- NEVER return null — if unsure, search the web and provide your best answer.\n"
+                "- Return ONLY a valid JSON object. No markdown, no explanation, no code fences.\n"
             )
 
             data_categories = {"Research", "People Search", "Company Enrichment", "Recommended", "Scraping"}
@@ -1413,6 +1413,7 @@ async def _run_function_consolidated(body: WebhookRequest, request: Request) -> 
     Falls back to step-by-step (_run_function_stepwise) on any failure.
     """
     import time
+
     from app.core.consolidated_runner import (
         build_consolidated_prompt,
         parse_consolidated_output,
@@ -1838,17 +1839,17 @@ async def _run_function(body: WebhookRequest, request: Request) -> dict:
                 f"Task: {tool_meta['description']}\n\n"
                 f"Inputs:\n"
                 + "\n".join(f"- {k}: {v}" for k, v in resolved_params.items())
-                + (f"\n\nAlready found (DO NOT re-lookup these):\n"
+                + ("\n\nAlready found (DO NOT re-lookup these):\n"
                    + "\n".join(f"- {k}: {v}" for k, v in already_found.items())
                    if already_found else "")
-                + f"\n\nReturn a JSON object with ONLY these keys:\n"
+                + "\n\nReturn a JSON object with ONLY these keys:\n"
                 + "\n".join(output_hints)
-                + f"\n\nRULES:\n"
-                f"- Search the web to find real, factual data.\n"
-                f"- For domains: return just the domain (e.g. 'salesforce.com'), not a full URL.\n"
-                f"- For LinkedIn company URLs: return https://linkedin.com/company/{{slug}}\n"
-                f"- NEVER return null — if unsure, search the web and provide your best answer.\n"
-                f"- Return ONLY a valid JSON object. No markdown, no explanation, no code fences.\n"
+                + "\n\nRULES:\n"
+                "- Search the web to find real, factual data.\n"
+                "- For domains: return just the domain (e.g. 'salesforce.com'), not a full URL.\n"
+                "- For LinkedIn company URLs: return https://linkedin.com/company/{slug}\n"
+                "- NEVER return null — if unsure, search the web and provide your best answer.\n"
+                "- Return ONLY a valid JSON object. No markdown, no explanation, no code fences.\n"
             )
 
             data_categories = {"Research", "People Search", "Company Enrichment", "Recommended", "Scraping"}

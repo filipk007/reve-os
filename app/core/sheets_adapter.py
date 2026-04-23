@@ -6,12 +6,10 @@ Sheets is an optional view, not the source of truth.
 
 import json
 import logging
-import time
 import uuid
 
 from app.core.sheets_client import SheetsClient
 from app.core.table_store import TableStore
-from app.models.tables import TableDefinition
 
 logger = logging.getLogger("clay-webhook-os")
 

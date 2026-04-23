@@ -11,7 +11,6 @@ from app.models.tables import (
     CreateTableRequest,
     DeleteRowsRequest,
     ExecuteTableRequest,
-    ExpandColumnRequest,
     ImportRowsRequest,
     InstantiateTemplateRequest,
     ReorderColumnsRequest,

@@ -14,8 +14,6 @@ specific, and genuinely helpful. Never salesy.
 ## Context Files to Load
 - knowledge_base/frameworks/josh-braun-pvc.md
 - knowledge_base/_defaults/writing-style.md
-- knowledge_base/signals/signal-openers.md
-- knowledge_base/personas/{{persona_slug}}.md
 - clients/{{client_slug}}.md
 
 ## Output Format
