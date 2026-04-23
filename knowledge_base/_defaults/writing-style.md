@@ -4,47 +4,165 @@ description: Voice and tone guidelines for all written output
 domain: methodology
 node_type: pattern
 status: validated
-last_updated: 2026-03-03
+last_updated: 2026-04-23
 tags:
   - methodology
   - voice
   - copywriting
-topics:
-  - email-writing
-  - content-creation
-  - brand-voice
-related_concepts:
-  - "[[josh-braun-pvc]]"
 ---
 
 # Writing Style Guide
 
-## Voice Characteristics
-- Sentence length: short to medium
-- Tone: casual-professional — easy to read, enough detail for context
-- Contractions: yes, always
-- Formality: like talking to a smart colleague, not a board room
+## North Star
 
-## Patterns to Use
-- Analogies and metaphors (makes abstract concrete)
-- Specific numbers and details over vague claims
-- "You" language — talk about their world, not yours
-- Short paragraphs (1-2 sentences max in emails)
-- Active voice, present tense
+Cold outreach should feel unmistakably human — like something a sharp, non-pushy founder would text you after skimming your site. Ditch verbosity, fluff, and polish. No intros, no sign-offs, no "hope you're well," no formal structure. Casual, punchy, a little rough around the edges — written in a hurry but with real thought. Use simple conversational words (nice, basically, a bit, stuff, kinda). Messages should land under 100 words.
 
-## Patterns to Avoid
-- Corporate jargon ("synergy", "leverage", "optimize", "ecosystem")
-- Filler words ("just", "actually", "really", "very")
-- Hedge language ("I think maybe", "perhaps we could")
-- AI-sounding phrases ("delve into", "it's important to note", "in today's landscape")
-- Exclamation points in professional context
-- Starting sentences with "I"
+## Buyer-Centric Mindset
 
-## Tone by Context
-- **Cold email:** Direct, specific, human. Like a text from a friend who works in the industry.
-- **Follow-up:** Warm, brief, reference something specific from last conversation.
-- **LinkedIn:** Opinionated, concise, conversation-starting. No hashtag spam.
-- **Client update:** Professional but warm, structured with clear next steps.
+The default failure mode is talking about yourself — your company, your product, your capabilities. That triggers defenses instantly. The shift: establish yourself as an expert in *their* field, not yours. If you can articulate their situation, their operational failure, or their current risk better than they can, you've earned more trust than any pitch could buy.
 
-## Evidence
-[VERIFIED: Derived from user's stated preferences and writing samples]
+Rules:
+- Email 1 contains zero information about your product or company
+- Credibility comes from the accuracy of your diagnosis, not your credentials
+- You are a thought leader delivering a relevant observation to someone who needs it right now
+- Goal isn't "interesting product" — it's "how did they know that about us?"
+
+## Nine Psychological Levers
+
+Every message should pull on 2–3 of these. Don't force all of them into one.
+
+**1. Pattern interrupt** — The highest-leverage lever. If your message looks like every other cold email, it dies. Break the format, tone, or opener. The opening line must not sound like a prospecting tool wrote it.
+
+**2. Relevance** — Make the reader think "this is about me." Front-load personalisations in the opening line to establish relevance immediately and optimise preview text. Weave in role, time in role, industry, colleagues, tech stack, recent wins.
+
+**3. Curiosity gap** — Humans hate information gaps (Zeigarnik effect). Drop enough breadcrumbs to create intrigue without revealing everything. Hint at a problem or idea but don't over-explain.
+
+**4. Social proof** — Reference case studies with competitors, companies in adjacent spaces, or at minimum a recognisable name. If you have no relevant case studies, acknowledge the gap and show overlap ("not exactly laundry, but a vibrant startup like you"). Weave subtly — a P.S. works.
+
+**5. Authority** — If you can articulate their pain better than they can, they'll assume you have the solution. Get specific. Vague expertise is no expertise. Pair with autonomy — demonstrate while empowering.
+
+**6. FOMO / Loss aversion** — Humans value losses more than equivalent gains. In cold outreach, subtlety is key — hint at what competitors are already seizing. Never fake urgency; tie it to real market movements or timing.
+
+**7. Reciprocity** — Offer something before asking. A genuinely personalised insight, a custom resource, or demonstrated homework makes people inclined to respond.
+
+**8. Ego** — Make the reader feel seen and smart. Subtle flattery that's specific. Don't overdo it — false flattery diminishes your status. Storytelling that paints the buyer as the hero works harder than straight compliments.
+
+**9. Autonomy** — Never push. Let them feel in control. Humbling disclaimers ("tentatively assuming," "might be way off here") go a long way. Give them easy outs.
+
+Bonus threads: **narrative transportation** (when info comes wrapped in a story, barriers drop — a well-crafted sequence tells one story across touchpoints) and **simplicity bias** (the easier the ask, the more replies). Both serve the nine above.
+
+## Opening Line Rule
+
+The opening line is the single highest-leverage sentence in the email. It doubles as preview text — treat it like a second subject line.
+
+- **Never start with**: "saw / noticed / came across / I was looking at" — these scream prospecting tool
+- **First line = preview text** — it must look internal, like something a colleague would send
+- **Front-load personalisation** — a specific detail about their world, not yours
+- **Drop-the-verb fix**: if you're tempted to start with "saw X," cut the verb and let the detail stand
+
+Example:
+```
+BAD:  "Mark, saw the Kee Safety MBO close with ICG in January. Congrats."
+GOOD: "Mark, the Kee Safety MBO in January. Since then..."
+```
+
+Open with an opinion, a provocation, or a question only someone who understands their business would ask.
+
+## Forbidden Phrases
+
+**Generic openers**: "Hope you're well" / "Hope this finds you" / "Just checking in" / "I wanted to reach out" / "I noticed that" / "Noticed..." / "Saw..." / "Came across..."
+
+**Overused adjectives**: Impressive, innovative, cutting edge, industry leading, best in class, revolutionary, game changing, robust, seamless, unique, powerful
+
+**Business jargon**: Leverage, optimise, streamline, synergy, scale, pain points, value proposition, best practices, circle back, touch base, low hanging fruit, move the needle
+
+**Pushy**: Limited time offer, act now, limited spots, don't miss out, once in a lifetime
+
+**Vague claims**: 10x your results, skyrocket your growth, transform your business, guaranteed success
+
+**Lazy follow-ups**: Just following up / Following up / Bumping this / Circling back / Friendly reminder / In case you missed my last message / Final thought / Last thing / One more thing
+
+**Sequence-aware openers**: Any phrase that acknowledges this is part of a sequence or references a previous email. Each message must read as standalone.
+
+**Vendor-speak patterns**: "Most [X] we see [Y]" / "Teams like yours..." / "Companies in your space typically..." — these are pattern-matched as sales-speak instantly. Get specific about *this* prospect, not a generic cohort.
+
+## Disarming Language (Whitelist)
+
+These lower the reader's guard and feel human. Use sparingly — one per message:
+
+- "Tentatively assuming..."
+- "If we entertain the possibility that..."
+- "Under the wildly optimistic assumption that..."
+- "If we suspend disbelief and assume that..."
+- "A mildly bold suggestion..."
+- "Possibly unnecessary thought..."
+- "Assuming this hasn't already been handled elegantly..."
+- "Grain of salt..."
+- "Not sure if this is on your radar atm..."
+- "Pushing my luck, but..."
+- "Either way, keep crushing it..."
+- "Zero strings attached"
+
+## CTA Patterns
+
+The easier the ask, the more replies. Whitelist:
+
+- **Self-aware closer**: "If this makes sense outside my head..." / "If this feels useful (and not redundant)..." / "If this isn't wildly unnecessary..." / "Am I late to this party, or..." / "Am I onto something, or onto nothing?"
+- **Disarming question**: "Am I even barking up the right tree?" / "Total shot in the dark, worth a chat?"
+- **No CTA**: Sometimes absence of an ask is itself a pattern disruptor — test it
+
+**Never use**: "Jump on a quick call" / "Grab 15 minutes" / "Book a slot in my calendar"
+
+## Structure Rules
+
+- Short sentences. 1–2 line paragraphs. Easy to skim on mobile.
+- One idea per message. Don't stack multiple asks or pain points.
+- No ROI metrics — they dehumanise the message and trigger scepticism.
+- No company name or solution name in the first message if you can help it.
+- Opening line = preview text. Treat it like a second subject line.
+
+## Subject Line Rules
+
+**Threading**: In a cold sequence, all emails thread under the same subject line. One killer subject for the entire arc, not unique subjects per touch.
+
+Two approaches that work:
+- **Boring on purpose** — looks internal, blends into their daily workflow, relevant to the topic
+- **Pattern disruptor** — so bold it demands attention ("[FirstName], the next [IndustryLeader]?" / "This is either genius or terrible")
+
+Universal rules:
+- 6 words or fewer performs best
+- Use their name or company name
+- Match tone to the message body (no bait-and-switch)
+- Front-load preview text with something personal
+
+## Follow-Up Rules
+
+These aren't follow-ups. They're new conversations.
+
+Never acknowledge the sequence exists. No "following up," "circling back," "bumping this," "in case you missed my last message." Also no "another thought," "separate note," or any meta-reference to this being multi-touch.
+
+Each message feels like a standalone insight that just occurred to you:
+- **Different pain angle**: same core dysfunction, new manifestation
+- **Disarming**: still casual, like you just thought of this
+- **Direct**: each email has one job in the psychological arc
+
+Target experience: "this person keeps having interesting thoughts about my business" — not "this person is following up."
+
+## Personalization Stacking
+
+Good personalisation goes beyond name, company, and job title. Layer details:
+- Time in role ("almost 2 years heading up X, guessing it's not about ideas, it's about bandwidth")
+- Colleague reference ("let me know if Simon might be better placed")
+- Tech stack ("saw you're on HubSpot, we integrate, so setup's simple")
+- Company tagline or mission statement
+- Recent news, hires, or funding
+- Competitor reference
+- Industry trends specific to their niche
+
+**Stack it**: combine multiple data points into one sentence. Feels researched, not random. Hedge inaccurate data with "LinkedIn data, grain of salt!" — human, disarming, builds trust.
+
+## Self-Interest Check
+
+Before sending, ask: *If I were the decision-maker at this company, would I actually respond to this?*
+
+If the answer isn't a confident yes — it's too long, too technical, the ask feels like a chore, or it sounds like every other message — rewrite it. The bar for cold outreach is painfully low. Being human, specific, and different is enough to stand out.
