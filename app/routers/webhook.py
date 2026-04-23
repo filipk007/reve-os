@@ -123,10 +123,38 @@ async def _maybe_fetch_research(skill: str, data: dict, enrichment_cache=None) -
                 data["research_context"] = waterfall_result
 
 
+def _coerce_json_string_fields(data: dict) -> None:
+    """Coerce data fields that Clay splices as JSON-encoded strings into real lists/dicts.
+
+    Clay's HTTP Action body editor splices variable pills as quoted strings
+    with internal quote-escaping. When a column holds a JSON array (e.g. the
+    `signals` / Triggers column), the backend receives the stringified form
+    and the skill sees `data.signals = "[{...}]"` instead of the parsed list.
+
+    This coercion inspects known array/object fields and parses them in-place
+    if they arrive as strings that look like JSON. Non-JSON strings are left
+    as-is. Mutates `data` in place.
+    """
+    import json as _json
+    # Fields that are semantically arrays or objects but may arrive as strings
+    _JSON_FIELDS = ("signals", "research_context", "triggers", "events")
+    for key in _JSON_FIELDS:
+        val = data.get(key)
+        if isinstance(val, str) and val.strip().startswith(("[", "{")):
+            try:
+                data[key] = _json.loads(val)
+            except _json.JSONDecodeError:
+                # Leave the string as-is; the skill will handle it as raw text
+                pass
+
+
 @router.post("/webhook")
 async def webhook(body: WebhookRequest, request: Request, debug: bool = False):
     pool = request.app.state.pool
     cache = request.app.state.cache
+
+    # Coerce Clay-style JSON-string variables into real lists/dicts
+    _coerce_json_string_fields(body.data)
 
     # Check subscription health — reject early if paused
     sub_monitor = getattr(request.app.state, "subscription_monitor", None)
