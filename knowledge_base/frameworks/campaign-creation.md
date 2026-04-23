@@ -17,7 +17,7 @@ topics:
   - signal-based-selling
   - outbound-strategy
 related_concepts:
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
   - "[[signal-taxonomy]]"
   - "[[cold-email-sequence]]"
   - "[[displacement-playbook]]"
@@ -55,7 +55,7 @@ The goal is a **Permissionless Value Prop (PVP)**: a message so valuable the
 prospect would pay to receive it. You're delivering market intelligence, not
 a pitch. The meeting is the natural next step, not the ask.
 
-PVP is the V in [[josh-braun-pvc]] taken to its extreme. Instead of one sentence
+PVP is the V in [[pvc]] taken to its extreme. Instead of one sentence
 of value, you're leading with an insight that makes the prospect think: "How do
 they know this about my market?"
 
@@ -127,7 +127,7 @@ Then specify:
 - **Pain hypothesis:** What pain does the data prove?
 - **PVP:** What would the prospect pay to know?
 - **Persona:** Who are we writing to? (match to persona doc)
-- **Framework:** [[josh-braun-pvc]], [[pain-agitate-solve]], or [[before-after-bridge]]?
+- **Framework:** [[pvc]], [[pain-agitate-solve]], or [[before-after-bridge]]?
 - **Sequence:** Which cadence? (see [[cold-email-sequence]])
 - **Signals:** Which triggers open the conversation? (see [[signal-taxonomy]])
 

@@ -16,7 +16,7 @@ topics:
 related_concepts:
   - "[[before-after-bridge]]"
   - "[[pain-agitate-solve]]"
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
 ---
 
 # AIDA Framework

@@ -16,7 +16,7 @@ topics:
 related_concepts:
   - "[[common-objections]]"
   - "[[timing-objections]]"
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
 ---
 
 # Competitor Objections

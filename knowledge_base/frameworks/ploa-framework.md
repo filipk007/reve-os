@@ -18,7 +18,7 @@ topics:
 related_concepts:
   - "[[writing-style]]"
   - "[[b2b-outbound-patterns]]"
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
 ---
  
 # PLOA Framework — Perceived Likelihood of Achievement

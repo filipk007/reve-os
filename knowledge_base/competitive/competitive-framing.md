@@ -15,7 +15,7 @@ topics:
   - differentiation
 related_concepts:
   - "[[displacement-playbook]]"
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
 ---
 
 # Competitive Framing

@@ -16,7 +16,7 @@ topics:
 related_concepts:
   - "[[competitor-objections]]"
   - "[[timing-objections]]"
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
 ---
 
 # Common Cold Outbound Objections

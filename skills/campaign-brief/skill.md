@@ -11,7 +11,7 @@ in one actionable document.
 
 ## Context Files to Load
 - clients/{{client_slug}}.md
-- knowledge_base/frameworks/josh-braun-pvc.md
+- knowledge_base/frameworks/pvc.md
 - knowledge_base/_defaults/writing-style.md
 - knowledge_base/sequences/cold-email-sequence.md
 - knowledge_base/signals/signal-taxonomy.md

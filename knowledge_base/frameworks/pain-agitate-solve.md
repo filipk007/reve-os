@@ -14,7 +14,7 @@ topics:
   - messaging-frameworks
   - persuasion
 related_concepts:
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
   - "[[before-after-bridge]]"
   - "[[aida]]"
 ---

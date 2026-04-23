@@ -14,7 +14,7 @@ topics:
   - cold-outreach
   - sales-development
 related_concepts:
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
   - "[[pain-agitate-solve]]"
   - "[[writing-style]]"
 ---

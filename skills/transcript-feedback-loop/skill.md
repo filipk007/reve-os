@@ -228,4 +228,4 @@ Commit: {hash}
 5. **Single atomic commit per run.** No partial commits, no `--amend`, no `--no-verify`.
 6. **Never `git push`.** Commit only.
 7. **Abort cleanly on "stop" / "cancel".** No partial state.
-8. **Never touch `josh-braun-pvc.md`, `writing-style.md`, or anything in `learnings/`.** Thumb up/down feedback is a different system.
+8. **Never touch `pvc.md`, `writing-style.md`, or anything in `learnings/`.** Thumb up/down feedback is a different system.

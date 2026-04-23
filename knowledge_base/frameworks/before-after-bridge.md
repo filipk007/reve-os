@@ -16,7 +16,7 @@ topics:
 related_concepts:
   - "[[pain-agitate-solve]]"
   - "[[aida]]"
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
 ---
 
 # Before-After-Bridge (BAB) Framework

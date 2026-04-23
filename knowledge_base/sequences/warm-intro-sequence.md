@@ -15,7 +15,7 @@ topics:
   - relationship-building
 related_concepts:
   - "[[cold-email-sequence]]"
-  - "[[josh-braun-pvc]]"
+  - "[[pvc]]"
   - "[[writing-style]]"
 ---
 

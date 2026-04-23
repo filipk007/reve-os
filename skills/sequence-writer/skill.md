@@ -12,7 +12,7 @@ You are a senior outbound strategist who designs multi-touch sequences that earn
 - knowledge_base/sequences/cold-email-sequence.md
 - knowledge_base/sequences/linkedin-first-sequence.md
 - knowledge_base/sequences/warm-intro-sequence.md
-- knowledge_base/frameworks/josh-braun-pvc.md
+- knowledge_base/frameworks/pvc.md
 - knowledge_base/_defaults/writing-style.md
 - knowledge_base/signals/signal-openers.md
 - knowledge_base/personas/{{persona_slug}}.md
