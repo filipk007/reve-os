@@ -107,7 +107,7 @@ Return ONLY valid JSON:
 ```json
 {
   "email_subject": "post-buyout, first 90 days",
-  "email_body": "Mark, the Kee Safety MBO with ICG in January. The part that usually breaks first: reporting.\n\nNew owners ask for numbers nobody built properly before. Legacy workflows start misfiring. Marketing ops ends up rebuilding dashboards instead of running pipeline.\n\nWe rebuild HubSpot portals through that exact window. Clean ownership data, rebuild attribution, retire the workflows nobody remembers why exist.\n\nWorth a 10-min look at what usually breaks first post-buyout?",
+  "email_body": "Mark, the Kee Safety MBO close with ICG happened in January?\n\nThe part that usually breaks first post-buyout: reporting. New owners ask for numbers nobody built properly before. Legacy workflows start misfiring. Marketing ops ends up rebuilding dashboards instead of running pipeline.\n\nWe rebuild HubSpot portals through that exact window. Clean ownership data, rebuild attribution, retire the workflows nobody remembers why exist.\n\nWorth a 10-min look at what usually breaks first post-buyout?",
   "personalization_hook": "January 2026 MBO backed by ICG",
   "angle_used": "signals",
   "signal_selected": {

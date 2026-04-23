@@ -63,9 +63,13 @@ The opening line does more work than any other sentence in the email. It doubles
 
 Example:
 ```
-BAD:  "Mark, saw the Kee Safety MBO close with ICG in January. Congrats."
-GOOD: "Mark, the Kee Safety MBO in January. Since then..."
+BAD:   "Mark, saw the Kee Safety MBO close with ICG in January. Congrats."
+WORSE: "Mark, the Kee Safety MBO in January."  ← noun fragment, no thought delivered
+GOOD:  "Mark, the Kee Safety MBO close with ICG happened in January?"
+         ← question form: implies you noticed, invites engagement, complete thought
 ```
+
+The question form works because it plants the signal AND invites the reader into the thought in one move. Alternative shapes that also work: temporal anchor + hook ("first 90 days post-MBO. Reporting usually cracks first."), or a direct observation about the signal ("post-MBO reporting is where things usually break first").
 
 Open with an opinion, a provocation, or a question only someone who understands their business would ask.
 
