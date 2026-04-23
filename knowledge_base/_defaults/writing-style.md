@@ -122,10 +122,13 @@ The easier the ask, the more replies. Whitelist:
 
 ## Structure Rules
 
-- Short sentences. 1–2 line paragraphs. Easy to skim on mobile.
-- One idea per message. Don't stack multiple asks or pain points.
-- No ROI metrics, they dehumanise the message and trigger scepticism.
-- No company name or solution name in the first message if you can help it.
+- **Target reading level: Grade 6–7** (Flesch-Kincaid). Not "short for B2B" — short like a text to a friend. Anything grading above 8 sounds like a memo.
+- **Sentences: 8–15 words each.** If a sentence runs past 15 words, break it. Two punchy sentences always beat one dense one.
+- **Words: short wins.** Prefer 1–2 syllable words. Cut "utilize" → "use", "approximately" → "about", "additionally" → "also", "therefore" → "so", "requirements" → "what you need". A Grade-11 sentence usually just has 3–4 long words you can swap.
+- **1–2 line paragraphs.** Easy to skim on mobile.
+- **One idea per message.** Don't stack multiple asks or pain points.
+- **No ROI metrics** — they dehumanise the message and trigger scepticism.
+- **No company name or solution name** in the first message if you can help it.
 
 ## Subject Line Rules
 
