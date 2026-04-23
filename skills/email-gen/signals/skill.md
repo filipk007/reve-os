@@ -70,10 +70,16 @@ Return ONLY valid JSON:
 - re-brand → content + CRM realignment
 
 **Writing rules:**
-- **Opener MUST be a question** — phrase the signal as something the prospect would nod to ("the Acme acquisition by Carlyle closed in February?"). Never a declarative statement ("the Acme acquisition by Carlyle closed in February."). The question form signals "you noticed too, right?" which lands as internal-colleague energy. A declarative signal-recap reads as news-forward, which kills the opener.
+- **Opener MUST be a question** — phrase the signal as something the prospect would nod to ("the Acme acquisition by Carlyle closed in February?"). Never a declarative statement. The question form signals "you noticed too, right?" which lands as internal-colleague energy.
 - Don't congratulate as the point. One beat, then move to implication.
 - Bridge signal → operational reality in one sentence immediately after the question.
-- One mechanism reference from client's Social Proof, not a list.
+
+**Proof citation rules (zero tolerance for hallucination):**
+- Cite ONE customer by NAME, pulled EXACTLY from the client's `## Social Proof` section. Not paraphrased, not invented, not generic.
+- Use exact numbers and exact mechanisms from that section. Do NOT invent outcomes.
+- If the profile marks a customer as an "Internal Proof Anecdote" or similar, you may reference the PATTERN ("one agency handled merging investor + merchant pipelines for a similar client") but NEVER claim "we did X for [customer]" unless the customer is in the public/quantified part of Social Proof.
+- Never use generic descriptors like "a payments scale-up", "a lender we worked with", "a similar client post-acquisition". Either name the customer or drop the proof line entirely.
+- If NO named customer in the profile matches the signal type, omit the proof sentence — it's better to have a shorter email than a fabricated one.
 
 ## Critical Rules
 - **Opener is a question, not a statement.** First line MUST end with `?` and phrase the signal as something the prospect would nod to. Declarative signal-recaps are banned.

@@ -122,9 +122,10 @@ The easier the ask, the more replies. Whitelist:
 
 ## Structure Rules
 
-- **Target reading level: Grade 6–7** (Flesch-Kincaid). Not "short for B2B" — short like a text to a friend. Anything grading above 8 sounds like a memo.
-- **Sentences: 8–15 words each.** If a sentence runs past 15 words, break it. Two punchy sentences always beat one dense one.
-- **Words: short wins.** Prefer 1–2 syllable words. Cut "utilize" → "use", "approximately" → "about", "additionally" → "also", "therefore" → "so", "requirements" → "what you need". A Grade-11 sentence usually just has 3–4 long words you can swap.
+- **Target reading level: Grade 6–7** (Flesch-Kincaid). HARD CAP Grade 8. If a draft grades above 8, rewrite before returning. Not "short for B2B", short like a text to a friend.
+- **Sentences: 12 words MAX.** If a sentence runs past 12 words, break it into two. Every sentence. No exceptions. Count if you have to.
+- **Words: short wins.** Ban these 3+ syllable words unless industry-critical: acquisition (use "deal"), consolidation (use "merging"), operations (use "ops"), infrastructure (use "setup" or "stack"), integration (use "sync"), transformation (banned anyway), optimization (use "tuning"), configuration (use "setup"), implementation (use "build"), significantly (use "a lot"), typically (use "usually"). A Grade-11 draft usually has 3–4 long words you can swap for shorter ones.
+- **Test yourself:** read the draft out loud. If any sentence makes you take a breath in the middle, it's too long — break it.
 - **1–2 line paragraphs.** Easy to skim on mobile.
 - **One idea per message.** Don't stack multiple asks or pain points.
 - **No ROI metrics** — they dehumanise the message and trigger scepticism.
