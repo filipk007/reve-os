@@ -88,7 +88,7 @@ Offer a diagnostic (audit checklist, teardown, playbook). Not a meeting.
 ```json
 {
   "email_subject": "paynt, first 90 days",
-  "email_body": "Sarah, 3 months into Paynt. Usually by month 3 the VP Growth audit surfaces what the last team left broken in tracking.\n\nOne quick one: if Paynt is optimizing for applications rather than funded loans, the CAPI event schema is probably where the gap sits. We rebuilt Inbank's and 2.7x'd loan volume in 3 months.\n\nHappy to send the audit checklist. Tells you in 20 min whether the funnel is leaking between the click and the funded loan.\n\nWorth a look?",
+  "email_body": "Sarah, 3 months into Paynt. Usually by month 3 the VP Growth audit surfaces what the last team left broken in tracking.\n\nOne quick one: if Paynt is optimizing for applications rather than funded loans, the CAPI event schema is probably where the gap sits. We rebuilt Inbank's and 2.7x'd loan volume in 3 months.\n\nHappy to send the audit checklist. Tells you whether the funnel is leaking between the click and the funded loan.\n\nWorth a look?",
   "personalization_hook": "New VP Growth at Paynt, 3 months in, audit window",
   "angle_used": "new-hire",
   "angle_reasoning": "Explicit new_hire_lt_90d signal + senior growth role + hiring paid media lead = prime audit window with active mandate.",

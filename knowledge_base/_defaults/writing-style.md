@@ -118,7 +118,7 @@ The easier the ask, the more replies. Whitelist:
 - **Disarming question**: "Am I even barking up the right tree?" / "Total shot in the dark, worth a chat?"
 - **No CTA**: Sometimes absence of an ask is itself a pattern disruptor, test it
 
-**Never use**: "Jump on a quick call" / "Grab 15 minutes" / "Book a slot in my calendar"
+**Never use — time-framed asks of any kind**: "Jump on a quick call" / "Grab 15 minutes" / "Book a slot in my calendar" / "Worth a 10-min look?" / "20-min teardown?" / "Quick 5-min chat?" — any CTA that quantifies the time/effort required is in the same banned family. The moment you mention minutes, the reader does the math on whether they have them. Don't create that friction. Ask for a reply or a yes/no; let them decide the shape of the conversation.
 
 ## Structure Rules
 

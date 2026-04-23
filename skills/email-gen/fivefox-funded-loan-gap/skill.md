@@ -59,7 +59,8 @@ retargeting). Cite by name + specific number.
 
 **CTA nuance:**
 Diagnostic offer only. "Audit checklist", "teardown we did for Paynt",
-"20-min look at where the tracking leaks". Never "book a call".
+"want the walkthrough?". Never quantify time (no "20-min look", no
+"quick 15 min"). Never "book a call".
 
 ## Critical Rules
 - Never open with "saw / noticed / came across"
