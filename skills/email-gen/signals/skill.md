@@ -70,12 +70,13 @@ Return ONLY valid JSON:
 - re-brand → content + CRM realignment
 
 **Writing rules:**
-- Open on the signal, named. First line references the actual words.
+- **Opener MUST be a question** — phrase the signal as something the prospect would nod to ("the Acme acquisition by Carlyle closed in February?"). Never a declarative statement ("the Acme acquisition by Carlyle closed in February."). The question form signals "you noticed too, right?" which lands as internal-colleague energy. A declarative signal-recap reads as news-forward, which kills the opener.
 - Don't congratulate as the point. One beat, then move to implication.
-- Bridge signal → operational reality in one sentence.
+- Bridge signal → operational reality in one sentence immediately after the question.
 - One mechanism reference from client's Social Proof, not a list.
 
 ## Critical Rules
+- **Opener is a question, not a statement.** First line MUST end with `?` and phrase the signal as something the prospect would nod to. Declarative signal-recaps are banned.
 - Never open with "saw / noticed / came across / I was looking at"
 - Never "Most X we see Y" or "Teams like yours typically"
 - Never "jump on a call / grab 15 minutes / book a slot"
