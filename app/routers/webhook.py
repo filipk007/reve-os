@@ -123,29 +123,69 @@ async def _maybe_fetch_research(skill: str, data: dict, enrichment_cache=None) -
                 data["research_context"] = waterfall_result
 
 
+_SIGNAL_PIPE_FIELDS = ("date", "type", "url", "summary", "trigger", "headline")
+
+
+def _parse_pipe_signals(raw: str) -> list[dict] | None:
+    """Parse the Clay-friendly pipe format for signals.
+
+    Format: `(date|type|url|summary|trigger|headline)|(date|type|...)|(...)`
+    - Each signal wrapped in `(...)`
+    - 6 fields per signal separated by `|`
+    - Signals separated by `)|(`
+
+    Returns a list of dicts keyed by the canonical field names. Returns None
+    if the input doesn't look like pipe format or parsing fails.
+    """
+    s = raw.strip()
+    if not (s.startswith("(") and s.endswith(")")):
+        return None
+    # Strip the outer parens, then split on `)|(` to separate signals
+    inner = s[1:-1]
+    chunks = inner.split(")|(")
+    parsed: list[dict] = []
+    for chunk in chunks:
+        parts = chunk.split("|")
+        if len(parts) != len(_SIGNAL_PIPE_FIELDS):
+            # Malformed signal, skip rather than crash the whole payload
+            continue
+        parsed.append(dict(zip(_SIGNAL_PIPE_FIELDS, (p.strip() for p in parts))))
+    return parsed or None
+
+
 def _coerce_json_string_fields(data: dict) -> None:
-    """Coerce data fields that Clay splices as JSON-encoded strings into real lists/dicts.
+    """Coerce data fields that Clay splices as strings into real lists/dicts.
 
     Clay's HTTP Action body editor splices variable pills as quoted strings
-    with internal quote-escaping. When a column holds a JSON array (e.g. the
-    `signals` / Triggers column), the backend receives the stringified form
-    and the skill sees `data.signals = "[{...}]"` instead of the parsed list.
+    with internal quote-escaping. When a column holds structured data (e.g.
+    the `signals` / Triggers column), the backend receives the stringified
+    form and the skill sees `data.signals = "[{...}]"` or a pipe-delimited
+    string instead of a parsed list.
 
-    This coercion inspects known array/object fields and parses them in-place
-    if they arrive as strings that look like JSON. Non-JSON strings are left
-    as-is. Mutates `data` in place.
+    Handles two Clay-friendly formats for signals/triggers/events:
+      1. JSON string: `"[{"date":...}]"` → json.loads
+      2. Pipe format: `"(date|type|url|summary|trigger|headline)|(...)"`
+         → custom parser (avoids JSON-in-JSON escaping hell)
+
+    Non-matching strings are left as-is; skills handle raw text as fallback.
     """
     import json as _json
-    # Fields that are semantically arrays or objects but may arrive as strings
     _JSON_FIELDS = ("signals", "research_context", "triggers", "events")
     for key in _JSON_FIELDS:
         val = data.get(key)
-        if isinstance(val, str) and val.strip().startswith(("[", "{")):
+        if not isinstance(val, str):
+            continue
+        s = val.strip()
+        if s.startswith(("[", "{")):
             try:
-                data[key] = _json.loads(val)
+                data[key] = _json.loads(s)
+                continue
             except _json.JSONDecodeError:
-                # Leave the string as-is; the skill will handle it as raw text
                 pass
+        if s.startswith("("):
+            parsed = _parse_pipe_signals(s)
+            if parsed is not None:
+                data[key] = parsed
 
 
 @router.post("/webhook")
