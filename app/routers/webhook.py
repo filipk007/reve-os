@@ -123,33 +123,51 @@ async def _maybe_fetch_research(skill: str, data: dict, enrichment_cache=None) -
                 data["research_context"] = waterfall_result
 
 
-_SIGNAL_PIPE_FIELDS = ("date", "type", "url", "summary", "trigger", "headline")
+_SIGNAL_PIPE_FIELDS_POSITIONAL = ("date", "type", "url", "summary", "trigger", "headline")
 
 
 def _parse_pipe_signals(raw: str) -> list[dict] | None:
     """Parse the Clay-friendly pipe format for signals.
 
-    Format: `(date|type|url|summary|trigger|headline)|(date|type|...)|(...)`
-    - Each signal wrapped in `(...)`
-    - 6 fields per signal separated by `|`
-    - Signals separated by `)|(`
+    Supports two variants:
 
-    Returns a list of dicts keyed by the canonical field names. Returns None
-    if the input doesn't look like pipe format or parsing fails.
+    1. **Labeled (preferred)** — self-describing, order-agnostic:
+       `(date:2026-03|type:expansion|url:https://...|summary:...|trigger:scaling|headline:Fabriq opens...)`
+       Each field is `key:value`. Fields split on first `:` only (so URLs
+       with `:` in them stay intact). Field order doesn't matter. Extra
+       fields are preserved; missing fields default to empty string.
+
+    2. **Positional (legacy)** — fixed 6-field order:
+       `(date|type|url|summary|trigger|headline)`
+       Fields mapped by position. Kept for backwards compatibility.
+
+    Signals separated by `)|(` in either variant. Each signal wrapped in `(...)`.
+    Returns a list of dicts or None if input doesn't look like pipe format.
     """
     s = raw.strip()
     if not (s.startswith("(") and s.endswith(")")):
         return None
-    # Strip the outer parens, then split on `)|(` to separate signals
     inner = s[1:-1]
     chunks = inner.split(")|(")
     parsed: list[dict] = []
     for chunk in chunks:
-        parts = chunk.split("|")
-        if len(parts) != len(_SIGNAL_PIPE_FIELDS):
-            # Malformed signal, skip rather than crash the whole payload
-            continue
-        parsed.append(dict(zip(_SIGNAL_PIPE_FIELDS, (p.strip() for p in parts))))
+        parts = [p.strip() for p in chunk.split("|")]
+        # Detect labeled vs positional by looking at the first field
+        first = parts[0] if parts else ""
+        is_labeled = ":" in first and first.split(":", 1)[0].strip().isidentifier()
+        if is_labeled:
+            sig: dict[str, str] = {}
+            for part in parts:
+                if ":" not in part:
+                    continue  # Skip malformed segments
+                key, _, value = part.partition(":")
+                sig[key.strip()] = value.strip()
+            if sig:
+                parsed.append(sig)
+        else:
+            if len(parts) != len(_SIGNAL_PIPE_FIELDS_POSITIONAL):
+                continue  # Malformed, skip rather than crash
+            parsed.append(dict(zip(_SIGNAL_PIPE_FIELDS_POSITIONAL, parts)))
     return parsed or None
 
 
