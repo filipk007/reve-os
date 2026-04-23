@@ -31,9 +31,9 @@ Rules:
 
 Every message should pull on 2–3 of these. Don't force all of them into one.
 
-**1. Pattern interrupt** — The highest-leverage lever. If your message looks like every other cold email, it dies. Break the format, tone, or opener. The opening line must not sound like a prospecting tool wrote it.
+**1. Pattern interrupt** — The lever that matters most. If your message looks like every other cold email, it dies. Break the format, tone, or opener. The opening line must not sound like a prospecting tool wrote it.
 
-**2. Relevance** — Make the reader think "this is about me." Front-load personalisations in the opening line to establish relevance immediately and optimise preview text. Weave in role, time in role, industry, colleagues, tech stack, recent wins.
+**2. Relevance** — Make the reader think "this is about me." Front-load personalisations in the opening line to establish relevance immediately and make the preview text earn its place. Weave in role, time in role, industry, colleagues, tech stack, recent wins.
 
 **3. Curiosity gap** — Humans hate information gaps (Zeigarnik effect). Drop enough breadcrumbs to create intrigue without revealing everything. Hint at a problem or idea but don't over-explain.
 
@@ -53,10 +53,9 @@ Bonus threads: **narrative transportation** (when info comes wrapped in a story,
 
 ## Opening Line Rule
 
-The opening line is the single highest-leverage sentence in the email. It doubles as preview text — treat it like a second subject line.
+The opening line does more work than any other sentence in the email. It doubles as preview text — treat it like a second subject line.
 
 - **Never start with**: "saw / noticed / came across / I was looking at" — these scream prospecting tool
-- **First line = preview text** — it must look internal, like something a colleague would send
 - **Front-load personalisation** — a specific detail about their world, not yours
 - **Drop-the-verb fix**: if you're tempted to start with "saw X," cut the verb and let the detail stand
 
@@ -119,7 +118,6 @@ The easier the ask, the more replies. Whitelist:
 - One idea per message. Don't stack multiple asks or pain points.
 - No ROI metrics — they dehumanise the message and trigger scepticism.
 - No company name or solution name in the first message if you can help it.
-- Opening line = preview text. Treat it like a second subject line.
 
 ## Subject Line Rules
 
@@ -139,7 +137,7 @@ Universal rules:
 
 These aren't follow-ups. They're new conversations.
 
-Never acknowledge the sequence exists. No "following up," "circling back," "bumping this," "in case you missed my last message." Also no "another thought," "separate note," or any meta-reference to this being multi-touch.
+Never acknowledge the sequence exists (see Forbidden Phrases → Lazy follow-ups and Sequence-aware openers). No meta-reference to this being multi-touch — no "another thought," no "separate note."
 
 Each message feels like a standalone insight that just occurred to you:
 - **Different pain angle**: same core dysfunction, new manifestation
@@ -153,7 +151,7 @@ Target experience: "this person keeps having interesting thoughts about my busin
 Good personalisation goes beyond name, company, and job title. Layer details:
 - Time in role ("almost 2 years heading up X, guessing it's not about ideas, it's about bandwidth")
 - Colleague reference ("let me know if Simon might be better placed")
-- Tech stack ("saw you're on HubSpot, we integrate, so setup's simple")
+- Tech stack ("you're on HubSpot, we integrate, so setup's simple")
 - Company tagline or mission statement
 - Recent news, hires, or funding
 - Competitor reference
