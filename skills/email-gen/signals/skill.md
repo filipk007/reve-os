@@ -73,13 +73,66 @@ Return ONLY valid JSON:
 
 ## PVP Writing Rules (strict — this is the whole skill)
 
-1. **Opener is a question referencing the signal, verbatim as the prospect experienced it.** Ends with `?`. "the Acme acquisition closed in February?"
-2. **One diagnostic sentence** — a specific operational thing that usually breaks for someone in this role at this kind of event. Concrete, not abstract.
-3. **One or two sentences elaborating the mechanism** — what EXACTLY goes wrong, named parts of their system (duplicates, reporting, workflows, whatever fits).
-4. **Invite confirmation, don't pitch.** End with a test question: "Does this land?" / "Am I onto something?" / "Anything to it?" / "Or off-base?"
-5. **NO mentions of:** the client company, "we", "us", the client's product, case studies, customer names, numbers, metrics, offers, audits, meetings, demos, or anything that sounds like a pitch. The whole point of PVP is to deliver the insight without asking for anything.
-6. **NO social proof.** Even indirectly ("we've seen this at..."). The diagnostic speaks for itself.
-7. **The reader's next thought should be:** "how did they know this about us?" — not "what do they sell?"
+**The email has exactly THREE parts:**
+1. **Opener** — a question referencing the signal, verbatim as the prospect experienced it. Ends with `?`. Example: "the Acme acquisition closed in February?"
+2. **Diagnostic middle** — 2-4 short sentences describing what specifically breaks for someone in this role at this kind of event. Concrete, named parts of their system (duplicates, reporting, workflows, dashboards, specific operational failure patterns). NO pitch, NO offer, NO product mention.
+3. **Test close** — ONE short question inviting confirmation: "Does this track?" / "Am I onto something?" / "Anything to it?" / "Or off-base?"
+
+**That's it. Three parts. Nothing else.**
+
+### Banned sentence patterns (zero tolerance — these are the exact ways PVP fails)
+
+Never write sentences that start with or contain:
+- "We rebuild..." / "We do..." / "We help..." / "We handle..." / "We run..." / "We've seen..." / "We've done..." / "We unified..." / "We rebuilt..."
+- "Our team..." / "Our process..." / "Our approach..."
+- "happy to send..." / "happy to share..." / "happy to walk through..."
+- "worth a look?" / "worth a conversation?" / "worth exploring?"
+- Any mention of "audit", "teardown", "checklist", "playbook", "breakdown" as something YOU offer
+- Any mention of the sender's client company by name
+- Any case study reference, even without numbers ("did it for X post-deal")
+- Any list of what your service does ("clean ownership data, rebuild attribution, retire workflows") — this is a pitch paragraph pretending to be a mechanism list
+
+If you find yourself writing any of the above, you are writing PVC, not PVP. Delete that sentence and end the email.
+
+**The reader's next thought should be:** "how did they know this about us?" — not "what do they sell?"
+
+### DON'T-WRITE-THIS example
+
+This is what a FAILED PVP email looks like (do NOT produce output like this):
+
+```
+Tucker, Triptease just shipped Auto Date Boost...?
+
+When you launch a feature that automates what hotels did manually, the
+inbound pattern shifts. New segments, new demo requests, pipeline
+categories that didn't exist last quarter.
+
+We rebuild HubSpot portals through exactly that kind of product-
+expansion window. Clean stages, automated routing, reporting that
+reflects the new product mix.
+
+Worth a look?
+```
+
+Why it fails:
+- Third paragraph is a pitch masquerading as a mechanism list (banned)
+- "We rebuild..." violates the no-"we" rule
+- "Clean stages, automated routing..." lists what YOU offer (banned)
+- "Worth a look?" is an offer-ask, not a confirmation test
+
+The FIXED version removes that whole third paragraph and ends on a test:
+
+```
+Tucker, Triptease just shipped Auto Date Boost...?
+
+When you launch a feature that automates what hotels did manually,
+the inbound pattern shifts. New segments, new demo requests,
+pipeline categories that didn't exist last quarter. If your CRM
+wasn't built to route those, sales ends up manually sorting what
+should be scoring itself.
+
+Am I onto something, or off-base?
+```
 
 ## Critical Rules
 - **Opener is a question**, not a statement. First line MUST end with `?`.
