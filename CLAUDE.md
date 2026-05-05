@@ -142,7 +142,8 @@ Order matters (outermost → innermost in `main.py`):
 git push filipk main
 
 # 2. Pull on OVH + restart services
-ssh ubuntu@192.99.247.122 "cd /opt/clay-webhook-os && git pull filipk main && \
+# (on the OVH box, the fork is set up as `origin` — no aliases)
+ssh ubuntu@192.99.247.122 "cd /opt/clay-webhook-os && git pull origin main && \
   sudo systemctl restart clay-webhook-os clay-dashboard"
 
 # 3. Verify
