@@ -16,7 +16,7 @@ Clay Row → POST /webhook → Load Skill + Context → claude --print → JSON 
 - **AI Engine**: `claude --print` subprocess (opus/sonnet/haiku)
 - **Testing**: pytest + pytest-asyncio (63 test files, 2437 tests)
 - **External APIs**: Parallel.ai, Sumble, Findymail
-- **Infra**: VPS (systemd) + Vercel (dashboard)
+- **Infra**: OVH VPS-3 (Ubuntu 24.04 LTS) running both backend + dashboard via systemd, behind nginx + Let's Encrypt
 
 ## Project Structure
 
@@ -133,33 +133,38 @@ Order matters (outermost → innermost in `main.py`):
 
 - **Branch**: `main` (single branch)
 - **Commit style**: `feat:`, `fix:`, `docs:` prefix — see `git log` for examples
-- **Repo**: `ferm-the-kiln/clay-webhook-os`
+- **Repo**: `filipk007/reve-os` (fork of `ferm-the-kiln/clay-webhook-os`). Push remote: `filipk`. Upstream: `origin` (rarely used directly — pull from upstream into local, push to filipk).
 
 ## Deployment
 
 ```bash
-# 1. Push code
-git push origin main
+# 1. Push code (filipk fork)
+git push filipk main
 
-# 2. Backend (VPS)
-ssh clay-vps "bash /opt/clay-webhook-os/scripts/deploy.sh"
-sleep 3 && curl -s https://clay.nomynoms.com/health   # verify
+# 2. Pull on OVH + restart services
+ssh ubuntu@192.99.247.122 "cd /opt/clay-webhook-os && git pull filipk main && \
+  sudo systemctl restart clay-webhook-os clay-dashboard"
 
-# 3. Dashboard (Vercel — no auto-deploy)
-cd dashboard && npx vercel --prod --yes
+# 3. Verify
+curl -s https://clay.revenueable.com/health | python3 -m json.tool | head
 ```
 
-- **VPS**: `178.156.249.201` (SSH alias: `clay-vps`), systemd service, port 8000
-- **API URL**: `https://clay.nomynoms.com`
-- **Dashboard URL**: `https://dashboard-beta-sable-36.vercel.app`
-- **Vercel team**: `fermin-3093s-projects`, project: `dashboard`
+- **VPS**: OVH `192.99.247.122` (hostname `vps-1d9f2138`), Ubuntu 24.04 LTS
+- **SSH**: `ssh ubuntu@192.99.247.122` (key `~/.ssh/id_ed25519`, identity `filip@ovh-deploy`)
+- **Backend**: `https://clay.revenueable.com` (FastAPI on :8001 via nginx + Let's Encrypt)
+- **Dashboard**: `https://app.revenueable.com` (Next.js on :3000 via nginx + Let's Encrypt)
+- **Services**: `clay-webhook-os.service` (backend), `clay-dashboard.service` (dashboard)
+- **Code**: deployed from `filipk007/reve-os` (your fork) to `/opt/clay-webhook-os`
+- **DNS**: Cloudflare (gray cloud / DNS-only — required for certbot HTTP-01)
+- **Claude auth**: Max subscription, logged in via `claude` CLI on the OVH box. Cannot scp credentials cross-machine — must `claude login` interactively if re-authing.
+- **Migrated from AWS**: `34.204.7.200` (decommissioned 2026-05-05)
 
 ## Common Tasks
 
 ### Add a new skill
 1. Create `skills/{name}/skill.md` following the template in `docs/skills-guide.md`
 2. Add an entry in `SKILL_CLIENT_SECTIONS` in `app/core/context_filter.py` (if it loads a client profile)
-3. Test: `curl -X POST localhost:8000/webhook -H "Content-Type: application/json" -d '{"skill":"name","data":{...}}'`
+3. Test locally: `curl -X POST localhost:8001/webhook -H "Content-Type: application/json" -d '{"skill":"name","data":{...}}'`. Or against prod: `curl -X POST https://clay.revenueable.com/webhook -H "x-api-key: $API_KEY" -H "content-type: application/json" -d '{...}'`
 4. Skills auto-discover — no registration needed
 
 ### Add a new API endpoint
