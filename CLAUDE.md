@@ -158,7 +158,7 @@ curl -s https://clay.revenueable.com/health | python3 -m json.tool | head
 - **Code**: deployed from `filipk007/reve-os` (your fork) to `/opt/clay-webhook-os`
 - **DNS**: Cloudflare (gray cloud / DNS-only — required for certbot HTTP-01)
 - **Claude auth**: Max subscription, logged in via `claude` CLI on the OVH box. Cannot scp credentials cross-machine — must `claude login` interactively if re-authing.
-- **Migrated from AWS**: `34.204.7.200` (decommissioned 2026-05-05)
+- **Migrated from AWS** on 2026-05-05. Old AWS instance (`34.204.7.200`, key `~/Downloads/8cpu.pem`) is fully decommissioned — credentials no longer valid, no fallback. All work happens on OVH.
 
 ## Common Tasks
 
